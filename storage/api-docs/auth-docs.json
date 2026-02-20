@@ -1,0 +1,300 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "DigitalRakshak Auth APIs",
+        "description": "Authentication APIs documentation",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1/auth",
+            "description": "Auth API Server"
+        }
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check Auth API health status",
+                "description": "Returns the health status of the Auth API",
+                "operationId": "authHealthCheck",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Auth API is running"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "service": {
+                                                    "type": "string",
+                                                    "example": "auth"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "healthy"
+                                                },
+                                                "timestamp": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-01-15 10:30:00"
+                                                },
+                                                "environment": {
+                                                    "type": "string",
+                                                    "example": "local"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/methods": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get available authentication methods",
+                "description": "Returns a list of available authentication methods",
+                "operationId": "getAuthMethods",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "methods": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "email"
+                                                            },
+                                                            "enabled": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Login with email and password"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "features": {
+                                                    "properties": {
+                                                        "registration": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "password_reset": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "email_verification": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "social_login": {
+                                                            "type": "boolean",
+                                                            "example": false
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/config": {
+            "get": {
+                "tags": [
+                    "Configuration"
+                ],
+                "summary": "Get authentication configuration",
+                "description": "Returns the current authentication configuration",
+                "operationId": "getAuthConfig",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token_ttl": {
+                                                    "description": "Token time to live in minutes",
+                                                    "type": "integer",
+                                                    "example": 60
+                                                },
+                                                "refresh_ttl": {
+                                                    "description": "Refresh token time to live in minutes",
+                                                    "type": "integer",
+                                                    "example": 20160
+                                                },
+                                                "max_attempts": {
+                                                    "description": "Maximum login attempts",
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "lockout_duration": {
+                                                    "description": "Lockout duration in minutes",
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "password_policy": {
+                                                    "properties": {
+                                                        "min_length": {
+                                                            "type": "integer",
+                                                            "example": 8
+                                                        },
+                                                        "requires_uppercase": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "requires_numbers": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "requires_symbols": {
+                                                            "type": "boolean",
+                                                            "example": false
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "Get authentication status",
+                "description": "Returns the current authentication system status",
+                "operationId": "getAuthStatus",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "mode": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "production",
+                                                        "maintenance",
+                                                        "setup"
+                                                    ],
+                                                    "example": "production"
+                                                },
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "1.0.0"
+                                                },
+                                                "last_checked": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-01-15T10:30:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Health",
+            "description": "Health"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Configuration",
+            "description": "Configuration"
+        },
+        {
+            "name": "Status",
+            "description": "Status"
+        }
+    ]
+}
