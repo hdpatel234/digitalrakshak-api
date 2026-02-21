@@ -23,4 +23,5 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 deploy.sh
+push.sh
 /storage/api-docs
