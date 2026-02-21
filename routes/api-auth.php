@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Auth\RefreshTokenController;
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
@@ -10,7 +11,7 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('reset-password', [LoginController::class, 'resetPassword']);
 
     Route::middleware('auth:api')->group(function () {
-        Route::post('refresh', [LoginController::class, 'refresh']);
+        Route::post('refresh-token', [RefreshTokenController::class, 'refreshToken']);
         Route::post('logout', [LogoutController::class, 'logout']);
         Route::post('logout-all', [LogoutController::class, 'logoutAll']);
     });

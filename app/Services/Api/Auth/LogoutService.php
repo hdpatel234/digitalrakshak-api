@@ -16,7 +16,7 @@ class LogoutService extends BaseService
     {
         $return_array = [];
         $return_array["status"] = true;
-        $return_array["message"] = "Successfully logged out";
+        $return_array["message"] = __('auth/logout.response_messages.logout_success');
         $return_array["data"] = [];
 
         $user->currentAccessToken()->delete();
@@ -28,7 +28,7 @@ class LogoutService extends BaseService
     {
         $return_array = [];
         $return_array["status"] = true;
-        $return_array["message"] = "Successfully logged out from all devices";
+        $return_array["message"] = __('auth/logout.response_messages.logout_all_success');
         $return_array["data"] = [];
 
         $user->tokens()->delete();
