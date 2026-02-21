@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  * )
  *
  * @OA\Server(
- *     url="/api/v1/client",
+ *     url="L5_SWAGGER_CONST_CLIENT_BASE_URL",
  *     description="Client API Server"
  * )
  *

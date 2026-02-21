@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Services;
+
+use App\Repositories\BaseRepository;
+
+abstract class BaseService
+{
+    protected BaseRepository $repository;
+
+    public function __construct(BaseRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    // column constants
+    public function id()
+    {
+        return $this->repository->id();
+    }
+
+    public function createdAt()
+    {
+        return $this->repository->createdAt();
+    }
+    public function updatedAt()
+    {
+        return $this->repository->updatedAt();
+    }
+
+    // functions
+    public function all($columns = ['*'])
+    {
+        return $this->repository->all($columns);
+    }
+
+    public function paginate($perPage = 15)
+    {
+        return $this->repository->paginate($perPage);
+    }
+
+    public function find($id, $columns = ['*'])
+    {
+        return $this->repository->find($id, $columns);
+    }
+
+    public function create(array $data)
+    {
+        return $this->repository->create($data);
+    }
+
+    public function update($id, array $data)
+    {
+        $record = $this->find($id);
+        $record->update($data);
+
+        return $record;
+    }
+
+    public function delete($id)
+    {
+        return $this->repository->delete($id);
+    }
+
+    public function query()
+    {
+        return $this->repository->query();
+    }
+}

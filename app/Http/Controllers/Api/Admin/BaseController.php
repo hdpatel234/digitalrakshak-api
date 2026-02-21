@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  * )
  *
  * @OA\Server(
- *     url="/api/v1/admin",
+ *     url="L5_SWAGGER_CONST_ADMIN_BASE_URL",
  *     description="Admin API Server"
  * )
  *

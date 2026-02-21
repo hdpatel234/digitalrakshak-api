@@ -331,6 +331,9 @@ return [
          */
         'constants' => [
             'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://my-default-host.com'),
+            'L5_SWAGGER_CONST_AUTH_BASE_URL' => env('L5_SWAGGER_CONST_AUTH_BASE_URL', 'http://my-default-host.com/api/v1/auth'),
+            'L5_SWAGGER_CONST_CLIENT_BASE_URL' => env('L5_SWAGGER_CONST_CLIENT_BASE_URL', 'http://my-default-host.com/api/v1/client'),
+            'L5_SWAGGER_CONST_ADMIN_BASE_URL' => env('L5_SWAGGER_CONST_ADMIN_BASE_URL', 'http://my-default-host.com/api/v1/admin'),
         ],
     ],
 ];
