@@ -27,7 +27,7 @@ class LoginController extends BaseController
      *         @OA\JsonContent(
      *             required={"email","password"},
      *             @OA\Property(property="email", type="string", format="email", example="user@digitalrakshak.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123")
+     *             @OA\Property(property="password", type="string", format="password", example="User@123")
      *         )
      *     ),
      *     @OA\Response(

@@ -37,7 +37,7 @@
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "password123"
+                                        "example": "User@123"
                                     }
                                 },
                                 "type": "object"
@@ -209,6 +209,128 @@
                     }
                 }
             }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Logout"
+                ],
+                "summary": "Logout current user",
+                "description": "Logs out the authenticated user by invalidating the current session/token.",
+                "operationId": "96a4e29e7196bbfa146523cc8bf6fd47",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "example": "0000-00-00 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/logout-all": {
+            "post": {
+                "tags": [
+                    "Logout"
+                ],
+                "summary": "Logout from all devices",
+                "description": "Revokes all access tokens of the authenticated user and logs out from all devices.",
+                "operationId": "dbc70025a193dba4873c7586803e66e2",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out from all devices",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out from all devices"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "example": "0000-00-00 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -224,6 +346,10 @@
         {
             "name": "Login",
             "description": "Login"
+        },
+        {
+            "name": "Logout",
+            "description": "Logout"
         }
     ]
 }

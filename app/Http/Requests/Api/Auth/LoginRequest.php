@@ -22,11 +22,11 @@ class LoginRequest extends BaseRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'auth.login.validation.email_required',
-            'email.email' => 'auth.login.validation.email_email',
-            'password.required' => 'auth.login.validation.password_required',
-            'password.string' => 'auth.login.validation.password_string',
-            'password.min' => 'auth.login.validation.password_min',
+            'email.required' => __('auth/login.validation.email_required'),
+            'email.email' => __('auth/login.validation.email_email'),
+            'password.required' => __('auth/login.validation.password_required'),
+            'password.string' => __('auth/login.validation.password_string'),
+            'password.min' => __('auth/login.validation.password_min'),
         ];
     }
 }

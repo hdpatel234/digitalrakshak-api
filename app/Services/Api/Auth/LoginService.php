@@ -3,9 +3,10 @@
 namespace App\Services\Api\Auth;
 
 use App\Repositories\UserRepository;
+use App\Services\BaseService;
 use Illuminate\Support\Facades\Http;
 
-class LoginService
+class LoginService extends BaseService
 {
     protected $userRepository;
 
@@ -34,7 +35,7 @@ class LoginService
 
             if ($response->failed()) {
                 $return_array['status'] = false;
-                $return_array['message'] = 'Invalid credentials';
+                $return_array['message'] = __('auth/login.response_messages.invalid_credentials');
                 return $return_array;
             }
 
@@ -44,7 +45,13 @@ class LoginService
 
             if (!$user) {
                 $return_array['status'] = false;
-                $return_array['message'] = 'User not found';
+                $return_array['message'] = __('auth/login.response_messages.user_not_found');
+                return $return_array;
+            }
+
+            if($user->{$this->userRepository->isActive()} == false) {
+                $return_array['status'] = false;
+                $return_array['message'] = __('auth/login.response_messages.account_inactive');
                 return $return_array;
             }
 
@@ -82,7 +89,7 @@ class LoginService
             ];
 
             $return_array['status'] = true;
-            $return_array['message'] = 'Login successful';
+            $return_array['message'] = __('auth/login.response_messages.login_success');
 
             return $return_array;
         } catch (\Exception $e) {
