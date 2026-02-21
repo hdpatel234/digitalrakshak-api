@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost/digitalrakshak-api/public/api/v1/auth",
+            "url": "http://localhost/api/v1/auth",
             "description": "Auth API Server"
         }
     ],
