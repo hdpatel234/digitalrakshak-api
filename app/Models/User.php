@@ -13,6 +13,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    const CLIENT_ID = 'client_id';
+    const USER_TYPE = 'user_type';
     const FIRST_NAME = 'first_name';
     const LAST_NAME = 'last_name';
     const EMAIL = 'email';

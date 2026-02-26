@@ -13,6 +13,14 @@ class UserRepository extends BaseRepository
     }
 
     // column costants
+    public function clientID()
+    {
+        return $this->model::CLIENT_ID;
+    }
+    public function userType()
+    {
+        return $this->model::USER_TYPE;
+    }
     public function firstName()
     {
         return $this->model::FIRST_NAME;

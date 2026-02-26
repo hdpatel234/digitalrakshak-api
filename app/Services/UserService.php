@@ -13,6 +13,14 @@ class UserService extends BaseService
     }
 
     // column costants
+    public function clientID()
+    {
+        return $this->repository->clientID();
+    }
+    public function userType()
+    {
+        return $this->repository->userType();
+    }
     public function firstName()
     {
         return $this->repository->firstName();
