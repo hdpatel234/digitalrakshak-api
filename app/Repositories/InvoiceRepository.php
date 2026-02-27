@@ -127,6 +127,11 @@ class InvoiceRepository extends BaseRepository
         return $this->model::INVOICE_DATA;
     }
 
+    public function documentId()
+    {
+        return $this->model::DOCUMENT_ID;
+    }
+
     public function createdBy()
     {
         return $this->model::CREATED_BY;

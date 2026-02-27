@@ -36,6 +36,11 @@ class OrderItemRepository extends BaseRepository
     {
         return $this->model::TICKET_ID;
     }
+    
+    public function reportDocumentId()
+    {
+        return $this->model::REPORT_DOCUMENT_ID;
+    }
 
     public function supportSyncStatus()
     {

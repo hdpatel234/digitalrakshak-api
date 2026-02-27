@@ -14,6 +14,7 @@ class OrderItem extends BaseModel
     const SERVICE_ID = "service_id";
     const SUPPORT_CONFIG_ID = "support_config_id";
     const TICKET_ID = "ticket_id";
+    const REPORT_DOCUMENT_ID = "report_document_id";
     const SUPPORT_SYNC_STATUS = "support_sync_status";
     const PROCESSING_RULE_ID = "processing_rule_id";
     const PROCESSING_STATUS = "processing_status";
@@ -38,6 +39,7 @@ class OrderItem extends BaseModel
         self::SERVICE_ID,
         self::SUPPORT_CONFIG_ID,
         self::TICKET_ID,
+        self::REPORT_DOCUMENT_ID,
         self::SUPPORT_SYNC_STATUS,
         self::PROCESSING_RULE_ID,
         self::PROCESSING_STATUS,

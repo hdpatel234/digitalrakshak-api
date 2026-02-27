@@ -39,6 +39,11 @@ class OrderItemService extends BaseService
         return $this->repository->ticketId();
     }
 
+    public function reportDocumentId()
+    {
+        return $this->repository->reportDocumentId();
+    }
+
     public function supportSyncStatus()
     {
         return $this->repository->supportSyncStatus();

@@ -107,6 +107,11 @@ class SupportTicketRepository extends BaseRepository
         return $this->model::TICKET_DATA;
     }
 
+    public function documentId()
+    {
+        return $this->model::DOCUMENT_ID;
+    }
+
     public function syncStatus()
     {
         return $this->model::SYNC_STATUS;

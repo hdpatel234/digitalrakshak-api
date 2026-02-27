@@ -129,6 +129,11 @@ class InvoiceService extends BaseService
         return $this->repository->invoiceData();
     }
 
+    public function documentId()
+    {
+        return $this->repository->documentId();
+    }
+
     public function createdBy()
     {
         return $this->repository->createdBy();

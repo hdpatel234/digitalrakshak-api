@@ -2,11 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Models\CandidateServiceDatum;
+use App\Models\CandidateServiceData;
 
-class CandidateServiceDatumRepository extends BaseRepository
+class CandidateServiceDataRepository extends BaseRepository
 {
-    public function __construct(CandidateServiceDatum $model)
+    public function __construct(CandidateServiceData $model)
     {
         parent::__construct($model);
     }
@@ -25,6 +25,11 @@ class CandidateServiceDatumRepository extends BaseRepository
     public function fieldValue()
     {
         return $this->model::FIELD_VALUE;
+    }
+
+    public function documentId()
+    {
+        return $this->model::DOCUMENT_ID;
     }
 
     public function isVerified()

@@ -28,6 +28,7 @@ class SupportTicket extends BaseModel
     const RESOLVED_AT = "resolved_at";
     const CLOSED_AT = "closed_at";
     const TICKET_DATA = "ticket_data";
+    const DOCUMENT_ID = "document_id";
     const SYNC_STATUS = "sync_status";
     const SYNC_MESSAGE = "sync_message";
     const LAST_SYNC_AT = "last_sync_at";

@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Repositories\CandidateServiceDatumRepository;
+use App\Repositories\CandidateServiceDataRepository;
 
-class CandidateServiceDatumService extends BaseService
+class CandidateServiceDataService extends BaseService
 {
     protected $repository;
-    
-    public function __construct(CandidateServiceDatumRepository $repository)
+
+    public function __construct(CandidateServiceDataRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -27,6 +27,11 @@ class CandidateServiceDatumService extends BaseService
     public function fieldValue()
     {
         return $this->repository->fieldValue();
+    }
+
+    public function documentId()
+    {
+        return $this->repository->documentId();
     }
 
     public function isVerified()

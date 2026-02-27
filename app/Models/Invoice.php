@@ -32,6 +32,7 @@ class Invoice extends BaseModel
     const SYNC_MESSAGE = "sync_message";
     const LAST_SYNC_AT = "last_sync_at";
     const INVOICE_DATA = "invoice_data";
+    const DOCUMENT_ID = "document_id";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [

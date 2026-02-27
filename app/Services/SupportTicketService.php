@@ -109,6 +109,11 @@ class SupportTicketService extends BaseService
         return $this->repository->ticketData();
     }
 
+    public function documentId()
+    {
+        return $this->repository->documentId();
+    }
+
     public function syncStatus()
     {
         return $this->repository->syncStatus();
