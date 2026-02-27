@@ -91,6 +91,47 @@ Route::prefix('client')->middleware(['auth:api', 'role:client', 'permission.rout
         Route::get('export/{type}', [Controller::class, 'export']); // Pending
     });
 
+    // API Management
+    Route::prefix('api')->group(function () {
+        Route::get('keys', [Controller::class, 'index']); // Pending
+        Route::post('keys', [Controller::class, 'store']); // Pending
+        Route::get('keys/{key}', [Controller::class, 'show']); // Pending
+        Route::put('keys/{key}', [Controller::class, 'update']); // Pending
+        Route::delete('keys/{key}', [Controller::class, 'destroy']); // Pending
+        Route::post('keys/{key}/revoke', [Controller::class, 'revoke']); // Pending
+        Route::post('keys/{key}/regenerate', [Controller::class, 'regenerate']); // Pending
+
+        Route::get('stats', [Controller::class, 'index']); // Pending
+        Route::get('stats/daily', [Controller::class, 'daily']); // Pending
+        Route::get('stats/endpoints', [Controller::class, 'topEndpoints']); // Pending
+        Route::get('logs', [Controller::class, 'logs']); // Pending
+        Route::get('logs/{log}', [Controller::class, 'showLog']); // Pending
+
+        Route::get('quota', [Controller::class, 'current']); // Pending
+        Route::get('quota/history', [Controller::class, 'history']); // Pending
+    });
+
+    // Webhooks
+    Route::prefix('webhooks')->group(function () {
+        Route::get('', [Controller::class, 'index']); // Pending
+        Route::post('', [Controller::class, 'store']); // Pending
+        Route::get('/{webhook}', [Controller::class, 'show']); // Pending
+        Route::put('/{webhook}', [Controller::class, 'update']); // Pending
+        Route::delete('/{webhook}', [Controller::class, 'destroy']); // Pending
+        Route::post('/{webhook}/test', [Controller::class, 'test']); // Pending
+        Route::post('/{webhook}/toggle', [Controller::class, 'toggle']); // Pending
+
+        Route::get('events', [Controller::class, 'availableEvents']); // Pending
+        Route::get('events/{category}', [Controller::class, 'eventsByCategory']); // Pending
+
+        Route::get('{webhook}/logs', [Controller::class, 'index']); // Pending
+        Route::get('{webhook}/logs/{log}', [Controller::class, 'show']); // Pending
+        Route::post('{webhook}/logs/{log}/retry', [Controller::class, 'retry']); // Pending
+
+        Route::get('stats', [Controller::class, 'index']); // Pending
+        Route::get('stats/delivery', [Controller::class, 'deliveryStats']); // Pending
+    });
+
     // Settings
     Route::prefix('settings')->group(function () {
         Route::get('profile', [Controller::class, 'profile']); // Pending

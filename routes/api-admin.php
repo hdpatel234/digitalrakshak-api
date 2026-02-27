@@ -4,12 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
 Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'])->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
     Route::get('/dashboard/revenue-chart', [Controller::class, 'revenueChart']); // Pending
     Route::get('/dashboard/recent-activities', [Controller::class, 'recentActivities']); // Pending
-    
+
     // Client Management
     Route::apiResource('clients', Controller::class);
     Route::post('clients/{client}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
@@ -20,7 +20,7 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
     Route::post('clients/{client}/users', [Controller::class, 'addUser']); // Pending
     Route::put('clients/{client}/users/{user}', [Controller::class, 'updateUser']); // Pending
     Route::delete('clients/{client}/users/{user}', [Controller::class, 'removeUser']); // Pending
-    
+
     // Service Management
     Route::apiResource('services', Controller::class);
     Route::post('services/{service}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
@@ -29,14 +29,14 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
     Route::put('services/fields/{field}', [Controller::class, 'updateField']); // Pending
     Route::delete('services/fields/{field}', [Controller::class, 'deleteField']); // Pending
     Route::post('services/fields/reorder', [Controller::class, 'reorderFields']); // Pending
-    
+
     // Service Processing Rules
     Route::get('services/{service}/processing-rules', [Controller::class, 'getProcessingRules']); // Pending
     Route::post('services/{service}/processing-rules', [Controller::class, 'createProcessingRule']); // Pending
     Route::put('services/processing-rules/{rule}', [Controller::class, 'updateProcessingRule']); // Pending
     Route::delete('services/processing-rules/{rule}', [Controller::class, 'deleteProcessingRule']); // Pending
     Route::post('services/processing-rules/{rule}/test', [Controller::class, 'testProcessingRule']); // Pending
-    
+
     // Package Management (Admin Packages)
     Route::apiResource('packages', Controller::class);
     Route::get('packages/{package}/services', [Controller::class, 'getServices']); // Pending
@@ -45,7 +45,7 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
     Route::delete('packages/{package}/services/{service}', [Controller::class, 'removeService']); // Pending
     Route::post('packages/{package}/duplicate', [Controller::class, 'duplicate']); // Pending
     Route::post('packages/{package}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
-    
+
     // Client Service Pricing
     Route::get('client-pricing', [Controller::class, 'index']); // Pending
     Route::get('clients/{client}/pricing', [Controller::class, 'getClientPricing']); // Pending
@@ -53,24 +53,24 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
     Route::put('clients/pricing/{pricing}', [Controller::class, 'update']); // Pending
     Route::delete('clients/pricing/{pricing}', [Controller::class, 'destroy']); // Pending
     Route::get('clients/{client}/pricing/history', [Controller::class, 'history']); // Pending
-    
+
     // Billing Platform Configuration
     Route::get('billing/platforms', [Controller::class, 'index']); // Pending
     Route::post('billing/platforms', [Controller::class, 'store']); // Pending
     Route::put('billing/platforms/{platform}', [Controller::class, 'update']); // Pending
     Route::delete('billing/platforms/{platform}', [Controller::class, 'destroy']); // Pending
-    
+
     // Support Platform Configuration
     Route::get('support/platforms', [Controller::class, 'index']); // Pending
     Route::post('support/platforms', [Controller::class, 'store']); // Pending
     Route::put('support/platforms/{platform}', [Controller::class, 'update']); // Pending
     Route::delete('support/platforms/{platform}', [Controller::class, 'destroy']); // Pending
-    
+
     // Email Templates
     Route::apiResource('email-templates', Controller::class);
     Route::post('email-templates/{template}/duplicate', [Controller::class, 'duplicate']); // Pending
     Route::post('email-templates/{template}/test', [Controller::class, 'test']); // Pending
-    
+
     // Reports
     Route::prefix('reports')->group(function () {
         Route::get('revenue', [Controller::class, 'revenue']); // Pending
@@ -81,7 +81,7 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
         Route::get('processing-times', [Controller::class, 'processingTimes']); // Pending
         Route::get('export/{type}', [Controller::class, 'export']); // Pending
     });
-    
+
     // System Monitoring
     Route::get('system/health', [Controller::class, 'health']); // Pending
     Route::get('system/queue-stats', [Controller::class, 'queueStats']); // Pending
@@ -90,9 +90,30 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'
     Route::delete('system/failed-jobs/{id}', [Controller::class, 'deleteFailedJob']); // Pending
     Route::get('system/cron-jobs', [Controller::class, 'cronJobs']); // Pending
     Route::post('system/cron-jobs/{job}/run', [Controller::class, 'runCronJob']); // Pending
-    
+
     // Audit Logs
     Route::get('audit-logs', [Controller::class, 'index']); // Pending
     Route::get('audit-logs/{id}', [Controller::class, 'show']); // Pending
     Route::get('audit-logs/export', [Controller::class, 'export']); // Pending
+
+    // Client API Configuration
+    Route::get('clients/{client}/api-keys', [Controller::class, 'index']); // Pending
+    Route::post('clients/{client}/api-keys', [Controller::class, 'store']); // Pending
+    Route::put('clients/api-keys/{key}', [Controller::class, 'update']); // Pending
+    Route::delete('clients/api-keys/{key}', [Controller::class, 'destroy']); // Pending
+
+    // Global API Settings
+    Route::get('api/settings', [Controller::class, 'index']); // Pending
+    Route::put('api/settings', [Controller::class, 'update']); // Pending
+
+    // API Monitoring
+    Route::get('api/monitoring/overview', [Controller::class, 'overview']); // Pending
+    Route::get('api/monitoring/clients', [Controller::class, 'clientUsage']); // Pending
+    Route::get('api/monitoring/errors', [Controller::class, 'errorLogs']); // Pending
+    Route::get('api/monitoring/rate-limits', [Controller::class, 'rateLimitHits']); // Pending
+
+    // Webhook Monitoring
+    Route::get('webhooks/monitoring', [Controller::class, 'index']); // Pending
+    Route::get('webhooks/failed', [Controller::class, 'failedDeliveries']); // Pending
+    Route::post('webhooks/{log}/retry', [Controller::class, 'retry']); // Pending
 });
