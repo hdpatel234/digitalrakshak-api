@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Services;
+
+use App\Repositories\UserConfigValueRepository;
+
+class UserConfigValueService extends BaseService
+{
+    protected $repository;
+    
+    public function __construct(UserConfigValueRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    // column constants
+    public function userId()
+    {
+        return $this->repository->userId();
+    }
+
+    public function configId()
+    {
+        return $this->repository->configId();
+    }
+
+    public function value()
+    {
+        return $this->repository->value();
+    }
+    // functions
+}
