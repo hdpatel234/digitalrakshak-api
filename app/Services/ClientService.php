@@ -99,6 +99,11 @@ class ClientService extends BaseService
         return $this->repository->defaultSupportConfigId();
     }
 
+    public function defualtDocumentConfigId()
+    {
+        return $this->repository->defaultDocumentConfigId();
+    }
+
     public function status()
     {
         return $this->repository->status();

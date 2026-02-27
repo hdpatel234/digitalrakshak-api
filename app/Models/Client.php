@@ -26,6 +26,7 @@ class Client extends BaseModel
     const PAYMENT_TERMS = "payment_terms";
     const DEFAULT_BILLING_CONFIG_ID = "default_billing_config_id";
     const DEFAULT_SUPPORT_CONFIG_ID = "default_support_config_id";
+    const DEFAULT_DOCUMENT_CONFIG_ID = "default_document_config_id";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
@@ -48,6 +49,7 @@ class Client extends BaseModel
         self::PAYMENT_TERMS,
         self::DEFAULT_BILLING_CONFIG_ID,
         self::DEFAULT_SUPPORT_CONFIG_ID,
+        self::DEFAULT_DOCUMENT_CONFIG_ID,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,

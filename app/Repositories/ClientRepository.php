@@ -97,6 +97,11 @@ class ClientRepository extends BaseRepository
         return $this->model::DEFAULT_SUPPORT_CONFIG_ID;
     }
 
+    public function defualtDocumentConfigId()
+    {
+        return $this->model::DEFAULT_DOCUMENT_CONFIG_ID;
+    }
+
     public function status()
     {
         return $this->model::STATUS;
