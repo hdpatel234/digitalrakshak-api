@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Services;
+
+use App\Repositories\EmailServerTypeRepository;
+
+class EmailServerTypeService extends BaseService
+{
+    protected $repository;
+    
+    public function __construct(EmailServerTypeRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    // column constants
+    public function typeName()
+    {
+        return $this->repository->typeName();
+    }
+
+    public function typeCode()
+    {
+        return $this->repository->typeCode();
+    }
+
+    public function description()
+    {
+        return $this->repository->description();
+    }
+
+    public function isOutgoing()
+    {
+        return $this->repository->isOutgoing();
+    }
+
+    public function isIncoming()
+    {
+        return $this->repository->isIncoming();
+    }
+
+    public function configurationSchema()
+    {
+        return $this->repository->configurationSchema();
+    }
+
+    public function isActive()
+    {
+        return $this->repository->isActive();
+    }
+    // functions
+}

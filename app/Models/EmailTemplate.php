@@ -11,20 +11,26 @@ class EmailTemplate extends BaseModel
     
     const TEMPLATE_NAME = "template_name";
     const TEMPLATE_CODE = "template_code";
+    const EMAIL_TYPE = "email_type";
     const SUBJECT = "subject";
-    const BODY = "body";
+    const BODY_HTML = "body_html";
+    const BODY_TEXT = "body_text";
     const VARIABLES = "variables";
-    const TYPE = "type";
+    const DEFAULT_PRIORITY = "default_priority";
+    const ALLOWED_ATTACHMENTS = "allowed_attachments";
     const IS_ACTIVE = "is_active";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::TEMPLATE_NAME,
         self::TEMPLATE_CODE,
+        self::EMAIL_TYPE,
         self::SUBJECT,
-        self::BODY,
+        self::BODY_HTML,
+        self::BODY_TEXT,
         self::VARIABLES,
-        self::TYPE,
+        self::DEFAULT_PRIORITY,
+        self::ALLOWED_ATTACHMENTS,
         self::IS_ACTIVE,
         self::CREATED_BY,
         self::UPDATED_BY,

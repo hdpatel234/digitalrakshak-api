@@ -22,14 +22,24 @@ class EmailTemplateRepository extends BaseRepository
         return $this->model::TEMPLATE_CODE;
     }
 
+    public function emailType()
+    {
+        return $this->model::EMAIL_TYPE;
+    }
+
     public function subject()
     {
         return $this->model::SUBJECT;
     }
 
-    public function body()
+    public function bodyHtml()
     {
-        return $this->model::BODY;
+        return $this->model::BODY_HTML;
+    }
+
+    public function bodyText()
+    {
+        return $this->model::BODY_TEXT;
     }
 
     public function variables()
@@ -37,9 +47,14 @@ class EmailTemplateRepository extends BaseRepository
         return $this->model::VARIABLES;
     }
 
-    public function type()
+    public function defaultPriority()
     {
-        return $this->model::TYPE;
+        return $this->model::DEFAULT_PRIORITY;
+    }
+
+    public function allowedAttachments()
+    {
+        return $this->model::ALLOWED_ATTACHMENTS;
     }
 
     public function isActive()

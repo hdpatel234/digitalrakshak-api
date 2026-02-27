@@ -24,14 +24,24 @@ class EmailTemplateService extends BaseService
         return $this->repository->templateCode();
     }
 
+    public function emailType()
+    {
+        return $this->repository->emailType();
+    }
+
     public function subject()
     {
         return $this->repository->subject();
     }
 
-    public function body()
+    public function bodyHtml()
     {
-        return $this->repository->body();
+        return $this->repository->bodyHtml();
+    }
+
+    public function bodyText()
+    {
+        return $this->repository->bodyText();
     }
 
     public function variables()
@@ -39,9 +49,14 @@ class EmailTemplateService extends BaseService
         return $this->repository->variables();
     }
 
-    public function type()
+    public function defaultPriority()
     {
-        return $this->repository->type();
+        return $this->repository->defaultPriority();
+    }
+
+    public function allowedAttachments()
+    {
+        return $this->repository->allowedAttachments();
     }
 
     public function isActive()
