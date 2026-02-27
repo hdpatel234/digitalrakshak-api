@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Services\Api\Auth\LogoutService;
+use App\Services\LogoutService;
 use App\Traits\ApiResponse;
 
 

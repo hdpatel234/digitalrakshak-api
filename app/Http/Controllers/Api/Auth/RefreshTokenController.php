@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Requests\Api\Auth\RefreshTokenRequest;
-use App\Services\Api\Auth\RefreshTokenService;
+use App\Services\RefreshTokenService;
 use App\Traits\ApiResponse;
 
 class RefreshTokenController extends BaseController

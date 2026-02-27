@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Services\Api\Auth;
+namespace App\Services;
 
 use App\Repositories\UserRepository;
-use App\Services\BaseService;
 use Illuminate\Support\Facades\Http;
-use Laravel\Passport\Token;
-
+use App\Services\BaseService;
 
 class RefreshTokenService extends BaseService
 {

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Requests\Api\Auth\LoginRequest;
-use App\Services\Api\Auth\LoginService;
+use App\Services\LoginService;
 use App\Traits\ApiResponse;
 
 class LoginController extends BaseController
