@@ -6,11 +6,9 @@ use App\Repositories\CandidateRepository;
 
 class CandidateService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(CandidateRepository $repository)
     {
-        $this->repository = $repository;
+        parent::__construct($repository);
     }
 
     // column constants

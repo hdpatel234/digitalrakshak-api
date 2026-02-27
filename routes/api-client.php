@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
 
-Route::prefix('client')->middleware(['auth:api', 'role:client', 'permission.route'])->group(function () {
+Route::prefix('v1/client')->middleware(['auth:api', 'role:client'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
@@ -14,7 +15,7 @@ Route::prefix('client')->middleware(['auth:api', 'role:client', 'permission.rout
     Route::get('/dashboard/processing-summary', [Controller::class, 'processingSummary']); // Pending
 
     // Candidate Management
-    Route::apiResource('candidates', Controller::class);
+    Route::apiResource('candidates', CandidatesController::class);
     Route::post('candidates/import', [Controller::class, 'import']); // Pending
     Route::get('candidates/import/{import}/status', [Controller::class, 'importStatus']); // Pending
     Route::get('candidates/import/{import}/errors', [Controller::class, 'importErrors']); // Pending

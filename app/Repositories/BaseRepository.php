@@ -102,7 +102,7 @@ abstract class BaseRepository
         $paginator = $builder->paginate($perPage, ['*'], 'page', $page);
 
         return [
-            'data' => $paginator->items(),
+            'list' => $paginator->items() ?? [],
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => $paginator->perPage(),

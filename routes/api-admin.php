@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
-Route::prefix('admin')->middleware(['auth:api', 'role:admin', 'permission.route'])->group(function () {
+Route::prefix('v1/admin')->middleware(['auth:api', 'role:admin', 'permission.route'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
