@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailQueue extends BaseModel
@@ -77,4 +78,9 @@ class EmailQueue extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

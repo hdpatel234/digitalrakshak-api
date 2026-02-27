@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserNotificationPreference extends BaseModel
@@ -27,4 +28,9 @@ class UserNotificationPreference extends BaseModel
         self::QUIET_HOURS_END,
         self::DIGEST_FREQUENCY,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserSavedSearch extends BaseModel
@@ -25,4 +26,9 @@ class UserSavedSearch extends BaseModel
         self::SORT,
         self::IS_SHARED,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

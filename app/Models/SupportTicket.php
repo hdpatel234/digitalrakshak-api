@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicket extends BaseModel
@@ -60,4 +61,9 @@ class SupportTicket extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::ASSIGNED_TO);
+    }
 }

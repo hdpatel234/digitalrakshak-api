@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseService
 {
@@ -65,5 +66,10 @@ abstract class BaseService
     public function query()
     {
         return $this->repository->query();
+    }
+
+    public function datatable(?Builder $query = null, array $params = [], array $config = []): array
+    {
+        return $this->repository->datatable($query, $params, $config);
     }
 }

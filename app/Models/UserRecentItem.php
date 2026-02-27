@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserRecentItem extends BaseModel
@@ -27,4 +28,9 @@ class UserRecentItem extends BaseModel
         self::LAST_ACCESSED_AT,
         self::ACCESS_COUNT,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

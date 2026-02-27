@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserSearchPreference extends BaseModel
@@ -25,4 +26,9 @@ class UserSearchPreference extends BaseModel
         self::SAVE_FILTERS,
         self::DEFAULT_DATE_RANGE,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

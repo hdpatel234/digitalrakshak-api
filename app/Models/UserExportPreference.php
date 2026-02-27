@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserExportPreference extends BaseModel
@@ -27,4 +28,9 @@ class UserExportPreference extends BaseModel
         self::COMPRESSION,
         self::EMAIL_ON_COMPLETE,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

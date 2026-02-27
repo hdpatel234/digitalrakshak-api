@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserPrivacySetting extends BaseModel
@@ -31,4 +32,9 @@ class UserPrivacySetting extends BaseModel
         self::COOKIE_CONSENT,
         self::DATA_RETENTION_PREFERENCE,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

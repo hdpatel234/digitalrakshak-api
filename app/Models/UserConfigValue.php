@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserConfigValue extends BaseModel
@@ -17,4 +18,9 @@ class UserConfigValue extends BaseModel
         self::CONFIG_ID,
         self::VALUE,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

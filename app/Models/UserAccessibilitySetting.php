@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserAccessibilitySetting extends BaseModel
@@ -35,4 +36,9 @@ class UserAccessibilitySetting extends BaseModel
         self::LINE_HEIGHT_MULTIPLIER,
         self::LETTER_SPACING,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

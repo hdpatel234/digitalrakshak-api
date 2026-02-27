@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserDashboardPreference extends BaseModel
@@ -27,4 +28,9 @@ class UserDashboardPreference extends BaseModel
         self::DEFAULT_VIEW,
         self::ITEMS_PER_PAGE,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

@@ -4,12 +4,12 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends BaseAuthenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -75,5 +75,75 @@ class User extends Authenticatable
     protected function getDefaultGuardName(): string
     {
         return $this->guard_name;
+    }
+
+    public function emailQueues(): HasMany
+    {
+        return $this->hasMany(EmailQueue::class, EmailQueue::USER_ID);
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class, SupportTicket::ASSIGNED_TO);
+    }
+
+    public function accessibilitySettings(): HasMany
+    {
+        return $this->hasMany(UserAccessibilitySetting::class, UserAccessibilitySetting::USER_ID);
+    }
+
+    public function configValues(): HasMany
+    {
+        return $this->hasMany(UserConfigValue::class, UserConfigValue::USER_ID);
+    }
+
+    public function dashboardPreferences(): HasMany
+    {
+        return $this->hasMany(UserDashboardPreference::class, UserDashboardPreference::USER_ID);
+    }
+
+    public function datetimePreferences(): HasMany
+    {
+        return $this->hasMany(UserDatetimePreference::class, UserDatetimePreference::USER_ID);
+    }
+
+    public function exportPreferences(): HasMany
+    {
+        return $this->hasMany(UserExportPreference::class, UserExportPreference::USER_ID);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(UserFavorite::class, UserFavorite::USER_ID);
+    }
+
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class, UserNotificationPreference::USER_ID);
+    }
+
+    public function privacySettings(): HasMany
+    {
+        return $this->hasMany(UserPrivacySetting::class, UserPrivacySetting::USER_ID);
+    }
+
+    public function recentItems(): HasMany
+    {
+        return $this->hasMany(UserRecentItem::class, UserRecentItem::USER_ID);
+    }
+
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(UserSavedSearch::class, UserSavedSearch::USER_ID);
+    }
+
+    public function searchPreferences(): HasMany
+    {
+        return $this->hasMany(UserSearchPreference::class, UserSearchPreference::USER_ID);
+    }
+
+    public function shortcuts(): HasMany
+    {
+        return $this->hasMany(UserShortcut::class, UserShortcut::USER_ID);
     }
 }

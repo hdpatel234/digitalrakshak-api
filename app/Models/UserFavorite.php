@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserFavorite extends BaseModel
@@ -27,4 +28,9 @@ class UserFavorite extends BaseModel
         self::METADATA,
         self::DISPLAY_ORDER,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserDatetimePreference extends BaseModel
@@ -33,4 +34,9 @@ class UserDatetimePreference extends BaseModel
         self::WORKING_HOURS_END,
         self::WORKING_DAYS,
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::USER_ID);
+    }
 }
