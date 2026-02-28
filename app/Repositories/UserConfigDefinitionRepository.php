@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\UserConfigDefinition;
+use Illuminate\Support\Collection;
 
 class UserConfigDefinitionRepository extends BaseRepository
 {
@@ -96,5 +97,49 @@ class UserConfigDefinitionRepository extends BaseRepository
     {
         return $this->model::CREATED_BY;
     }
-    // functions
+
+    public function getResolvedConfigsForUser(int|string $userId): array
+    {
+        $definitions = $this->query()
+            ->leftJoin('user_config_values as ucv', function ($join) use ($userId): void {
+                $join->on('ucv.config_id', '=', 'user_config_definitions.id')
+                    ->where('ucv.user_id', '=', $userId);
+            })
+            ->orderBy($this->displayOrder())
+            ->orderBy($this->id())
+            ->get([
+                'user_config_definitions.id',
+                'user_config_definitions.config_key',
+                'user_config_definitions.config_name',
+                'user_config_definitions.default_value',
+                'ucv.value as user_value',
+            ]);
+
+        return $definitions->map(static function ($row): array {
+            $userValue = $row->user_value;
+            $resolvedValue = is_string($userValue) && trim($userValue) !== ''
+                ? $userValue
+                : $row->default_value;
+
+            return [
+                'id' => $row->id,
+                'key' => $row->config_key,
+                'name' => $row->config_name,
+                'value' => $resolvedValue,
+                'default_value' => $row->default_value,
+                'user_value' => $userValue,
+            ];
+        })->values()->all();
+    }
+
+    public function getConfigIdMapByKeys(array $keys): Collection
+    {
+        if ($keys === []) {
+            return collect();
+        }
+
+        return $this->query()
+            ->whereIn($this->configKey(), $keys)
+            ->pluck($this->id(), $this->configKey());
+    }
 }

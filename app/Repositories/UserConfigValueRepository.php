@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\UserConfigValue;
+use Illuminate\Support\Facades\DB;
 
 class UserConfigValueRepository extends BaseRepository
 {
@@ -26,5 +27,25 @@ class UserConfigValueRepository extends BaseRepository
     {
         return $this->model::VALUE;
     }
-    // functions
+
+    public function upsertForUserByConfigIds(int|string $userId, array $configIdValueMap): void
+    {
+        if ($configIdValueMap === []) {
+            return;
+        }
+
+        DB::transaction(function () use ($configIdValueMap, $userId): void {
+            foreach ($configIdValueMap as $configId => $value) {
+                $this->query()->updateOrCreate(
+                    [
+                        $this->userId() => $userId,
+                        $this->configId() => $configId,
+                    ],
+                    [
+                        $this->value() => (string) $value,
+                    ]
+                );
+            }
+        });
+    }
 }

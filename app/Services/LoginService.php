@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Http;
 class LoginService extends BaseService
 {
     protected $userRepository;
+    protected UserConfigService $userConfigService;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserRepository $userRepository, UserConfigService $userConfigService)
     {
         $this->userRepository = $userRepository;
+        $this->userConfigService = $userConfigService;
     }
 
     public function login($email, $password)
@@ -69,6 +71,22 @@ class LoginService extends BaseService
                 $this->userRepository->lastLoginDevice() => request()->header('User-Agent'),
             ]);
 
+            $resolvedConfigs = $this->userConfigService->getResolvedConfigs($user->{$this->userRepository->id()});
+            $configKeyValue = [];
+            foreach ($resolvedConfigs as $resolvedConfig) {
+                if (!isset($resolvedConfig['key'])) {
+                    continue;
+                }
+
+                $configKeyValue[(string) $resolvedConfig['key']] = $resolvedConfig['value'] ?? null;
+            }
+
+            $roles = $user->getRoleNames()->values()->all();
+            $permissions = $user->getAllPermissions()
+                ->pluck('name')
+                ->values()
+                ->all();
+
             $return_array['data'] = [
                 'access_token' => $tokenData['access_token'],
                 'refresh_token' => $tokenData['refresh_token'],
@@ -86,6 +104,9 @@ class LoginService extends BaseService
                     $this->userRepository->isActive() => $user->{$this->userRepository->isActive()},
                     $this->userRepository->isAdmin() => $user->{$this->userRepository->isAdmin()},
                 ],
+                'config' => $configKeyValue,
+                'roles' => $roles,
+                'permissions' => $permissions,
             ];
 
             $return_array['status'] = true;

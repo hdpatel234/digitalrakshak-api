@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
+use App\Http\Controllers\Api\Auth\UserConfigController;
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
@@ -16,7 +17,7 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']); // Pending
     Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']); // Pending
 
-    Route::middleware(['auth:api', 'permission.route'])->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
         Route::post('refresh-token', [RefreshTokenController::class, 'refreshToken']);
         Route::post('logout', [LogoutController::class, 'logout']);
         Route::post('logout-all', [LogoutController::class, 'logoutAll']);
@@ -28,5 +29,8 @@ Route::prefix('v1/auth')->group(function () {
         Route::get('notifications', [LoginController::class, 'index']); // Pending
         Route::put('notifications/{id}/read', [LoginController::class, 'markAsRead']); // Pending
         Route::put('notifications/read-all', [LoginController::class, 'markAllAsRead']); // Pending
+
+        Route::get('config', [UserConfigController::class,'index']);
+        Route::post('config' , [UserConfigController::class,'store']);
     });
 });
