@@ -45,6 +45,10 @@ class UserRepository extends BaseRepository
     {
         return $this->model::REMEMBER_TOKEN;
     }
+    public function avatar()
+    {
+        return $this->model::AVATAR;
+    }
     public function lastLoginAt()
     {
         return $this->model::LAST_LOGIN_AT;
@@ -61,6 +65,17 @@ class UserRepository extends BaseRepository
     {
         return $this->model::LAST_LOGIN_DEVICE;
     }
+
+    public function lastLoginProvider()
+    {
+        return $this->model::LAST_LOGIN_PROVIDER;
+    }
+
+    public function lastLoginProviderId()
+    {
+        return $this->model::LAST_LOGIN_PROVIDER_ID;
+    }
+
     public function isActive()
     {
         return $this->model::IS_ACTIVE;

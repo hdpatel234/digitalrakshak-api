@@ -45,6 +45,10 @@ class UserService extends BaseService
     {
         return $this->repository->rememberToken();
     }
+    public function avatar()
+    {
+        return $this->repository->avatar();
+    }
     public function lastLoginAt()
     {
         return $this->repository->lastLoginAt();
@@ -60,6 +64,15 @@ class UserService extends BaseService
     public function lastLoginDevice()
     {
         return $this->repository->lastLoginDevice();
+    }
+    public function lastLoginProvider()
+    {
+        return $this->repository->lastLoginProvider();
+    }
+
+    public function lastLoginProviderId()
+    {
+        return $this->repository->lastLoginProviderId();
     }
     public function isActive()
     {

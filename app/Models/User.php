@@ -24,10 +24,13 @@ class User extends BaseAuthenticatable
     const EMAIL_VERIFIED_AT = 'email_verified_at';
     const PASSWORD = 'password';
     const REMEMBER_TOKEN = 'remember_token';
+    const AVATAR = 'avatar';
     const LAST_LOGIN_AT = 'last_login_at';
     const LAST_LOGIN_IP = 'last_login_ip';
     const LAST_LOGIN_BROWSER = 'last_login_browser';
     const LAST_LOGIN_DEVICE = 'last_login_device';
+    const LAST_LOGIN_PROVIDER = 'last_login_provider';
+    const LAST_LOGIN_PROVIDER_ID = 'last_login_provider_id';
     const IS_ACTIVE = 'is_active';
     const IS_ADMIN = 'is_admin';
 
@@ -41,12 +44,15 @@ class User extends BaseAuthenticatable
         self::LAST_NAME,
         self::EMAIL,
         self::PASSWORD,
+        self::AVATAR,
         self::IS_ACTIVE,
         self::IS_ADMIN,
         self::LAST_LOGIN_AT,
         self::LAST_LOGIN_IP,
         self::LAST_LOGIN_BROWSER,
         self::LAST_LOGIN_DEVICE,
+        self::LAST_LOGIN_PROVIDER,
+        self::LAST_LOGIN_PROVIDER_ID,
     ];
 
     /**
