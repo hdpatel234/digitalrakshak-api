@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateImportHistory extends BaseModel
@@ -33,4 +34,9 @@ class CandidateImportHistory extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function importErrors(): HasMany
+    {
+        return $this->hasMany(CandiateImportError::class, CandiateImportError::IMPORT_ID);
+    }
 }

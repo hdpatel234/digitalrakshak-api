@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderCandidate extends BaseModel
@@ -33,4 +34,14 @@ class OrderCandidate extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function candidate(): BelongsTo
+    {
+        return $this->belongsTo(Candidate::class, self::CANDIDATE_ID);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+    }
 }

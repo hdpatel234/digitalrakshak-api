@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Candidate extends BaseModel
@@ -57,4 +60,59 @@ class Candidate extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
+
+    public function lastOrder(): BelongsTo
+    {
+        return $this->belongsTo(CandidateOrder::class, self::LAST_ORDER_ID);
+    }
+
+    public function candidateInvitations(): HasMany
+    {
+        return $this->hasMany(CandidateInvitation::class, CandidateInvitation::CANDIDATE_ID);
+    }
+
+    public function candidateServices(): HasMany
+    {
+        return $this->hasMany(CandidateService::class, CandidateService::CANDIDATE_ID);
+    }
+
+    public function orderCandidates(): HasMany
+    {
+        return $this->hasMany(OrderCandidate::class, OrderCandidate::CANDIDATE_ID);
+    }
+
+    public function candidateOrders(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CandidateOrder::class,
+            "order_candidates",
+            OrderCandidate::CANDIDATE_ID,
+            OrderCandidate::ORDER_ID
+        );
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class, Document::CANDIDATE_ID);
+    }
+
+    public function emailQueues(): HasMany
+    {
+        return $this->hasMany(EmailQueue::class, EmailQueue::CANDIDATE_ID);
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class, SupportTicket::CANDIDATE_ID);
+    }
+
+    public function serviceProcessingQueues(): HasMany
+    {
+        return $this->hasMany(ServiceProcessingQueue::class, ServiceProcessingQueue::CANDIDATE_ID);
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateOrder extends BaseModel
@@ -73,4 +75,19 @@ class CandidateOrder extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function orderCandidates(): HasMany
+    {
+        return $this->hasMany(OrderCandidate::class, OrderCandidate::ORDER_ID);
+    }
+
+    public function candidates(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Candidate::class,
+            "order_candidates",
+            OrderCandidate::ORDER_ID,
+            OrderCandidate::CANDIDATE_ID
+        );
+    }
 }

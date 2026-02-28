@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateInvitationsLog extends BaseModel
@@ -27,4 +28,9 @@ class CandidateInvitationsLog extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function invitation(): BelongsTo
+    {
+        return $this->belongsTo(CandidateInvitation::class, self::INVITATION_ID);
+    }
 }

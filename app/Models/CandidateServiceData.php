@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateServiceData extends BaseModel
@@ -32,4 +33,9 @@ class CandidateServiceData extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function candidateService(): BelongsTo
+    {
+        return $this->belongsTo(CandidateService::class, self::CANDIDATE_SERVICE_ID);
+    }
 }

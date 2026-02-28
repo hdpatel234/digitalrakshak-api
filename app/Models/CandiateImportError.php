@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandiateImportError extends BaseModel
@@ -27,4 +28,9 @@ class CandiateImportError extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function importHistory(): BelongsTo
+    {
+        return $this->belongsTo(CandidateImportHistory::class, self::IMPORT_ID);
+    }
 }
