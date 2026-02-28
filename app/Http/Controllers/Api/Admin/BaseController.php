@@ -80,7 +80,7 @@ class BaseController extends Controller
             'message' => 'API is running',
             'data' => [
                 'status' => 'healthy',
-                'timestamp' => now()->format('Y-m-d H:i:s'),
+                'timestamp' => now()->format((string) config('app.user_datetime_format', 'Y-m-d H:i:s')),
                 'environment' => app()->environment()
             ]
         ]);

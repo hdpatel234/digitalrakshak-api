@@ -6,13 +6,18 @@ use Illuminate\Http\JsonResponse;
 
 trait ApiResponse
 {
+    protected function responseTimestamp(): string
+    {
+        return now()->format((string) config('app.user_datetime_format', 'Y-m-d H:i:s'));
+    }
+
     protected function success($message = '', $data = [], $code = 200): JsonResponse
     {
         return response()->json([
             'status' => true,
             'message' => __($message),
             'data' => $data,
-            'timestamp' => now()->toDateTimeString(),
+            'timestamp' => $this->responseTimestamp(),
         ], $code);
     }
 
@@ -22,7 +27,7 @@ trait ApiResponse
             'status' => false,
             'message' => __($message),
             'data' => $data,
-            'timestamp' => now()->toDateTimeString(),
+            'timestamp' => $this->responseTimestamp(),
         ], $code);
     }
 
@@ -32,7 +37,7 @@ trait ApiResponse
             'status' => false,
             'message' => __($message),
             'errors' => $errors,
-            'timestamp' => now()->toDateTimeString(),
+            'timestamp' => $this->responseTimestamp(),
         ], $code);
     }
 }

@@ -43,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     'status' => false,
                     'message' => __('common.unauthenticated'),
                     'data' => [],
-                    'timestamp' => now()->toDateTimeString(),
+                    'timestamp' => now()->format((string) config('app.user_datetime_format', 'Y-m-d H:i:s')),
                 ], 401);
             }
         });

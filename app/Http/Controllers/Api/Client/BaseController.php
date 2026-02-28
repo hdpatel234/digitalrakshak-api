@@ -92,7 +92,7 @@ class BaseController extends Controller
             'data' => [
                 'service' => 'client',
                 'status' => 'healthy',
-                'timestamp' => now()->format('Y-m-d H:i:s'),
+                'timestamp' => now()->format((string) config('app.user_datetime_format', 'Y-m-d H:i:s')),
                 'environment' => app()->environment(),
                 'version' => '1.0.0'
             ]
