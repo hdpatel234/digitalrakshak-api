@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\UserType;
 use App\Models\User;
 use App\Support\RoutePermission;
 use Illuminate\Console\Command;
@@ -23,29 +24,48 @@ class SyncRolesAndPermissions extends Command
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $roles = [
-            'admin' => Role::findOrCreate('admin', 'api'),
-            'client' => Role::findOrCreate('client', 'api'),
+            UserType::SUPER_ADMIN->value => Role::findOrCreate(UserType::SUPER_ADMIN->value, 'api'),
+            UserType::ADMIN->value => Role::findOrCreate(UserType::ADMIN->value, 'api'),
+            UserType::CLIENT_ADMIN->value => Role::findOrCreate(UserType::CLIENT_ADMIN->value, 'api'),
+            UserType::CLIENT_USER->value => Role::findOrCreate(UserType::CLIENT_USER->value, 'api'),
         ];
 
         $permissionMatrix = $this->buildPermissionMatrix();
+        $allPermissions = array_keys($permissionMatrix);
+        $adminPermissions = collect($permissionMatrix)
+            ->filter(fn (array $audience): bool => in_array(UserType::ADMIN->value, $audience, true))
+            ->keys()
+            ->all();
+        $clientPermissions = collect($permissionMatrix)
+            ->filter(fn (array $audience): bool => in_array(UserType::CLIENT_ADMIN->value, $audience, true))
+            ->keys()
+            ->all();
+        $commonPermissions = collect($permissionMatrix)
+            ->filter(fn (array $audience): bool => in_array('common', $audience, true))
+            ->keys()
+            ->all();
 
-        foreach (array_keys($permissionMatrix) as $permissionName) {
+        foreach ($allPermissions as $permissionName) {
             Permission::findOrCreate($permissionName, 'api');
         }
 
-        $roles['admin']->syncPermissions(
-            collect($permissionMatrix)
-                ->filter(fn (array $audience): bool => in_array('admin', $audience, true))
-                ->keys()
-                ->all()
-        );
+        // Super admin gets complete route access.
+        $roles[UserType::SUPER_ADMIN->value]->syncPermissions($allPermissions);
 
-        $roles['client']->syncPermissions(
-            collect($permissionMatrix)
-                ->filter(fn (array $audience): bool => in_array('client', $audience, true))
-                ->keys()
-                ->all()
-        );
+        // Admin gets admin and common permissions.
+        $roles[UserType::ADMIN->value]->syncPermissions(array_values(array_unique(array_merge(
+            $adminPermissions,
+            $commonPermissions
+        ))));
+
+        // Client admin gets client and common permissions.
+        $roles[UserType::CLIENT_ADMIN->value]->syncPermissions(array_values(array_unique(array_merge(
+            $clientPermissions,
+            $commonPermissions
+        ))));
+
+        // Client user is intentionally minimal by default; it can be extended per user.
+        $roles[UserType::CLIENT_USER->value]->syncPermissions($commonPermissions);
 
         $this->info('Permissions and roles synced successfully.');
         $this->line('Total permissions: '.count($permissionMatrix));
@@ -75,7 +95,7 @@ class SyncRolesAndPermissions extends Command
 
             if (Str::startsWith($uri, 'admin.')) {
                 foreach ($methods as $method) {
-                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = ['admin'];
+                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = [UserType::ADMIN->value];
                 }
 
                 continue;
@@ -83,7 +103,7 @@ class SyncRolesAndPermissions extends Command
 
             if (Str::startsWith($uri, 'client.')) {
                 foreach ($methods as $method) {
-                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = ['client'];
+                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = [UserType::CLIENT_ADMIN->value];
                 }
 
                 continue;
@@ -91,7 +111,7 @@ class SyncRolesAndPermissions extends Command
 
             if (Str::startsWith($uri, 'v1.auth.') && in_array('auth:api', $route->gatherMiddleware(), true)) {
                 foreach ($methods as $method) {
-                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = ['admin', 'client'];
+                    $matrix[RoutePermission::fromUriAndMethod($uri, $method)] = ['common'];
                 }
             }
         }
@@ -125,17 +145,29 @@ class SyncRolesAndPermissions extends Command
 
     private function resolveRoleName(User $user, bool $hasIsAdmin, bool $hasUserType): string
     {
-        if ($hasIsAdmin && (bool) $user->getAttribute('is_admin')) {
-            return 'admin';
-        }
-
         if ($hasUserType) {
-            $userType = Str::lower((string) $user->getAttribute('user_type'));
-            if (in_array($userType, ['admin', 'administrator', 'super_admin'], true)) {
-                return 'admin';
+            $userTypeAttribute = $user->getAttribute(User::USER_TYPE);
+            $userType = $userTypeAttribute instanceof UserType
+                ? $userTypeAttribute->value
+                : Str::lower((string) $userTypeAttribute);
+
+            if (in_array($userType, User::supportedUserTypes(), true)) {
+                return $userType;
+            }
+
+            if (in_array($userType, ['administrator'], true)) {
+                return UserType::ADMIN->value;
+            }
+
+            if (in_array($userType, ['client'], true)) {
+                return UserType::CLIENT_USER->value;
             }
         }
 
-        return 'client';
+        if ($hasIsAdmin && (bool) $user->getAttribute('is_admin')) {
+            return UserType::ADMIN->value;
+        }
+
+        return UserType::CLIENT_USER->value;
     }
 }

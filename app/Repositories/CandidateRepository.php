@@ -46,6 +46,27 @@ class CandidateRepository extends BaseRepository
     {
         return $this->model::ADDRESS;
     }
+    public function countryId()
+    {
+        return $this->model::COUNTRY_ID;
+    }
+    public function stateId()
+    {
+        return $this->model::STATE_ID;
+    }
+    public function cityId()
+    {
+        return $this->model::CITY_ID;
+    }
+    public function locationVerifed()
+    {
+        return $this->model::LOCATION_VERIFIED;
+    }
+
+    public function locationVerifiedAt()
+    {
+        return $this->model::LOCATION_VERIFIED_AT;
+    }
 
     public function city()
     {

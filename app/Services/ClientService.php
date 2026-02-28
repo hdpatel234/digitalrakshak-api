@@ -7,7 +7,7 @@ use App\Repositories\ClientRepository;
 class ClientService extends BaseService
 {
     protected $repository;
-    
+
     public function __construct(ClientRepository $repository)
     {
         $this->repository = $repository;
@@ -47,6 +47,21 @@ class ClientService extends BaseService
     public function address()
     {
         return $this->repository->address();
+    }
+
+    public function countryID()
+    {
+        return $this->repository->countryID();
+    }
+
+    public function stateID()
+    {
+        return $this->repository->stateID();
+    }
+
+    public function cityId()
+    {
+        return $this->repository->cityID();
     }
 
     public function city()

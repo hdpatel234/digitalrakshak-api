@@ -47,6 +47,28 @@ class CandidateService extends BaseService
         return $this->repository->address();
     }
 
+    public function countryId()
+    {
+        return $this->repository->countryId();
+    }
+    public function stateId()
+    {
+        return $this->repository->stateId();
+    }
+    public function cityId()
+    {
+        return $this->repository->cityId();
+    }
+    public function locationVerifed()
+    {
+        return $this->repository->locationVerifed();
+    }
+
+    public function locationVerifiedAt()
+    {
+        return $this->repository->locationVerifiedAt();
+    }
+
     public function city()
     {
         return $this->repository->city();

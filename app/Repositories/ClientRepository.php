@@ -47,6 +47,21 @@ class ClientRepository extends BaseRepository
         return $this->model::ADDRESS;
     }
 
+    public function countryID()
+    {
+        return $this->model::COUNTRY_ID;
+    }
+
+    public function stateID()
+    {
+        return $this->model::STATE_ID;
+    }
+
+    public function cityId()
+    {
+        return $this->model::CITY_ID;
+    }
+
     public function city()
     {
         return $this->model::CITY;

@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Candidate extends BaseModel
 {
-    
+
     protected $table = "candidates";
-    
+
     const CLIENT_ID = "client_id";
     const FIRST_NAME = "first_name";
     const LAST_NAME = "last_name";
@@ -19,6 +19,11 @@ class Candidate extends BaseModel
     const PHONE = "phone";
     const ALTERNATE_PHONE = "alternate_phone";
     const ADDRESS = "address";
+    const COUNTRY_ID = "country_id";
+    const STATE_ID = "state_id";
+    const CITY_ID = "city_id";
+    const LOCATION_VERIFIED = "location_verified";
+    const LOCATION_VERIFIED_AT = "location_verified_at";
     const CITY = "city";
     const STATE = "state";
     const PINCODE = "pincode";
@@ -43,6 +48,11 @@ class Candidate extends BaseModel
         self::PHONE,
         self::ALTERNATE_PHONE,
         self::ADDRESS,
+        self::COUNTRY_ID,
+        self::STATE_ID,
+        self::CITY_ID,
+        self::LOCATION_VERIFIED,
+        self::LOCATION_VERIFIED_AT,
         self::CITY,
         self::STATE,
         self::PINCODE,

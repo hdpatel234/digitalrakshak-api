@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
 
-Route::prefix('v1/client')->middleware(['auth:api', 'role:client'])->group(function () {
+Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user', 'permission.route'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending

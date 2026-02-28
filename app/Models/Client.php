@@ -18,6 +18,9 @@ class Client extends BaseModel
     const GST_NUMBER = "gst_number";
     const PAN_NUMBER = "pan_number";
     const ADDRESS = "address";
+    const COUNTRY_ID = "country_id";
+    const STATE_ID = "state_id";
+    const CITY_ID = "city_id";
     const CITY = "city";
     const STATE = "state";
     const PINCODE = "pincode";
@@ -41,6 +44,9 @@ class Client extends BaseModel
         self::GST_NUMBER,
         self::PAN_NUMBER,
         self::ADDRESS,
+        self::COUNTRY_ID,
+        self::STATE_ID,
+        self::CITY_ID,
         self::CITY,
         self::STATE,
         self::PINCODE,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserType;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -40,6 +41,8 @@ class User extends BaseAuthenticatable
      * @var list<string>
      */
     protected $fillable = [
+        self::CLIENT_ID,
+        self::USER_TYPE,
         self::FIRST_NAME,
         self::LAST_NAME,
         self::EMAIL,
@@ -54,6 +57,11 @@ class User extends BaseAuthenticatable
         self::LAST_LOGIN_PROVIDER,
         self::LAST_LOGIN_PROVIDER_ID,
     ];
+
+    public static function supportedUserTypes(): array
+    {
+        return UserType::values();
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -75,6 +83,7 @@ class User extends BaseAuthenticatable
         return [
             self::EMAIL_VERIFIED_AT => 'datetime',
             self::PASSWORD => 'hashed',
+            self::USER_TYPE => UserType::class,
         ];
     }
 
