@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 abstract class BaseModel extends Model
 {
     protected static array $auditColumnsCache = [];
+    protected static array $dateTimeColumnsCache = [];
+    protected static ?int $timezoneCacheUserId = null;
+    protected static ?string $timezoneCacheValue = null;
 
     // column constants
     const ID = 'id';
@@ -92,5 +97,104 @@ abstract class BaseModel extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, static::DELETED_BY);
+    }
+
+    public function attributesToArray(): array
+    {
+        $attributes = parent::attributesToArray();
+
+        return $this->convertDateColumnsToUserTimezone($attributes);
+    }
+
+    protected function convertDateColumnsToUserTimezone(array $attributes): array
+    {
+        $targetTimezone = $this->resolveUserTimezone();
+        $sourceTimezone = config('app.timezone', 'UTC');
+        $dateTimeColumns = $this->getDateTimeColumns();
+
+        foreach ($dateTimeColumns as $column => $columnType) {
+            if (!array_key_exists($column, $attributes) || empty($attributes[$column])) {
+                continue;
+            }
+
+            $rawValue = $this->getRawOriginal($column);
+            if (empty($rawValue)) {
+                continue;
+            }
+
+            $attributes[$column] = $this->convertDateValueByType(
+                (string) $rawValue,
+                $columnType,
+                $sourceTimezone,
+                $targetTimezone
+            );
+        }
+
+        return $attributes;
+    }
+
+    protected function getDateTimeColumns(): array
+    {
+        $table = $this->getTable();
+
+        if (!array_key_exists($table, static::$dateTimeColumnsCache)) {
+            $columns = [];
+            foreach (Schema::getColumnListing($table) as $column) {
+                $type = strtolower(Schema::getColumnType($table, $column));
+                if (in_array($type, ['date', 'datetime', 'datetimetz', 'timestamp', 'timestamptz', 'time'], true)) {
+                    $columns[$column] = $type;
+                }
+            }
+
+            static::$dateTimeColumnsCache[$table] = $columns;
+        }
+
+        return static::$dateTimeColumnsCache[$table];
+    }
+
+    protected function convertDateValueByType(
+        string $value,
+        string $columnType,
+        string $sourceTimezone,
+        string $targetTimezone
+    ): string {
+        try {
+            $parsed = Carbon::parse($value, $sourceTimezone)->setTimezone($targetTimezone);
+        } catch (\Throwable $e) {
+            return $value;
+        }
+
+        if ($columnType === 'date') {
+            return $parsed->toDateString();
+        }
+
+        if ($columnType === 'time') {
+            return $parsed->format('H:i:s');
+        }
+
+        return $parsed->format($this->getDateFormat());
+    }
+
+    protected function resolveUserTimezone(): string
+    {
+        $defaultTimezone = 'Asia/Kolkata';
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return $defaultTimezone;
+        }
+
+        if (static::$timezoneCacheUserId === $userId && static::$timezoneCacheValue) {
+            return static::$timezoneCacheValue;
+        }
+
+        $timezone = DB::table('user_datetime_preferences')
+            ->where(UserDatetimePreference::USER_ID, $userId)
+            ->value(UserDatetimePreference::TIMEZONE);
+
+        static::$timezoneCacheUserId = $userId;
+        static::$timezoneCacheValue = $timezone ?: $defaultTimezone;
+
+        return static::$timezoneCacheValue;
     }
 }

@@ -36,6 +36,16 @@ abstract class BaseRepository
         return $this->model->get($columns);
     }
 
+    public function allActive($columns = ['*'])
+    {
+        return $this->model->get($columns);
+    }
+
+    public function count()
+    {
+        return $this->model->count();
+    }
+
     public function paginate($perPage = 15)
     {
         return $this->model->paginate($perPage);

@@ -10,6 +10,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use App\Http\Middleware\EnsureRoutePermission;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\SetUserPreferredLocale;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('api', [
+            SetUserPreferredLocale::class,
+        ]);
+
         $middleware->alias([
             'auth' => Authenticate::class,
             'role' => RoleMiddleware::class,
@@ -36,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Unauthenticated.',
+                    'message' => __('common.unauthenticated'),
                     'data' => [],
                     'timestamp' => now()->toDateTimeString(),
                 ], 401);

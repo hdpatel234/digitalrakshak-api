@@ -23,4 +23,9 @@ class UserConfigValue extends BaseModel
     {
         return $this->belongsTo(User::class, self::USER_ID);
     }
+
+    public function definition(): BelongsTo
+    {
+        return $this->belongsTo(UserConfigDefinition::class, self::CONFIG_ID);
+    }
 }

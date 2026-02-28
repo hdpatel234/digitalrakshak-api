@@ -35,6 +35,16 @@ abstract class BaseService
         return $this->repository->all($columns);
     }
 
+    public function allActive($columns = ['*'])
+    {
+        return $this->repository->allActive($columns);
+    }
+
+    public function count()
+    {
+        return $this->repository->count();
+    }
+
     public function paginate($perPage = 15)
     {
         return $this->repository->paginate($perPage);

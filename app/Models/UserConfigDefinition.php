@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserConfigDefinition extends BaseModel
@@ -45,4 +46,16 @@ class UserConfigDefinition extends BaseModel
         self::IS_ACTIVE,
         self::CREATED_BY,
     ];
+
+    protected function casts(): array
+    {
+        return [
+            self::POSSIBLE_VALUES => 'array',
+        ];
+    }
+
+    public function values(): HasMany
+    {
+        return $this->hasMany(UserConfigValue::class, UserConfigValue::CONFIG_ID);
+    }
 }
