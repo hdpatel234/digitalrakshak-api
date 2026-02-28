@@ -123,4 +123,13 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    /--------------------------------------------------------------------------
+    | Test Mode
+    |--------------------------------------------------------------------------
+    |
+    | When set to true, this will run the application in a "testing" environment
+    |
+    */
+    'test_mode' => env('TEST_MODE', false),
 ];

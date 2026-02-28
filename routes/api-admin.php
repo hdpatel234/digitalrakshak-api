@@ -82,6 +82,48 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:admin', 'permission.rou
         Route::get('export/{type}', [Controller::class, 'export']); // Pending
     });
 
+    // Provider CRUD
+    Route::apiResource('providers', Controller::class); // Pending
+    Route::post('providers/{provider}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
+    Route::get('providers/{provider}/stats', [Controller::class, 'stats']); // Pending
+
+    // Provider API Configs
+    Route::get('providers/{provider}/configs', [Controller::class, 'index']); // Pending
+    Route::post('providers/{provider}/configs', [Controller::class, 'store']); // Pending
+    Route::put('providers/configs/{config}', [Controller::class, 'update']); // Pending
+    Route::delete('providers/configs/{config}', [Controller::class, 'destroy']); // Pending
+    Route::post('providers/configs/{config}/test', [Controller::class, 'testConnection']); // Pending
+
+    // Service-Provider Assignments
+    Route::get('services/{service}/providers', [Controller::class, 'index']); // Pending
+    Route::post('services/{service}/providers', [Controller::class, 'assign']); // Pending
+    Route::put('services/providers/{assignment}', [Controller::class, 'update']); // Pending
+    Route::delete('services/providers/{assignment}', [Controller::class, 'remove']); // Pending
+    Route::post('services/providers/reorder', [Controller::class, 'reorder']); // Pending
+
+    // Field Mappings
+    Route::get('services/providers/{assignment}/field-mappings', [Controller::class, 'index']); // Pending
+    Route::post('services/providers/{assignment}/field-mappings', [Controller::class, 'store']); // Pending
+    Route::put('services/providers/field-mappings/{mapping}', [Controller::class, 'update']); // Pending
+    Route::delete('services/providers/field-mappings/{mapping}', [Controller::class, 'destroy']); // Pending
+
+    // Response Mappings
+    Route::get('services/providers/{assignment}/response-mappings', [Controller::class, 'index']); // Pending
+    Route::post('services/providers/{assignment}/response-mappings', [Controller::class, 'store']); // Pending
+    Route::put('services/providers/response-mappings/{mapping}', [Controller::class, 'update']);  // Pending
+    Route::delete('services/providers/response-mappings/{mapping}', [Controller::class, 'destroy']); // Pending
+
+    // Provider Monitoring
+    Route::get('providers/monitoring/health', [Controller::class, 'health']); // Pending
+    Route::get('providers/monitoring/performance', [Controller::class, 'performance']); // Pending
+    Route::get('providers/monitoring/outages', [Controller::class, 'outages']); // Pending
+    Route::get('providers/monitoring/costs', [Controller::class, 'costs']); // Pending
+
+    // Provider Costs
+    Route::get('providers/{provider}/costs', [Controller::class, 'index']); // Pending
+    Route::post('providers/{provider}/costs', [Controller::class, 'store']); // Pending
+    Route::put('providers/costs/{cost}', [Controller::class, 'update']); // Pending
+
     // System Monitoring
     Route::get('system/health', [Controller::class, 'health']); // Pending
     Route::get('system/queue-stats', [Controller::class, 'queueStats']); // Pending
