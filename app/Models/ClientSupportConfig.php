@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientSupportConfig extends BaseModel
@@ -43,4 +44,14 @@ class ClientSupportConfig extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    protected $casts = [
+        self::ADDITIONAL_CONFIG => 'array',
+        self::IS_DEFAULT => 'boolean',
+    ];
+
+    public function supportPlatform(): BelongsTo
+    {
+        return $this->belongsTo(SupportPlatform::class, self::SUPPORT_PLATFORM_ID);
+    }
 }

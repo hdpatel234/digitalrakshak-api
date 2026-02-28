@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BillingPlatform extends BaseModel
@@ -19,4 +20,9 @@ class BillingPlatform extends BaseModel
         self::DESCRIPTION,
         self::IS_ACTIVE,
     ];
+
+    public function clientBillingConfigs(): HasMany
+    {
+        return $this->hasMany(ClientBillingConfig::class, ClientBillingConfig::BILLING_PLATFORM_ID);
+    }
 }

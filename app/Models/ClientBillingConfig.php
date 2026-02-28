@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientBillingConfig extends BaseModel
@@ -47,4 +48,14 @@ class ClientBillingConfig extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    protected $casts = [
+        self::ADDITIONAL_CONFIG => 'array',
+        self::IS_DEFAULT => 'boolean',
+    ];
+
+    public function billingPlatform(): BelongsTo
+    {
+        return $this->belongsTo(BillingPlatform::class, self::BILLING_PLATFORM_ID);
+    }
 }

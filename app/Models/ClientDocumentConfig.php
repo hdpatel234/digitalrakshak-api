@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientDocumentConfig extends BaseModel
@@ -61,4 +62,15 @@ class ClientDocumentConfig extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    protected $casts = [
+        self::ADDITIONAL_CONFIG => 'array',
+        self::ALLOWED_FILE_TYPES => 'array',
+        self::IS_DEFAULT => 'boolean',
+    ];
+
+    public function documentPlatform(): BelongsTo
+    {
+        return $this->belongsTo(DocumentPlatform::class, self::DOCUMENT_PLATFORM_ID);
+    }
 }
