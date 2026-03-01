@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\ChangePasswordController;
 use App\Http\Controllers\Api\Auth\CountryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
@@ -27,7 +28,8 @@ Route::prefix('v1/auth')->group(function () {
         Route::get('me', [ProfileController::class, 'me']);
         Route::post('profile', [ProfileController::class, 'updateProfile']);
 
-        Route::post('change-password', [LoginController::class, 'changePassword']); // Pending
+        Route::post('change-password', [ChangePasswordController::class, 'changePassword']); // Pending
+
         Route::get('permissions', [LoginController::class, 'getPermissions']); // Pending
         Route::get('notifications', [LoginController::class, 'index']); // Pending
         Route::post('notifications/{id}/read', [LoginController::class, 'markAsRead']); // Pending

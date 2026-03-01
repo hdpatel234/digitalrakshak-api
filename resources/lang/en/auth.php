@@ -77,6 +77,22 @@ return [
         ],
     ],
 
+    // Change Password
+    'change_password' => [
+        'validation' => [
+            'current_password_required' => 'Current password is required.',
+            'current_password_string' => 'Current password must be a valid text value.',
+            'new_password_required' => 'New password is required.',
+            'new_password_string' => 'New password must be a valid text value.',
+            'new_password_min' => 'New password must be at least 6 characters.',
+            'new_password_different' => 'New password must be different from current password.',
+        ],
+        'response_messages' => [
+            'password_changed_success' => 'Password changed successfully',
+            'invalid_current_password' => 'Current password is incorrect',
+        ],
+    ],
+
     // Get Countries
     'get_countries' => [
         'validation' => [],

@@ -9,10 +9,10 @@ use App\Services\UserService;
 class ProfileController extends BaseController
 {
     use ApiResponse;
-    protected $userService;
-    public function __construct(UserService $userService)
+    protected $userServcice;
+    public function __construct(UserService $userServcice)
     {
-        $this->userService = $userService;
+        $this->userServcice = $userServcice;
     }
 
     public function me()
@@ -28,14 +28,22 @@ class ProfileController extends BaseController
 
     public function updateProfile(UpdateProfileRequest $request)
     {
-        $user = auth()->user();
-        $response = $this->userService->updateProfile($user,$request->validated(),$request->file('avatar'));
+        try {
+            $user = auth()->user();
+            $response = $this->userServcice->updateProfile(
+                $user,
+                $request->validated(),
+                $request->file('avatar')
+            );
 
-        $responseData = $response->toArray();
-        if (!empty($responseData['avatar'])) {
-            $responseData['avatar'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $responseData['avatar'], '/');
+            $responseData = $response->toArray();
+            if (!empty($responseData['avatar'])) {
+                $responseData['avatar'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $responseData['avatar'], '/');
+            }
+
+            return $this->success('auth.update_profile.response_messages.profile_updated_success', $responseData);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage());
         }
-
-        return $this->success('auth.update_profile.response_messages.profile_updated_success', $responseData);
     }
 }
