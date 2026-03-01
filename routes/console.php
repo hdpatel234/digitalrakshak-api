@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::command('passport:delete-expired')->hourly();
+Schedule::command('passport:delete-expired')->dailyAt('02:00');

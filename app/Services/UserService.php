@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\BaseService;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class UserService extends BaseService
 {
@@ -37,6 +40,14 @@ class UserService extends BaseService
     {
         return $this->repository->emailVerifiedAt();
     }
+    public function phoneCode()
+    {
+        return $this->repository->phoneCode();
+    }
+    public function phone()
+    {
+        return $this->repository->phone();
+    }
     public function password()
     {
         return $this->repository->password();
@@ -65,6 +76,10 @@ class UserService extends BaseService
     {
         return $this->repository->lastLoginDevice();
     }
+    public function lastLoginOs()
+    {
+        return $this->repository->lastLoginOs();
+    }
     public function lastLoginProvider()
     {
         return $this->repository->lastLoginProvider();
@@ -87,5 +102,47 @@ class UserService extends BaseService
     public function getByEmail($email)
     {
         return $this->repository->getByEmail($email);
+    }
+
+    public function updateProfile(User $user, array $data, ?UploadedFile $avatar = null): User
+    {
+        $payload = [];
+
+        $fieldMap = [
+            'first_name' => $this->firstName(),
+            'last_name' => $this->lastName(),
+            'email' => $this->email(),
+            'phone_code' => $this->phoneCode(),
+            'phone' => $this->phone(),
+        ];
+
+        foreach ($fieldMap as $requestKey => $column) {
+            if (array_key_exists($requestKey, $data)) {
+                $payload[$column] = $data[$requestKey];
+            }
+        }
+
+        $shouldRemoveAvatar = (bool) ($data['remove_logo'] ?? false);
+        $currentAvatar = $user->{$this->avatar()};
+
+        if ($avatar) {
+            if ($currentAvatar) {
+                Storage::disk('public')->delete($currentAvatar);
+            }
+
+            $payload[$this->avatar()] = $avatar->store('users/avatar', 'public');
+        } elseif ($shouldRemoveAvatar) {
+            if ($currentAvatar) {
+                Storage::disk('public')->delete($currentAvatar);
+            }
+
+            $payload[$this->avatar()] = null;
+        }
+
+        if ($payload !== []) {
+            $user = $this->update($user->{$this->id()}, $payload);
+        }
+
+        return $user->fresh();
     }
 }

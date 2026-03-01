@@ -32,12 +32,12 @@ class RefreshTokenService extends BaseService
 
             if ($response->failed()) {
                 $return_array['status'] = false;
-                $return_array['message'] = __('auth/refresh_token.response_messages.invalid_refresh_token');
+                $return_array['message'] = 'auth.refresh_token.response_messages.invalid_refresh_token';
                 return $return_array;
             }
 
             $return_array['status'] = true;
-            $return_array['message'] = __('auth/refresh_token.response_messages.refresh_success');
+            $return_array['message'] = 'auth.refresh_token.response_messages.refresh_success';
             $return_array['data'] = $response->json();
 
             return $return_array;

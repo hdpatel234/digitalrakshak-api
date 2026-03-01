@@ -37,6 +37,14 @@ class UserRepository extends BaseRepository
     {
         return $this->model::EMAIL_VERIFIED_AT;
     }
+    public function phoneCode()
+    {
+        return $this->model::PHONE_CODE;
+    }
+    public function phone()
+    {
+        return $this->model::PHONE;
+    }
     public function password()
     {
         return $this->model::PASSWORD;
@@ -64,6 +72,11 @@ class UserRepository extends BaseRepository
     public function lastLoginDevice()
     {
         return $this->model::LAST_LOGIN_DEVICE;
+    }
+
+    public function lastLoginOs()
+    {
+        return $this->model::LAST_LOGIN_OS;
     }
 
     public function lastLoginProvider()

@@ -5,19 +5,26 @@ namespace App\Services;
 use App\Repositories\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\Http;
+use App\Repositories\UserSessionRepository;
 
 class LoginService extends BaseService
 {
     protected $userRepository;
+    protected $userSessionRepository;
     protected UserConfigService $userConfigService;
 
-    public function __construct(UserRepository $userRepository, UserConfigService $userConfigService)
-    {
+    public function __construct
+    (
+        UserRepository $userRepository,
+        UserConfigService $userConfigService,
+        UserSessionRepository $userSessionRepository
+    ) {
         $this->userRepository = $userRepository;
         $this->userConfigService = $userConfigService;
+        $this->userSessionRepository = $userSessionRepository;
     }
 
-    public function login($email, $password)
+    public function login($request)
     {
         $return_array = [];
         $return_array['status'] = false;
@@ -30,32 +37,52 @@ class LoginService extends BaseService
                 'grant_type' => 'password',
                 'client_id' => env('PASSPORT_PASSWORD_CLIENT_ID'),
                 'client_secret' => env('PASSPORT_PASSWORD_CLIENT_SECRET'),
-                'username' => $email,
-                'password' => $password,
+                'username' => $request->email,
+                'password' => $request->password,
                 'scope' => '',
             ]);
 
             if ($response->failed()) {
                 $return_array['status'] = false;
-                $return_array['message'] = __('auth/login.response_messages.invalid_credentials');
+                $return_array['message'] = 'auth.login.response_messages.invalid_credentials';
                 return $return_array;
             }
 
             $tokenData = $response->json();
 
-            $user = $this->userRepository->getByEmail($email);
+            $user = $this->userRepository->getByEmail($request->email);
 
             if (!$user) {
                 $return_array['status'] = false;
-                $return_array['message'] = __('auth/login.response_messages.user_not_found');
+                $return_array['message'] = 'auth.login.response_messages.user_not_found';
                 return $return_array;
             }
 
-            if($user->{$this->userRepository->isActive()} == false) {
+            if ($user->{$this->userRepository->isActive()} == false) {
                 $return_array['status'] = false;
-                $return_array['message'] = __('auth/login.response_messages.account_inactive');
+                $return_array['message'] = 'auth.login.response_messages.account_inactive';
                 return $return_array;
             }
+
+
+            $accessTokenId = null;
+
+            if (isset($tokenData['access_token'])) {
+                $jwtParts = explode('.', $tokenData['access_token']);
+                if (count($jwtParts) === 3) {
+                    $payload = json_decode(base64_decode($jwtParts[1]));
+                    $accessTokenId = $payload->jti ?? null;
+                }
+            }
+
+            $this->userSessionRepository->create([
+                'user_id' => $user->{$this->userRepository->id()},
+                'access_token_id' => $accessTokenId,
+                'ip_address' => $request->ip ?? request()->ip(),
+                'browser' => $request->browser ?? request()->header('User-Agent'),
+                'os' => $request->os ?? null,
+                'device' => $request->device ?? request()->header('User-Agent'),
+            ]);
 
             $lastLoginData = [
                 $this->userRepository->lastLoginAt() => $user->{$this->userRepository->lastLoginAt()},
@@ -66,9 +93,10 @@ class LoginService extends BaseService
 
             $user->update([
                 $this->userRepository->lastLoginAt() => now(),
-                $this->userRepository->lastLoginIp() => request()->ip(),
-                $this->userRepository->lastLoginBrowser() => request()->header('User-Agent'),
-                $this->userRepository->lastLoginDevice() => request()->header('User-Agent'),
+                $this->userRepository->lastLoginIp() => $request->ip ?? request()->ip(),
+                $this->userRepository->lastLoginBrowser() => $request->browser ?? request()->header('User-Agent'),
+                $this->userRepository->lastLoginDevice() => $request->device ?? request()->header('User-Agent'),
+                $this->userRepository->lastLoginOs() => $request->os ?? null,
             ]);
 
             $resolvedConfigs = $this->userConfigService->getResolvedConfigs($user->{$this->userRepository->id()});
@@ -110,7 +138,7 @@ class LoginService extends BaseService
             ];
 
             $return_array['status'] = true;
-            $return_array['message'] = __('auth/login.response_messages.login_success');
+            $return_array['message'] = 'auth.login.response_messages.login_success';
 
             return $return_array;
         } catch (\Exception $e) {

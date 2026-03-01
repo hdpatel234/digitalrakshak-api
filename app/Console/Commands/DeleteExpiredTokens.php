@@ -14,11 +14,35 @@ class DeleteExpiredTokens extends Command
     {
         $now = now();
 
-        DB::table('oauth_access_tokens')->where('expires_at', '<', $now)->delete();
+        $expiredTokenIds = DB::table('oauth_access_tokens')
+            ->where('expires_at', '<', $now)
+            ->pluck('id')
+            ->toArray();
 
-        DB::table('oauth_refresh_tokens')->where('expires_at', '<', $now)->delete();
+        $revokedTokenIds = DB::table('oauth_access_tokens')
+            ->where('revoked', 1)
+            ->pluck('id')
+            ->toArray();
 
-        DB::table('oauth_access_tokens')->where('revoked', 1)->delete();
+        $tokenIds = array_unique(array_merge($expiredTokenIds, $revokedTokenIds));
+
+        if (!empty($tokenIds)) {
+
+            DB::table('user_sessions')
+                ->whereIn('access_token_id', $tokenIds)
+                ->update([
+                    'is_active' => false,
+                    'updated_at' => now(),
+                ]);
+
+            DB::table('oauth_access_tokens')
+                ->whereIn('id', $tokenIds)
+                ->delete();
+        }
+
+        DB::table('oauth_refresh_tokens')
+            ->where('expires_at', '<', $now)
+            ->delete();
 
         $this->info('Expired and revoked tokens deleted successfully.');
     }
