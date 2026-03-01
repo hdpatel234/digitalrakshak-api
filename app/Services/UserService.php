@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class UserService extends BaseService
@@ -130,7 +131,25 @@ class UserService extends BaseService
                 Storage::disk('public')->delete($currentAvatar);
             }
 
-            $payload[$this->avatar()] = $avatar->store('users/avatar', 'public');
+            try {
+                // Check if directory exists and is writable
+                $directory = storage_path('app/public/users/avatar');
+                Log::info('Avatar directory:', [
+                    'path' => $directory,
+                    'exists' => file_exists($directory),
+                    'is_writable' => is_writable($directory),
+                    'owner' => function_exists('posix_getpwuid') ? posix_getpwuid(fileowner($directory)) : 'unknown',
+                    'permissions' => substr(sprintf('%o', fileperms($directory)), -4)
+                ]);
+
+                $path = $avatar->store('users/avatar', 'public');
+                Log::info('Avatar stored successfully at: ' . $path);
+
+                $payload[$this->avatar()] = $path;
+            } catch (\Exception $e) {
+                Log::error('Avatar upload failed: ' . $e->getMessage());
+                throw $e;
+            }
         } elseif ($shouldRemoveAvatar) {
             if ($currentAvatar) {
                 Storage::disk('public')->delete($currentAvatar);
