@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
+use App\Http\Controllers\Api\Client\Invitation\CandidateInvitationController;
+use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
@@ -24,9 +26,9 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('candidates/export', [Controller::class, 'export']); // Pending
 
     // Candidate Invitations
-    Route::post('candidates/{candidate}/invite', [Controller::class, 'invite']); // Pending
-    Route::post('candidates/bulk-invite', [Controller::class, 'bulkInvite']); // Pending
-    Route::get('invitations', [Controller::class, 'index']); // Pending
+    Route::post('candidates/{candidate}/invite', [CandidateInvitationController::class, 'invite']);
+    Route::post('candidates/bulk-invite', [CandidateInvitationController::class, 'store']);
+    Route::get('invitations', [CandidateInvitationController::class, 'index']);
     Route::get('invitations/{invitation}', [Controller::class, 'show']); // Pending
     Route::post('invitations/{invitation}/resend', [Controller::class, 'resend']); // Pending
     Route::delete('invitations/{invitation}', [Controller::class, 'destroy']); // Pending
@@ -34,7 +36,8 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('invitations/stats', [Controller::class, 'stats']); // Pending
 
     // Package Management (Client Packages)
-    Route::apiResource('packages', Controller::class)->except(['show']); // Pending
+    Route::get('packages', [PackageController::class, 'index']);
+    Route::apiResource('packages', Controller::class)->except(['index', 'show']); // Pending
     Route::get('packages/available', [Controller::class, 'available']); // Pending
     Route::get('packages/{package}', [Controller::class, 'show']); // Pending
     Route::get('packages/{package}/services', [Controller::class, 'services']); // Pending

@@ -2,39 +2,34 @@
 
 namespace App\Repositories;
 
-use App\Models\Service;
+use App\Models\ServiceCategory;
 
-class ServiceRepository extends BaseRepository
+class ServiceCategoryRepository extends BaseRepository
 {
-    public function __construct(Service $model)
+    public function __construct(ServiceCategory $model)
     {
         parent::__construct($model);
     }
 
     // column constants
-    public function serviceCategory()
+    public function categoryName()
     {
-        return $this->model::SERVICE_CATEGORY;
+        return $this->model::CATEGORY_NAME;
     }
 
-    public function serviceName()
+    public function categoryCode()
     {
-        return $this->model::SERVICE_NAME;
+        return $this->model::CATEGORY_CODE;
     }
 
-    public function serviceCode()
+    public function categorySlug()
     {
-        return $this->model::SERVICE_CODE;
+        return $this->model::CATEGORY_SLUG;
     }
 
     public function description()
     {
         return $this->model::DESCRIPTION;
-    }
-
-    public function basePrice()
-    {
-        return $this->model::BASE_PRICE;
     }
 
     public function status()

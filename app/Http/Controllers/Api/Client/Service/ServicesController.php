@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\Client\Service;
 
 use App\Http\Controllers\Api\Client\BaseController;
+use App\Models\ClientService;
 use App\Models\ClientServicePricing;
+use App\Models\ServiceCategory;
 use App\Services\ServiceService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -30,6 +32,10 @@ class ServicesController extends BaseController
         $serviceTable = $this->service->query()->getModel()->getTable();
         $statusColumn = $this->service->status();
         $basePriceColumn = $this->service->basePrice();
+        $serviceCategoryColumn = $this->service->serviceCategory();
+        $clientServicesTable = (new ClientService())->getTable();
+        $serviceCategoriesTable = (new ServiceCategory())->getTable();
+        $qualifiedStatusColumn = $serviceTable . '.' . $statusColumn;
 
         $customPriceSubQuery = ClientServicePricing::query()
             ->select(ClientServicePricing::CUSTOM_PRICE)
@@ -52,11 +58,28 @@ class ServicesController extends BaseController
             ->limit(1);
 
         $query = $this->service->query()
-            ->where(function ($builder) use ($statusColumn) {
-                $builder->where($statusColumn, 'active')
-                    ->orWhere($statusColumn, 1);
+            ->where(function ($builder) use ($qualifiedStatusColumn) {
+                $builder->where($qualifiedStatusColumn, 'active')
+                    ->orWhere($qualifiedStatusColumn, 1);
             })
+            ->whereExists(function ($builder) use ($clientServicesTable, $serviceTable, $clientId) {
+                $builder->selectRaw('1')
+                    ->from($clientServicesTable)
+                    ->whereColumn($clientServicesTable . '.' . ClientService::SERVICE_ID, $serviceTable . '.id')
+                    ->where($clientServicesTable . '.' . ClientService::CLIENT_ID, $clientId)
+                    ->where(function ($statusBuilder) use ($clientServicesTable) {
+                        $statusBuilder->where($clientServicesTable . '.' . ClientService::STATUS, 'active')
+                            ->orWhere($clientServicesTable . '.' . ClientService::STATUS, 1);
+                    });
+            })
+            ->leftJoin(
+                $serviceCategoriesTable,
+                $serviceCategoriesTable . '.id',
+                '=',
+                $serviceTable . '.' . $serviceCategoryColumn
+            )
             ->select($serviceTable . '.*')
+            ->addSelect($serviceCategoriesTable . '.' . ServiceCategory::CATEGORY_NAME . ' as service_category_name')
             ->selectSub($customPriceSubQuery, 'custom_price');
 
         $result = $this->service->datatable(
@@ -64,20 +87,22 @@ class ServicesController extends BaseController
             params: $request->all(),
             config: [
                 'searchable' => [
-                    $this->service->serviceName(),
-                    $this->service->serviceCode(),
-                    $this->service->description(),
+                    $serviceCategoriesTable . '.' . ServiceCategory::CATEGORY_NAME,
+                    $serviceTable . '.' . $this->service->serviceName(),
+                    $serviceTable . '.' . $this->service->serviceCode(),
+                    $serviceTable . '.' . $this->service->description(),
                 ],
-                'status_column' => $this->service->status(),
-                'date_column' => $this->service->createdAt(),
+                'status_column' => $qualifiedStatusColumn,
+                'date_column' => $serviceTable . '.' . $this->service->createdAt(),
                 'allowed_sorts' => [
-                    $this->service->id(),
-                    $this->service->serviceName(),
-                    $this->service->serviceCode(),
-                    $this->service->basePrice(),
-                    $this->service->createdAt(),
+                    $serviceTable . '.' . $this->service->id(),
+                    $serviceCategoriesTable . '.' . ServiceCategory::CATEGORY_NAME,
+                    $serviceTable . '.' . $this->service->serviceName(),
+                    $serviceTable . '.' . $this->service->serviceCode(),
+                    $serviceTable . '.' . $this->service->basePrice(),
+                    $serviceTable . '.' . $this->service->createdAt(),
                 ],
-                'default_sort_by' => $this->service->serviceName(),
+                'default_sort_by' => $serviceTable . '.' . $this->service->serviceName(),
                 'default_sort_direction' => 'asc',
                 'default_per_page' => 10,
                 'max_per_page' => 100,

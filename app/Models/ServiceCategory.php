@@ -4,26 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Service extends BaseModel
+class ServiceCategory extends BaseModel
 {
     
-    protected $table = "services";
+    protected $table = "service_categories";
     
-    const SERVICE_CATEGORY = "service_category";
-    const SERVICE_NAME = "service_name";
-    const SERVICE_CODE = "service_code";
+    const CATEGORY_NAME = "category_name";
+    const CATEGORY_CODE = "category_code";
+    const CATEGORY_SLUG = "category_slug";
     const DESCRIPTION = "description";
-    const BASE_PRICE = "base_price";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
     protected $fillable = [
-        self::SERVICE_CATEGORY,
-        self::SERVICE_NAME,
-        self::SERVICE_CODE,
+        self::CATEGORY_NAME,
+        self::CATEGORY_CODE,
+        self::CATEGORY_SLUG,
         self::DESCRIPTION,
-        self::BASE_PRICE,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,

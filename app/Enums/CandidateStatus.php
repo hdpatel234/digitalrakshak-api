@@ -5,6 +5,7 @@ namespace App\Enums;
 enum CandidateStatus: string
 {
     case CREATED = 'created';
+    case INVITED = 'invited';
     case ACTIVE = 'active';
 
     /**

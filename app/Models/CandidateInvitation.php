@@ -9,6 +9,9 @@ class CandidateInvitation extends BaseModel
 {
     
     protected $table = "candidate_invitations";
+    protected $casts = [
+        self::FORM_DATA => 'array',
+    ];
     
     const CANDIDATE_ID = "candidate_id";
     const CLIENT_ID = "client_id";
