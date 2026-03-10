@@ -6,7 +6,6 @@ use App\Repositories\InvoiceRepository;
 
 class InvoiceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(InvoiceRepository $repository)
     {

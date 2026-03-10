@@ -6,7 +6,6 @@ use App\Repositories\PaymentTransactionRepository;
 
 class PaymentTransactionService extends BaseService
 {
-    protected $repository;
     
     public function __construct(PaymentTransactionRepository $repository)
     {

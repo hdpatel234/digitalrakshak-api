@@ -6,7 +6,6 @@ use App\Repositories\UserConfigDefinitionRepository;
 
 class UserConfigDefinitionService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserConfigDefinitionRepository $repository)
     {

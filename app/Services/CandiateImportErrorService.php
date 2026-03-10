@@ -6,7 +6,6 @@ use App\Repositories\CandiateImportErrorRepository;
 
 class CandiateImportErrorService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CandiateImportErrorRepository $repository)
     {

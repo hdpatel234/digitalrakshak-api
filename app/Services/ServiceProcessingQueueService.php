@@ -6,7 +6,6 @@ use App\Repositories\ServiceProcessingQueueRepository;
 
 class ServiceProcessingQueueService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ServiceProcessingQueueRepository $repository)
     {

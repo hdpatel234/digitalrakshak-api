@@ -6,7 +6,6 @@ use App\Repositories\CandidateManagerRepository;
 
 class CandidateManagerService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CandidateManagerRepository $repository)
     {

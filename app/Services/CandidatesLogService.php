@@ -6,7 +6,6 @@ use App\Repositories\CandidatesLogRepository;
 
 class CandidatesLogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CandidatesLogRepository $repository)
     {

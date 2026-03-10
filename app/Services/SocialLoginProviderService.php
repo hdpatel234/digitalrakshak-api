@@ -6,7 +6,6 @@ use App\Repositories\SocialLoginProviderRepository;
 
 class SocialLoginProviderService extends BaseService
 {
-    protected $repository;
     
     public function __construct(SocialLoginProviderRepository $repository)
     {

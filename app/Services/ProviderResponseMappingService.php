@@ -6,7 +6,6 @@ use App\Repositories\ProviderResponseMappingRepository;
 
 class ProviderResponseMappingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ProviderResponseMappingRepository $repository)
     {

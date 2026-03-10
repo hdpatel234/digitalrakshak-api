@@ -6,7 +6,6 @@ use App\Repositories\PostalCodeRepository;
 
 class PostalCodeService extends BaseService
 {
-    protected $repository;
     
     public function __construct(PostalCodeRepository $repository)
     {

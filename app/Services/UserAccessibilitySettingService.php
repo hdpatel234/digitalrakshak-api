@@ -6,7 +6,6 @@ use App\Repositories\UserAccessibilitySettingRepository;
 
 class UserAccessibilitySettingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserAccessibilitySettingRepository $repository)
     {

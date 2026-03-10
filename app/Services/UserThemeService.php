@@ -6,7 +6,6 @@ use App\Repositories\UserThemeRepository;
 
 class UserThemeService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserThemeRepository $repository)
     {

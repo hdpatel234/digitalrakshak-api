@@ -6,7 +6,6 @@ use App\Repositories\EmailQueueRepository;
 
 class EmailQueueService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailQueueRepository $repository)
     {

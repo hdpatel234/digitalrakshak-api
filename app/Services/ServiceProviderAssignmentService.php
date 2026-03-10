@@ -6,7 +6,6 @@ use App\Repositories\ServiceProviderAssignmentRepository;
 
 class ServiceProviderAssignmentService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ServiceProviderAssignmentRepository $repository)
     {

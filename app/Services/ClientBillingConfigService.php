@@ -6,7 +6,6 @@ use App\Repositories\ClientBillingConfigRepository;
 
 class ClientBillingConfigService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientBillingConfigRepository $repository)
     {

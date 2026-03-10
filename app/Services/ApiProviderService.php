@@ -6,7 +6,6 @@ use App\Repositories\ApiProviderRepository;
 
 class ApiProviderService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ApiProviderRepository $repository)
     {

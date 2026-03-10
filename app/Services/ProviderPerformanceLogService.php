@@ -6,7 +6,6 @@ use App\Repositories\ProviderPerformanceLogRepository;
 
 class ProviderPerformanceLogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ProviderPerformanceLogRepository $repository)
     {

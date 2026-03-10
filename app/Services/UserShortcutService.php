@@ -6,7 +6,6 @@ use App\Repositories\UserShortcutRepository;
 
 class UserShortcutService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserShortcutRepository $repository)
     {

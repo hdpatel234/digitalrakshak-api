@@ -6,7 +6,6 @@ use App\Repositories\DocumentShareRepository;
 
 class DocumentShareService extends BaseService
 {
-    protected $repository;
     
     public function __construct(DocumentShareRepository $repository)
     {

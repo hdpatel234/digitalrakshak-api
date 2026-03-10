@@ -6,7 +6,6 @@ use App\Repositories\LocationServicePricingRepository;
 
 class LocationServicePricingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(LocationServicePricingRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\ActivitylogRepository;
 
 class ActivitylogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ActivitylogRepository $repository)
     {

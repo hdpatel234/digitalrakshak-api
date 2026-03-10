@@ -6,7 +6,6 @@ use App\Repositories\GeneratedDocumentRepository;
 
 class GeneratedDocumentService extends BaseService
 {
-    protected $repository;
     
     public function __construct(GeneratedDocumentRepository $repository)
     {

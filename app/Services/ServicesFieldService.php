@@ -6,7 +6,6 @@ use App\Repositories\ServicesFieldRepository;
 
 class ServicesFieldService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ServicesFieldRepository $repository)
     {

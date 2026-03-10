@@ -6,7 +6,6 @@ use App\Repositories\UserConfigValueRepository;
 
 class UserConfigValueService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserConfigValueRepository $repository)
     {

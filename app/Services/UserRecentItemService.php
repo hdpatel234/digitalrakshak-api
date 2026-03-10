@@ -6,7 +6,6 @@ use App\Repositories\UserRecentItemRepository;
 
 class UserRecentItemService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserRecentItemRepository $repository)
     {

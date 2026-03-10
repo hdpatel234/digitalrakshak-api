@@ -6,7 +6,6 @@ use App\Repositories\UserSessionRepository;
 
 class UserSessionService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserSessionRepository $repository)
     {

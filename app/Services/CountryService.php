@@ -6,7 +6,6 @@ use App\Repositories\CountryRepository;
 
 class CountryService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CountryRepository $repository)
     {

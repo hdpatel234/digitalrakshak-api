@@ -6,7 +6,6 @@ use App\Repositories\ProviderCostRepository;
 
 class ProviderCostService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ProviderCostRepository $repository)
     {

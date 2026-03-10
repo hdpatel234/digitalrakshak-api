@@ -6,7 +6,6 @@ use App\Repositories\ClientWebhookRepository;
 
 class ClientWebhookService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientWebhookRepository $repository)
     {

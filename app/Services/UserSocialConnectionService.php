@@ -6,7 +6,6 @@ use App\Repositories\UserSocialConnectionRepository;
 
 class UserSocialConnectionService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserSocialConnectionRepository $repository)
     {

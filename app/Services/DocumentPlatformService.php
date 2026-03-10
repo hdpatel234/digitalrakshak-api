@@ -6,7 +6,6 @@ use App\Repositories\DocumentPlatformRepository;
 
 class DocumentPlatformService extends BaseService
 {
-    protected $repository;
     
     public function __construct(DocumentPlatformRepository $repository)
     {

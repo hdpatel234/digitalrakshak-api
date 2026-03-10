@@ -6,7 +6,6 @@ use App\Repositories\UserNotificationPreferenceRepository;
 
 class UserNotificationPreferenceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserNotificationPreferenceRepository $repository)
     {

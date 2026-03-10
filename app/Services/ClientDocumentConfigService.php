@@ -6,7 +6,6 @@ use App\Repositories\ClientDocumentConfigRepository;
 
 class ClientDocumentConfigService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientDocumentConfigRepository $repository)
     {

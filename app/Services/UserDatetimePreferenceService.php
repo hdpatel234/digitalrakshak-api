@@ -6,7 +6,6 @@ use App\Repositories\UserDatetimePreferenceRepository;
 
 class UserDatetimePreferenceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserDatetimePreferenceRepository $repository)
     {

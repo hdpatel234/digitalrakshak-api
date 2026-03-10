@@ -6,7 +6,6 @@ use App\Repositories\WebhookLogRepository;
 
 class WebhookLogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(WebhookLogRepository $repository)
     {

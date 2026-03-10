@@ -6,7 +6,6 @@ use App\Repositories\ServiceProcessingRuleRepository;
 
 class ServiceProcessingRuleService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ServiceProcessingRuleRepository $repository)
     {

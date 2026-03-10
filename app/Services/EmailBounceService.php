@@ -6,7 +6,6 @@ use App\Repositories\EmailBounceRepository;
 
 class EmailBounceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailBounceRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\StateRepository;
 
 class StateService extends BaseService
 {
-    protected $repository;
 
     public function __construct(StateRepository $repository)
     {

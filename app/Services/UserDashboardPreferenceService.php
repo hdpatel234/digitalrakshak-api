@@ -6,7 +6,6 @@ use App\Repositories\UserDashboardPreferenceRepository;
 
 class UserDashboardPreferenceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserDashboardPreferenceRepository $repository)
     {

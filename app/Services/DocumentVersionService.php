@@ -6,7 +6,6 @@ use App\Repositories\DocumentVersionRepository;
 
 class DocumentVersionService extends BaseService
 {
-    protected $repository;
     
     public function __construct(DocumentVersionRepository $repository)
     {

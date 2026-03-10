@@ -6,7 +6,6 @@ use App\Repositories\SupportTicketRepository;
 
 class SupportTicketService extends BaseService
 {
-    protected $repository;
     
     public function __construct(SupportTicketRepository $repository)
     {

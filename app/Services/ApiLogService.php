@@ -6,7 +6,6 @@ use App\Repositories\ApiLogRepository;
 
 class ApiLogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ApiLogRepository $repository)
     {

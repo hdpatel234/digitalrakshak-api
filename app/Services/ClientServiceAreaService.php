@@ -6,7 +6,6 @@ use App\Repositories\ClientServiceAreaRepository;
 
 class ClientServiceAreaService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientServiceAreaRepository $repository)
     {

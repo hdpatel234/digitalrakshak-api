@@ -6,7 +6,6 @@ use App\Repositories\SyncJobRepository;
 
 class SyncJobService extends BaseService
 {
-    protected $repository;
     
     public function __construct(SyncJobRepository $repository)
     {

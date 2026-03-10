@@ -6,7 +6,6 @@ use App\Repositories\EmailServerTypeRepository;
 
 class EmailServerTypeService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailServerTypeRepository $repository)
     {

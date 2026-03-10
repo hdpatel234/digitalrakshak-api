@@ -6,7 +6,6 @@ use App\Repositories\BillingPlatformRepository;
 
 class BillingPlatformService extends BaseService
 {
-    protected $repository;
     
     public function __construct(BillingPlatformRepository $repository)
     {

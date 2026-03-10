@@ -6,7 +6,6 @@ use App\Repositories\UserSearchPreferenceRepository;
 
 class UserSearchPreferenceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserSearchPreferenceRepository $repository)
     {

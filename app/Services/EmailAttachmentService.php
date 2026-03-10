@@ -6,7 +6,6 @@ use App\Repositories\EmailAttachmentRepository;
 
 class EmailAttachmentService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailAttachmentRepository $repository)
     {

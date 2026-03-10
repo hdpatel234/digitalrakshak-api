@@ -32,7 +32,6 @@ class CandidatesController extends BaseController
 
     public function index(Request $request)
     {
-        Log::info("Request: " . $request);
         $query = $this->candidateService->query();
 
         $user = $request->user('api') ?? $request->user();

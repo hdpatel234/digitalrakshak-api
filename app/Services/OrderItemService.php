@@ -6,7 +6,6 @@ use App\Repositories\OrderItemRepository;
 
 class OrderItemService extends BaseService
 {
-    protected $repository;
     
     public function __construct(OrderItemRepository $repository)
     {

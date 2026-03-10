@@ -6,7 +6,6 @@ use App\Repositories\SupportPlatformRepository;
 
 class SupportPlatformService extends BaseService
 {
-    protected $repository;
     
     public function __construct(SupportPlatformRepository $repository)
     {

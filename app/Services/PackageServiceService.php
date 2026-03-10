@@ -6,7 +6,6 @@ use App\Repositories\PackageServiceRepository;
 
 class PackageServiceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(PackageServiceRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\ClientServicePricingRepository;
 
 class ClientServicePricingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientServicePricingRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\UserExportPreferenceRepository;
 
 class UserExportPreferenceService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserExportPreferenceRepository $repository)
     {

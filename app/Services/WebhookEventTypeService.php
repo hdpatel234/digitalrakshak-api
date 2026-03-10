@@ -6,7 +6,6 @@ use App\Repositories\WebhookEventTypeRepository;
 
 class WebhookEventTypeService extends BaseService
 {
-    protected $repository;
     
     public function __construct(WebhookEventTypeRepository $repository)
     {

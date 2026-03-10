@@ -6,7 +6,6 @@ use App\Repositories\UserPrivacySettingRepository;
 
 class UserPrivacySettingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserPrivacySettingRepository $repository)
     {

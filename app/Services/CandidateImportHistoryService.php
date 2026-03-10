@@ -6,7 +6,6 @@ use App\Repositories\CandidateImportHistoryRepository;
 
 class CandidateImportHistoryService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CandidateImportHistoryRepository $repository)
     {

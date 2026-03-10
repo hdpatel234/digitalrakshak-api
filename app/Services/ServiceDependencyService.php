@@ -6,7 +6,6 @@ use App\Repositories\ServiceDependencyRepository;
 
 class ServiceDependencyService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ServiceDependencyRepository $repository)
     {

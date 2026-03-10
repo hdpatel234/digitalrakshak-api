@@ -6,7 +6,6 @@ use App\Repositories\EmailServerHealthRepository;
 
 class EmailServerHealthService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailServerHealthRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\UserSavedSearchRepository;
 
 class UserSavedSearchService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserSavedSearchRepository $repository)
     {

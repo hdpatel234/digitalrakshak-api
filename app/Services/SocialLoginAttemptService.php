@@ -6,7 +6,6 @@ use App\Repositories\SocialLoginAttemptRepository;
 
 class SocialLoginAttemptService extends BaseService
 {
-    protected $repository;
     
     public function __construct(SocialLoginAttemptRepository $repository)
     {

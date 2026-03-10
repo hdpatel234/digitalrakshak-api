@@ -6,7 +6,6 @@ use App\Repositories\OrderCandidateRepository;
 
 class OrderCandidateService extends BaseService
 {
-    protected $repository;
     
     public function __construct(OrderCandidateRepository $repository)
     {

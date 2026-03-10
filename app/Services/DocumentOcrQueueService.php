@@ -6,7 +6,6 @@ use App\Repositories\DocumentOcrQueueRepository;
 
 class DocumentOcrQueueService extends BaseService
 {
-    protected $repository;
     
     public function __construct(DocumentOcrQueueRepository $repository)
     {

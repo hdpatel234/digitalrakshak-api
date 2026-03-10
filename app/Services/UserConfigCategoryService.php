@@ -6,7 +6,6 @@ use App\Repositories\UserConfigCategoryRepository;
 
 class UserConfigCategoryService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserConfigCategoryRepository $repository)
     {

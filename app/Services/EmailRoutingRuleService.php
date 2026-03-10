@@ -6,7 +6,6 @@ use App\Repositories\EmailRoutingRuleRepository;
 
 class EmailRoutingRuleService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailRoutingRuleRepository $repository)
     {

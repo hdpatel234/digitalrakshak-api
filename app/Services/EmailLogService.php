@@ -6,7 +6,6 @@ use App\Repositories\EmailLogRepository;
 
 class EmailLogService extends BaseService
 {
-    protected $repository;
     
     public function __construct(EmailLogRepository $repository)
     {

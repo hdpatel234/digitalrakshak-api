@@ -6,7 +6,6 @@ use App\Repositories\CityRepository;
 
 class CityService extends BaseService
 {
-    protected $repository;
 
     public function __construct(CityRepository $repository)
     {

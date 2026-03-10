@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
+use App\Http\Controllers\Api\Client\Service\ServicesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
@@ -20,7 +21,6 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('candidates/imports', [CandidatesController::class, 'imports']);
     Route::apiResource('candidates', CandidatesController::class);
     Route::post('candidates/bulk-delete', [Controller::class, 'bulkDelete']); // Pending
-    Route::post('candidates/{candidate}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
     Route::get('candidates/export', [Controller::class, 'export']); // Pending
 
     // Candidate Invitations
@@ -41,10 +41,10 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::post('packages/{package}/duplicate', [Controller::class, 'duplicate']); // Pending
 
     // Service Management (for client reference)
-    Route::get('services', [Controller::class, 'index']); // Pending
-    Route::get('services/{service}', [Controller::class, 'show']); // Pending
-    Route::get('services/{service}/fields', [Controller::class, 'fields']); // Pending
-    Route::get('services/{service}/price', [Controller::class, 'getPrice']); // Pending
+    Route::get('services', [ServicesController::class, 'index']);
+    Route::get('services/{service}', [ServicesController::class, 'show']); // Pending
+    Route::get('services/{service}/fields', [ServicesController::class, 'fields']); // Pending
+    Route::get('services/{service}/price', [ServicesController::class, 'getPrice']); // Pending
 
     // Order Management
     Route::apiResource('orders', Controller::class);

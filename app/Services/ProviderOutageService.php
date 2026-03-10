@@ -6,7 +6,6 @@ use App\Repositories\ProviderOutageRepository;
 
 class ProviderOutageService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ProviderOutageRepository $repository)
     {

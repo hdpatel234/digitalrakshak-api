@@ -6,7 +6,6 @@ use App\Repositories\CandidateInvitationRepository;
 
 class CandidateInvitationService extends BaseService
 {
-    protected $repository;
     
     public function __construct(CandidateInvitationRepository $repository)
     {

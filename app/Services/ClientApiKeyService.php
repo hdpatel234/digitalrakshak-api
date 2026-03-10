@@ -6,7 +6,6 @@ use App\Repositories\ClientApiKeyRepository;
 
 class ClientApiKeyService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientApiKeyRepository $repository)
     {

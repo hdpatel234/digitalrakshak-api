@@ -6,7 +6,6 @@ use App\Repositories\ProviderFieldMappingRepository;
 
 class ProviderFieldMappingService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ProviderFieldMappingRepository $repository)
     {

@@ -6,7 +6,6 @@ use App\Repositories\TicketConversationRepository;
 
 class TicketConversationService extends BaseService
 {
-    protected $repository;
     
     public function __construct(TicketConversationRepository $repository)
     {

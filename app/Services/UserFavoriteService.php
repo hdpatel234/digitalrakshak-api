@@ -6,7 +6,6 @@ use App\Repositories\UserFavoriteRepository;
 
 class UserFavoriteService extends BaseService
 {
-    protected $repository;
     
     public function __construct(UserFavoriteRepository $repository)
     {

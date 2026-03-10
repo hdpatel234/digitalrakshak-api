@@ -6,7 +6,6 @@ use App\Repositories\ClientApiQuotaRepository;
 
 class ClientApiQuotaService extends BaseService
 {
-    protected $repository;
     
     public function __construct(ClientApiQuotaRepository $repository)
     {
