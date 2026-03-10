@@ -76,5 +76,10 @@ class StateRepository extends BaseRepository
     {
         return $this->model::UPDATED_BY;
     }
+
     // functions
+    public function getByCountry($country)
+    {
+        return $this->model->where($this->countryId(), $country)->get();
+    }
 }

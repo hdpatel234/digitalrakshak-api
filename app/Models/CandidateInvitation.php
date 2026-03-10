@@ -13,7 +13,6 @@ class CandidateInvitation extends BaseModel
     const CANDIDATE_ID = "candidate_id";
     const CLIENT_ID = "client_id";
     const PACKAGE_ID = "package_id";
-    const SERVICE_IDS = "service_ids";
     const INVITATION_TYPE = "invitation_type";
     const INVITATION_TOKEN = "invitation_token";
     const FORM_LINK = "form_link";
@@ -34,7 +33,6 @@ class CandidateInvitation extends BaseModel
         self::CANDIDATE_ID,
         self::CLIENT_ID,
         self::PACKAGE_ID,
-        self::SERVICE_IDS,
         self::INVITATION_TYPE,
         self::INVITATION_TOKEN,
         self::FORM_LINK,

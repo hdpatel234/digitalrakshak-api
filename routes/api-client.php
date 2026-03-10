@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
 
-Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user', 'permission.route'])->group(function () {
+Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
@@ -15,10 +15,10 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('/dashboard/processing-summary', [Controller::class, 'processingSummary']); // Pending
 
     // Candidate Management
+    Route::get('candidates/import/sample', [CandidatesController::class, 'importSample']);
+    Route::post('candidates/import', [CandidatesController::class, 'import']);
+    Route::get('candidates/imports', [CandidatesController::class, 'imports']);
     Route::apiResource('candidates', CandidatesController::class);
-    Route::post('candidates/import', [Controller::class, 'import']); // Pending
-    Route::get('candidates/import/{import}/status', [Controller::class, 'importStatus']); // Pending
-    Route::get('candidates/import/{import}/errors', [Controller::class, 'importErrors']); // Pending
     Route::post('candidates/bulk-delete', [Controller::class, 'bulkDelete']); // Pending
     Route::post('candidates/{candidate}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
     Route::get('candidates/export', [Controller::class, 'export']); // Pending

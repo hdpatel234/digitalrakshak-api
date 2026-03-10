@@ -86,5 +86,10 @@ class CityRepository extends BaseRepository
     {
         return $this->model::UPDATED_BY;
     }
+
     // functions
+    public function getByState($state)
+    {
+        return $this->model->where($this->stateId(), $state)->get();
+    }
 }

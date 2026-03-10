@@ -27,11 +27,6 @@ class CandidateInvitationRepository extends BaseRepository
         return $this->model::PACKAGE_ID;
     }
 
-    public function serviceIds()
-    {
-        return $this->model::SERVICE_IDS;
-    }
-
     public function invitationType()
     {
         return $this->model::INVITATION_TYPE;

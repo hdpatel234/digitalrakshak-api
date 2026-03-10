@@ -7,7 +7,7 @@ use App\Repositories\StateRepository;
 class StateService extends BaseService
 {
     protected $repository;
-    
+
     public function __construct(StateRepository $repository)
     {
         $this->repository = $repository;
@@ -78,5 +78,10 @@ class StateService extends BaseService
     {
         return $this->repository->updatedBy();
     }
+
     // functions
+    public function getByCountry($country)
+    {
+        return $this->repository->getByCountry($country);
+    }
 }

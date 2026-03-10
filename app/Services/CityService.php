@@ -7,7 +7,7 @@ use App\Repositories\CityRepository;
 class CityService extends BaseService
 {
     protected $repository;
-    
+
     public function __construct(CityRepository $repository)
     {
         $this->repository = $repository;
@@ -88,5 +88,10 @@ class CityService extends BaseService
     {
         return $this->repository->updatedBy();
     }
+
     // functions
+    public function getByState($state)
+    {
+        return $this->repository->getByState($state);
+    }
 }

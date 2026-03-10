@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('passport:delete-expired')->dailyAt('02:00');
+Schedule::command('candidates:process-imports')->everyMinute();

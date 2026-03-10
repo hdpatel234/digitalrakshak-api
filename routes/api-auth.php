@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\ChangePasswordController;
+use App\Http\Controllers\Api\Auth\CityController;
 use App\Http\Controllers\Api\Auth\CountryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
+use App\Http\Controllers\Api\Auth\StateController;
 use App\Http\Controllers\Api\Auth\UserConfigController;
 
 Route::prefix('v1/auth')->group(function () {
@@ -39,5 +41,7 @@ Route::prefix('v1/auth')->group(function () {
         Route::post('config' , [UserConfigController::class,'store']);
 
         Route::get('countries', [CountryController::class, 'index']);
+        Route::get('states', [StateController::class, 'index']);
+        Route::get('cities', [CityController::class, 'index']);
     });
 });

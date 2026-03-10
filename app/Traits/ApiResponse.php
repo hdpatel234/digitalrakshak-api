@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 trait ApiResponse
 {
@@ -39,5 +40,13 @@ trait ApiResponse
             'errors' => $errors,
             'timestamp' => $this->responseTimestamp(),
         ], $code);
+    }
+
+    protected function downloadResponse(
+        callable $callback,
+        string $filename,
+        array $headers = []
+    ): StreamedResponse {
+        return response()->streamDownload($callback, $filename, $headers);
     }
 }

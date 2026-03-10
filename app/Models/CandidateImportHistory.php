@@ -18,6 +18,7 @@ class CandidateImportHistory extends BaseModel
     const IMPORTED_BY = "imported_by";
     const ERROR_LOG = "error_log";
     const STATUS = "status";
+    const REASON = "reason";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
@@ -30,6 +31,7 @@ class CandidateImportHistory extends BaseModel
         self::IMPORTED_BY,
         self::ERROR_LOG,
         self::STATUS,
+        self::REASON,
         self::CREATED_BY,
         self::UPDATED_BY,
         self::DELETED_BY,

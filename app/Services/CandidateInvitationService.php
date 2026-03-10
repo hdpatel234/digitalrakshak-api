@@ -29,11 +29,6 @@ class CandidateInvitationService extends BaseService
         return $this->repository->packageId();
     }
 
-    public function serviceIds()
-    {
-        return $this->repository->serviceIds();
-    }
-
     public function invitationType()
     {
         return $this->repository->invitationType();
