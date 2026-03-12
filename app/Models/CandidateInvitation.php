@@ -58,4 +58,9 @@ class CandidateInvitation extends BaseModel
     {
         return $this->belongsTo(Candidate::class, self::CANDIDATE_ID);
     }
+
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(Package::class, self::PACKAGE_ID);
+    }
 }

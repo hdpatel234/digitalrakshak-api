@@ -17,8 +17,8 @@ class StoreCandidateRequest extends BaseRequest
         $clientId = (int) (auth('api')->user()?->client_id ?? auth()->user()?->client_id ?? 0);
 
         return [
-            'firstName' => ['nullable', 'string', 'max:255'],
-            'lastName' => ['nullable', 'string', 'max:255'],
+            'first_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',

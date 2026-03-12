@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Enums\EmailQueueStatus;
+use App\Enums\EmailServerStatus;
 use App\Models\EmailQueue;
 use App\Models\EmailServer;
 use App\Models\EmailLog;
@@ -17,123 +19,155 @@ class ProcessEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $emailQueue;
+    protected int $emailQueueId;
     public $timeout = 120;
     public $tries = 3;
 
-    public function __construct(EmailQueue $emailQueue)
+    public function __construct(int $emailQueueId)
     {
-        $this->emailQueue = $emailQueue;
+        $this->emailQueueId = $emailQueueId;
     }
 
     public function handle(EmailDriverFactory $driverFactory)
     {
-        // Update status to processing
-        $this->emailQueue->update([
-            'status' => 'processing',
-            'attempts' => $this->emailQueue->attempts + 1,
-            'last_attempt_at' => now()
+        $emailQueue = EmailQueue::query()
+            ->with(['assignedServer.serverType', 'attachments'])
+            ->find($this->emailQueueId);
+
+        if (!$emailQueue) {
+            return;
+        }
+
+        if (!in_array((string) $emailQueue->status, [
+            EmailQueueStatus::PENDING->value,
+            EmailQueueStatus::PROCESSING->value,
+        ], true)) {
+            return;
+        }
+
+        $currentAttempts = ((int) $emailQueue->attempts) + 1;
+
+        $emailQueue->update([
+            'status' => EmailQueueStatus::PROCESSING->value,
+            'attempts' => $currentAttempts,
+            'last_attempt_at' => now(),
         ]);
 
         try {
-            // Get assigned server
-            $server = $this->emailQueue->assignedServer;
-            
-            if (!$server || $server->status !== 'active') {
-                // Try to find alternative server
+            $emailQueue->refresh();
+            $emailQueue->loadMissing(['assignedServer.serverType', 'attachments']);
+
+            if (empty($emailQueue->to_email)) {
+                throw new \RuntimeException('Queue email is missing to_email.');
+            }
+
+            $server = $emailQueue->assignedServer;
+
+            if (!$server || $server->status !== EmailServerStatus::ACTIVE->value) {
                 $server = $this->findAlternativeServer();
-                
+
                 if (!$server) {
                     throw new \Exception('No active email server available');
                 }
-                
-                $this->emailQueue->update(['assigned_server_id' => $server->id]);
+
+                $emailQueue->update(['assigned_server_id' => $server->id]);
             }
 
-            // Create driver instance
             $driver = $driverFactory->driver($server);
 
-            // Prepare email data
+            $attachments = $emailQueue->attachments
+                ->map(fn ($attachment) => [
+                    'filename' => $attachment->filename,
+                    'file_path' => $attachment->file_path,
+                    'file_size' => $attachment->file_size,
+                    'mime_type' => $attachment->mime_type,
+                    'cid' => $attachment->cid,
+                    'is_inline' => (bool) $attachment->is_inline,
+                ])
+                ->values()
+                ->all();
+
             $emailData = [
                 'to' => [
-                    'email' => $this->emailQueue->to_email,
-                    'name' => $this->emailQueue->to_name
+                    'email' => $emailQueue->to_email,
+                    'name' => $emailQueue->to_name,
                 ],
-                'cc' => $this->emailQueue->cc,
-                'bcc' => $this->emailQueue->bcc,
-                'reply_to' => $this->emailQueue->reply_to,
-                'subject' => $this->emailQueue->subject,
-                'html' => $this->emailQueue->body_html,
-                'text' => $this->emailQueue->body_text,
-                'attachments' => $this->emailQueue->attachments,
+                'cc' => is_array($emailQueue->cc) ? $emailQueue->cc : [],
+                'bcc' => is_array($emailQueue->bcc) ? $emailQueue->bcc : [],
+                'reply_to' => $emailQueue->reply_to,
+                'subject' => $emailQueue->subject,
+                'html' => $emailQueue->body_html,
+                'text' => $emailQueue->body_text,
+                'attachments' => $attachments,
                 'metadata' => [
-                    'email_uid' => $this->emailQueue->email_uid,
-                    'client_id' => $this->emailQueue->client_id,
-                    'candidate_id' => $this->emailQueue->candidate_id,
-                    'order_id' => $this->emailQueue->order_id
-                ]
+                    'email_uid' => $emailQueue->email_uid,
+                    'client_id' => $emailQueue->client_id,
+                    'candidate_id' => $emailQueue->candidate_id,
+                    'order_id' => $emailQueue->order_id,
+                ],
             ];
 
-            // Send email
             $result = $driver->send($emailData);
+            $sentAt = now();
 
-            // Update queue status
-            $this->emailQueue->update([
-                'status' => 'sent',
-                'sent_at' => now(),
+            $emailQueue->update([
+                'status' => EmailQueueStatus::SENT->value,
+                'sent_at' => $sentAt,
                 'message_id' => $result['message_id'] ?? null,
-                'provider_response' => $result
+                'provider_response' => $result,
             ]);
 
-            // Create log entry
             EmailLog::create([
-                'email_queue_id' => $this->emailQueue->id,
-                'email_uid' => $this->emailQueue->email_uid,
-                'to_email' => $this->emailQueue->to_email,
-                'subject' => $this->emailQueue->subject,
+                'email_queue_id' => $emailQueue->id,
+                'email_uid' => $emailQueue->email_uid,
+                'to_email' => $emailQueue->to_email,
+                'subject' => $emailQueue->subject,
                 'server_id' => $server->id,
                 'message_id' => $result['message_id'] ?? null,
-                'status' => 'sent',
+                'status' => EmailQueueStatus::SENT->value,
                 'provider_response' => $result,
-                'sent_at' => now()
+                'sent_at' => $sentAt,
             ]);
 
-            // Update server stats
             $server->increment('success_count');
             $server->update(['last_used_at' => now()]);
 
+            $emailQueue->attachments()->delete();
+            $emailQueue->delete();
         } catch (\Exception $e) {
-            // Log failure
             Log::error('Email processing failed', [
-                'email_uid' => $this->emailQueue->email_uid,
-                'error' => $e->getMessage()
+                'email_queue_id' => $emailQueue->id,
+                'email_uid' => $emailQueue->email_uid,
+                'error' => $e->getMessage(),
             ]);
 
-            // Update queue with error
-            $this->emailQueue->update([
-                'status' => $this->attempts >= $this->tries ? 'failed' : 'pending',
-                'error_message' => $e->getMessage()
+            $maxAttempts = max(1, (int) $emailQueue->max_attempts);
+            $hasAttemptsLeft = $currentAttempts < $maxAttempts;
+
+            $emailQueue->update([
+                'status' => $hasAttemptsLeft
+                    ? EmailQueueStatus::PENDING->value
+                    : EmailQueueStatus::FAILED->value,
+                'error_message' => $e->getMessage(),
             ]);
 
-            // Create log entry
             EmailLog::create([
-                'email_queue_id' => $this->emailQueue->id,
-                'email_uid' => $this->emailQueue->email_uid,
-                'to_email' => $this->emailQueue->to_email,
-                'subject' => $this->emailQueue->subject,
-                'server_id' => $this->emailQueue->assigned_server_id,
-                'status' => 'failed',
-                'error_message' => $e->getMessage()
+                'email_queue_id' => $emailQueue->id,
+                'email_uid' => $emailQueue->email_uid,
+                'to_email' => $emailQueue->to_email,
+                'subject' => $emailQueue->subject,
+                'server_id' => $emailQueue->assigned_server_id,
+                'status' => EmailQueueStatus::FAILED->value,
+                'error_message' => $e->getMessage(),
             ]);
 
-            // Update server stats if server exists
-            if ($this->emailQueue->assignedServer) {
-                $this->emailQueue->assignedServer->increment('failure_count');
+            $emailQueue->loadMissing('assignedServer');
+            if ($emailQueue->assignedServer) {
+                $emailQueue->assignedServer->increment('failure_count');
             }
 
-            // Requeue if attempts left
-            if ($this->attempts < $this->tries) {
-                $this->release(60 * $this->attempts); // Exponential backoff
+            if ($hasAttemptsLeft) {
+                $this->release(60 * $currentAttempts);
             } else {
                 throw $e;
             }
@@ -145,17 +179,8 @@ class ProcessEmailJob implements ShouldQueue
      */
     protected function findAlternativeServer(): ?EmailServer
     {
-        $currentServer = $this->emailQueue->assignedServer;
-        
-        if (!$currentServer) {
-            return EmailServer::where('status', 'active')
-                ->orderBy('priority')
-                ->first();
-        }
-
-        return EmailServer::where('server_group', $currentServer->server_group)
-            ->where('status', 'active')
-            ->where('id', '!=', $currentServer->id)
+        return EmailServer::query()
+            ->where('status', EmailServerStatus::ACTIVE->value)
             ->orderBy('priority')
             ->first();
     }

@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailRoutingRule extends BaseModel
 {
     
     protected $table = "email_routing_rules";
+    protected $casts = [
+        self::IS_ACTIVE => 'boolean',
+        self::DAYS_OF_WEEK => 'array',
+    ];
     
     const RULE_NAME = "rule_name";
     const RULE_PRIORITY = "rule_priority";
@@ -53,4 +58,14 @@ class EmailRoutingRule extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(EmailServer::class, self::SERVER_ID);
+    }
+
+    public function failoverServer(): BelongsTo
+    {
+        return $this->belongsTo(EmailServer::class, self::FAILOVER_SERVER_ID);
+    }
 }

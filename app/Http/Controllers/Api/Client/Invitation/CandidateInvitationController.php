@@ -1,12 +1,22 @@
 <?php
 namespace App\Http\Controllers\Api\Client\Invitation;
 
+use App\Enums\CandidateInvitationStatus;
+use App\Enums\CandidateInvitationType;
 use App\Enums\CandidateStatus;
+use App\Enums\ConfigurationKey;
+use App\Enums\EmailPriority;
+use App\Enums\EmailQueueStatus;
+use App\Enums\EmailTemplateCode;
 use App\Http\Controllers\Api\Client\BaseController;
 use App\Http\Requests\Api\Client\Invitation\StoreCandidateInvitationRequest;
 use App\Services\CandidateInvitationsLogService;
 use App\Services\CandidateInvitationService;
 use App\Services\CandidateService;
+use App\Services\ClientService;
+use App\Services\ConfigurationService;
+use App\Services\EmailQueueService;
+use App\Services\EmailTemplateService;
 use App\Services\PackageService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -19,19 +29,31 @@ class CandidateInvitationController extends BaseController
     use ApiResponse;
     protected CandidateService $candidateService;
     protected PackageService $packageService;
+    protected ClientService $clientService;
+    protected EmailTemplateService $emailTemplateService;
+    protected EmailQueueService $emailQueueService;
     protected CandidateInvitationsLogService $candidateInvitationsLogService;
+    protected ConfigurationService $configurationService;
     protected CandidateInvitationService $service;
 
     public function __construct(
         CandidateInvitationService $service,
         CandidateService $candidateService,
         PackageService $packageService,
-        CandidateInvitationsLogService $candidateInvitationsLogService
+        ClientService $clientService,
+        EmailTemplateService $emailTemplateService,
+        EmailQueueService $emailQueueService,
+        CandidateInvitationsLogService $candidateInvitationsLogService,
+        ConfigurationService $configurationService
     ) {
         $this->service = $service;
         $this->candidateService = $candidateService;
         $this->packageService = $packageService;
+        $this->clientService = $clientService;
+        $this->emailTemplateService = $emailTemplateService;
+        $this->emailQueueService = $emailQueueService;
         $this->candidateInvitationsLogService = $candidateInvitationsLogService;
+        $this->configurationService = $configurationService;
     }
 
     public function index(Request $request)
@@ -44,8 +66,6 @@ class CandidateInvitationController extends BaseController
         }
 
         $invitationTable = $this->service->query()->getModel()->getTable();
-        $candidateTable = $this->candidateService->query()->getModel()->getTable();
-        $packageTable = $this->packageService->query()->getModel()->getTable();
 
         $invitationIdColumn = $this->service->id();
         $candidateIdColumn = $this->service->candidateId();
@@ -55,37 +75,13 @@ class CandidateInvitationController extends BaseController
         $formDataColumn = $this->service->formData();
 
         $query = $this->service->query()
-            ->where($invitationTable . '.' . $clientIdColumn, $clientId)
-            ->leftJoin(
-                $candidateTable,
-                $candidateTable . '.' . $this->candidateService->id(),
-                '=',
-                $invitationTable . '.' . $candidateIdColumn
-            )
-            ->leftJoin(
-                $packageTable,
-                $packageTable . '.' . $this->packageService->id(),
-                '=',
-                $invitationTable . '.' . $packageIdColumn
-            )
-            ->select($invitationTable . '.*')
-            ->addSelect($candidateTable . '.' . $this->candidateService->firstName() . ' as candidate_first_name')
-            ->addSelect($candidateTable . '.' . $this->candidateService->lastName() . ' as candidate_last_name')
-            ->addSelect($candidateTable . '.' . $this->candidateService->email() . ' as candidate_email')
-            ->addSelect($candidateTable . '.' . $this->candidateService->phone() . ' as candidate_phone')
-            ->addSelect($packageTable . '.' . $this->packageService->packageName() . ' as primary_package_name')
-            ->addSelect($packageTable . '.' . $this->packageService->packageCode() . ' as primary_package_code');
+            ->where($invitationTable . '.' . $clientIdColumn, $clientId);
 
         $result = $this->service->datatable(
             query: $query,
             params: $request->all(),
             config: [
                 'searchable' => [
-                    $candidateTable . '.' . $this->candidateService->firstName(),
-                    $candidateTable . '.' . $this->candidateService->lastName(),
-                    $candidateTable . '.' . $this->candidateService->email(),
-                    $packageTable . '.' . $this->packageService->packageName(),
-                    $packageTable . '.' . $this->packageService->packageCode(),
                     $invitationTable . '.' . $this->service->invitationToken(),
                     $invitationTable . '.' . $this->service->formLink(),
                     $invitationTable . '.' . $this->service->invitationType(),
@@ -104,10 +100,6 @@ class CandidateInvitationController extends BaseController
                     $invitationTable . '.' . $this->service->invitedAt(),
                     $invitationTable . '.' . $this->service->expiresAt(),
                     $invitationTable . '.' . $this->service->createdAt(),
-                    $candidateTable . '.' . $this->candidateService->firstName(),
-                    $candidateTable . '.' . $this->candidateService->lastName(),
-                    $candidateTable . '.' . $this->candidateService->email(),
-                    $packageTable . '.' . $this->packageService->packageName(),
                 ],
                 'default_sort_by' => $invitationTable . '.' . $this->service->createdAt(),
                 'default_sort_direction' => 'desc',
@@ -116,9 +108,26 @@ class CandidateInvitationController extends BaseController
             ]
         );
 
-        $normalized = collect($result['list'])
-            ->map(function ($item) use ($packageIdColumn, $formDataColumn) {
-                $invitation = is_array($item) ? $item : $item->toArray();
+        $list = collect($result['list'])
+            ->map(static fn($item) => is_array($item) ? $item : $item->toArray())
+            ->values();
+
+        $invitationIds = $list
+            ->pluck($invitationIdColumn)
+            ->map(static fn($id) => (int) $id)
+            ->filter(static fn($id) => $id > 0)
+            ->all();
+
+        $invitationsById = $this->service->query()
+            ->whereIn($invitationIdColumn, $invitationIds)
+            ->with(['candidate', 'package'])
+            ->get()
+            ->keyBy($invitationIdColumn);
+
+        $normalized = $list
+            ->map(function ($item) use ($packageIdColumn, $formDataColumn, $invitationsById, $invitationIdColumn) {
+                $invitation = $item;
+                $invitationModel = $invitationsById->get((int) ($invitation[$invitationIdColumn] ?? 0));
 
                 $formData = $invitation[$formDataColumn] ?? [];
                 if (is_string($formData)) {
@@ -141,15 +150,25 @@ class CandidateInvitationController extends BaseController
                     $packageIds = [(int) $invitation[$packageIdColumn]];
                 }
 
-                $candidateFirstName = trim((string) ($invitation['candidate_first_name'] ?? ''));
-                $candidateLastName = trim((string) ($invitation['candidate_last_name'] ?? ''));
+                $candidate = $invitationModel?->candidate;
+                $package = $invitationModel?->package;
+                $candidateFirstName = trim((string) ($candidate?->{$this->candidateService->firstName()} ?? ''));
+                $candidateLastName = trim((string) ($candidate?->{$this->candidateService->lastName()} ?? ''));
 
-                $invitation['candidate_name'] = trim($candidateFirstName . ' ' . $candidateLastName);
-                $invitation['package_ids'] = $packageIds;
-                $invitation['primary_package'] = [
-                    'id' => $invitation[$packageIdColumn] ?? null,
-                    'name' => $invitation['primary_package_name'] ?? null,
-                    'code' => $invitation['primary_package_code'] ?? null,
+                $invitation['candidate'] = [
+                    'id' => $candidate?->{$this->candidateService->id()} ?? ($invitation[$this->service->candidateId()] ?? null),
+                    'name' => trim($candidateFirstName . ' ' . $candidateLastName),
+                    'first_name' => $candidate?->{$this->candidateService->firstName()} ?? null,
+                    'last_name' => $candidate?->{$this->candidateService->lastName()} ?? null,
+                    'email' => $candidate?->{$this->candidateService->email()} ?? null,
+                    'phone' => $candidate?->{$this->candidateService->phone()} ?? null,
+                ];
+
+                $invitation['package'] = [
+                    'id' => $package?->{$this->packageService->id()} ?? ($invitation[$packageIdColumn] ?? null),
+                    'name' => $package?->{$this->packageService->packageName()} ?? null,
+                    'code' => $package?->{$this->packageService->packageCode()} ?? null,
+                    'package_ids' => $packageIds,
                 ];
 
                 return $invitation;
@@ -243,11 +262,26 @@ class CandidateInvitationController extends BaseController
         }
 
         $primaryPackageId = $packageIds[0] ?? null;
+        $defaultExpiryDays = max(1, $this->configurationService->getIntValue(ConfigurationKey::INVITATION_LINK_EXPIRY_DAYS, 7));
+        $clientAppUrl = $this->configurationService->getStringValue(
+            ConfigurationKey::CLIENT_APP_URL,
+            (string) config('app.client_url', env('CLIENT_URL', ''))
+        );
         $now = now();
-        $expiresAt = !empty($payload['expires_at']) ? $payload['expires_at'] : $now->copy()->addDays(7)->toDateTimeString();
-        $invitationType = (string) ($payload['invitation_type'] ?? 'email');
-        $status = (string) ($payload['status'] ?? 'pending');
+        $expiresAt = !empty($payload['expires_at'])
+            ? $payload['expires_at']
+            : $now->copy()->addDays($defaultExpiryDays)->toDateTimeString();
+        $invitationType = (string) ($payload['invitation_type'] ?? CandidateInvitationType::EMAIL->value);
+        $status = (string) ($payload['status'] ?? CandidateInvitationStatus::PENDING->value);
         $baseFormData = is_array($payload['form_data'] ?? null) ? $payload['form_data'] : [];
+
+        $client = $this->clientService->query()
+            ->where($this->clientService->id(), $clientId)
+            ->first();
+
+        $invitationTemplate = $this->emailTemplateService->findActiveByCode(
+            EmailTemplateCode::CANDIDATE_INVITATION_FORM->value
+        );
 
         $createdInvitations = DB::transaction(function () use ($candidates, $packageIds, $primaryPackageId, $baseFormData, $invitationType, $status, $expiresAt, $now, $user, $request, $clientId) {
             $invitations = [];
@@ -301,7 +335,80 @@ class CandidateInvitationController extends BaseController
             return $invitations;
         });
 
-        $responseInvitations = collect($createdInvitations)
+        if ($invitationTemplate) {
+            foreach ($createdInvitations as $invitation) {
+                $candidate = $candidates->firstWhere(
+                    $this->candidateService->id(),
+                    $invitation->{$this->service->candidateId()}
+                );
+
+                $candidateEmail = strtolower(trim((string) ($candidate?->{$this->candidateService->email()} ?? '')));
+                if ($candidateEmail === '') {
+                    continue;
+                }
+
+                $candidateFirstName = trim((string) ($candidate?->{$this->candidateService->firstName()} ?? ''));
+                $candidateLastName = trim((string) ($candidate?->{$this->candidateService->lastName()} ?? ''));
+                $candidateFullName = trim($candidateFirstName . ' ' . $candidateLastName) ?? $candidateEmail;
+
+                $relativeLink = (string) ($invitation->{$this->service->formLink()} ?? '');
+                $baseUrl = rtrim($clientAppUrl, '/');
+                $inviteLink = $baseUrl !== ''
+                    ? $baseUrl . '/' . ltrim($relativeLink, '/')
+                    : '/' . ltrim($relativeLink, '/');
+
+                $rendered = $this->emailTemplateService->renderTemplate($invitationTemplate, [
+                    'candidate_full_name' => $candidateFullName,
+                    'candidate_first_name' => $candidateFirstName,
+                    'candidate_last_name' => $candidateLastName,
+                    'candidate_email' => $candidateEmail,
+                    'candidate_invite_link' => $inviteLink,
+                    'company_name' => (string) ($client?->{$this->clientService->companyName()} ?? config('app.name')),
+                    'client_email' => (string) ($client?->{$this->clientService->email()} ?? ''),
+                    'invitation_token' => (string) ($invitation->{$this->service->invitationToken()} ?? ''),
+                    'invitation_expires_at' => (string) ($invitation->{$this->service->expiresAt()} ?? ''),
+                ]);
+
+                $this->emailQueueService->create([
+                    $this->emailQueueService->emailUid() => 'email_' . Str::uuid(),
+                    $this->emailQueueService->toEmail() => $candidateEmail,
+                    $this->emailQueueService->toName() => $candidateFullName !== '' ? $candidateFullName : null,
+                    $this->emailQueueService->subject() => (string) ($rendered['subject'] ?? ''),
+                    $this->emailQueueService->bodyHtml() => $rendered['body_html'] ?? null,
+                    $this->emailQueueService->bodyText() => $rendered['body_text'] ?? null,
+                    $this->emailQueueService->templateId() => $invitationTemplate->{$this->emailTemplateService->id()},
+                    $this->emailQueueService->emailType() => (string) ($invitationTemplate->{$this->emailTemplateService->emailType()} ?? 'candidate_invitation'),
+                    $this->emailQueueService->priority() => (string) ($invitationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
+                    $this->emailQueueService->clientId() => $clientId,
+                    $this->emailQueueService->candidateId() => $invitation->{$this->service->candidateId()},
+                    $this->emailQueueService->userId() => $user?->id,
+                    $this->emailQueueService->assignedServerId() => $invitationTemplate->{$this->emailTemplateService->serverId()},
+                    $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
+                    $this->emailQueueService->attempts() => 0,
+                    $this->emailQueueService->maxAttempts() => 3,
+                    $this->emailQueueService->scheduledAt() => now(),
+                    $this->emailQueueService->expiresAt() => $invitation->{$this->service->expiresAt()},
+                ]);
+            }
+        } else {
+            Log::warning('Candidate invitation template not found.', [
+                'template_code' => EmailTemplateCode::CANDIDATE_INVITATION_FORM->value,
+                'client_id' => $clientId,
+            ]);
+        }
+
+        $createdInvitationIds = collect($createdInvitations)
+            ->pluck($this->service->id())
+            ->map(static fn($id) => (int) $id)
+            ->values()
+            ->all();
+
+        $createdInvitationWithRelations = $this->service->query()
+            ->whereIn($this->service->id(), $createdInvitationIds)
+            ->with(['candidate', 'package'])
+            ->get();
+
+        $responseInvitations = $createdInvitationWithRelations
             ->map(function ($invitation) use ($packageIds) {
                 return [
                     'id' => $invitation->{$this->service->id()},
@@ -319,6 +426,36 @@ class CandidateInvitationController extends BaseController
             ->values()
             ->all();
 
+        $responseCandidates = $createdInvitationWithRelations
+            ->pluck('candidate')
+            ->filter()
+            ->unique($this->candidateService->id())
+            ->map(function ($candidate) {
+                return [
+                    'id' => $candidate->{$this->candidateService->id()},
+                    'first_name' => $candidate->{$this->candidateService->firstName()},
+                    'last_name' => $candidate->{$this->candidateService->lastName()},
+                    'email' => $candidate->{$this->candidateService->email()},
+                    'phone' => $candidate->{$this->candidateService->phone()},
+                    'status' => $candidate->{$this->candidateService->status()},
+                ];
+            })
+            ->values()
+            ->all();
+
+        $responsePackages = $packages
+            ->map(function ($package) {
+                return [
+                    'id' => $package->{$this->packageService->id()},
+                    'package_name' => $package->{$this->packageService->packageName()},
+                    'package_code' => $package->{$this->packageService->packageCode()},
+                    'type' => $package->{$this->packageService->type()},
+                    'status' => $package->{$this->packageService->status()},
+                ];
+            })
+            ->values()
+            ->all();
+
         return $this->success('Candidate invitations created successfully.', [
             'candidate_ids' => $candidateIds,
             'package_ids' => $packageIds,
@@ -326,16 +463,8 @@ class CandidateInvitationController extends BaseController
             'total_packages' => count($packageIds),
             'total_invitations' => count($responseInvitations),
             'invitations' => $responseInvitations,
+            'candidates' => $responseCandidates,
+            'packages' => $responsePackages,
         ], 201);
     }
-
-    // public function update(CandidateInvitationRequest $request, CandidateInvitationService $service)
-    // {
-
-    // }
-
-    // public function destroy(CandidateInvitationService $service)
-    // {
-
-    // }
 }

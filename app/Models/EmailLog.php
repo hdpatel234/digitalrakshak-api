@@ -8,6 +8,13 @@ class EmailLog extends BaseModel
 {
     
     protected $table = "email_logs";
+    protected $casts = [
+        self::PROVIDER_RESPONSE => 'array',
+        self::METADATA => 'array',
+        self::SENT_AT => 'datetime',
+        self::OPENED_AT => 'datetime',
+        self::CLICKED_AT => 'datetime',
+    ];
     
     const EMAIL_QUEUE_ID = "email_queue_id";
     const EMAIL_UID = "email_uid";

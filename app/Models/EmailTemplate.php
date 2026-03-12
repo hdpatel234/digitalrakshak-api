@@ -8,7 +8,13 @@ class EmailTemplate extends BaseModel
 {
     
     protected $table = "email_templates";
+    protected $casts = [
+        self::VARIABLES => 'array',
+        self::ALLOWED_ATTACHMENTS => 'array',
+        self::IS_ACTIVE => 'boolean',
+    ];
     
+    const SERVER_ID = "server_id";
     const TEMPLATE_NAME = "template_name";
     const TEMPLATE_CODE = "template_code";
     const EMAIL_TYPE = "email_type";
@@ -22,6 +28,7 @@ class EmailTemplate extends BaseModel
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [
+        self::SERVER_ID,
         self::TEMPLATE_NAME,
         self::TEMPLATE_CODE,
         self::EMAIL_TYPE,

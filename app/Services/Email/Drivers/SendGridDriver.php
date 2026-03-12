@@ -3,6 +3,8 @@
 namespace App\Services\Email\Drivers;
 
 use App\Models\EmailServer;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use SendGrid\Mail\Mail;
 use SendGrid;
 
@@ -14,7 +16,7 @@ class SendGridDriver
     public function __construct(EmailServer $server)
     {
         $this->server = $server;
-        $this->sendgrid = new SendGrid(decrypt($server->api_key));
+        $this->sendgrid = new SendGrid($this->resolveSecret($server->api_key));
     }
 
     public function send(array $data)
@@ -89,5 +91,19 @@ class SendGridDriver
             'provider' => 'sendgrid',
             'status_code' => $response->statusCode()
         ];
+    }
+
+    protected function resolveSecret(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            // Backward compatibility for existing plain-text values.
+            return $value;
+        }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Services\Email;
 
+use App\Enums\EmailPriority;
+use App\Enums\EmailQueueStatus;
+use App\Enums\EmailServerStatus;
 use App\Jobs\ProcessEmailJob;
 use App\Models\EmailServer;
 use App\Models\EmailRoutingRule;
@@ -9,6 +12,7 @@ use App\Models\EmailQueue;
 use App\Models\EmailTemplate;
 use App\Models\Client;
 use App\Models\EmailBounce;
+use App\Services\Email\TemplateVariableRenderer;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
@@ -73,14 +77,14 @@ class EmailManager
             'body_text' => $data['body_text'] ?? null,
             'template_id' => $data['template_id'] ?? null,
             'email_type' => $emailType,
-            'priority' => $data['priority'] ?? 'normal',
+            'priority' => $data['priority'] ?? EmailPriority::NORMAL->value,
             'client_id' => $data['client_id'] ?? null,
             'candidate_id' => $data['candidate_id'] ?? null,
             'order_id' => $data['order_id'] ?? null,
             'user_id' => $data['user_id'] ?? null,
             'assigned_server_id' => $server?->id,
             'routing_rule_id' => $routingRule?->id,
-            'status' => 'pending',
+            'status' => EmailQueueStatus::PENDING->value,
             'scheduled_at' => $data['scheduled_at'] ?? now(),
             'expires_at' => $data['expires_at'] ?? now()->addDays(7),
             'created_by' => $data['created_by'] ?? auth()->id()
@@ -93,9 +97,9 @@ class EmailManager
 
         // Dispatch to queue for processing
         if ($emailQueue->scheduled_at <= now()) {
-            dispatch(new ProcessEmailJob($emailQueue));
+            dispatch(new ProcessEmailJob((int) $emailQueue->id));
         } else {
-            dispatch(new ProcessEmailJob($emailQueue))->delay($emailQueue->scheduled_at);
+            dispatch(new ProcessEmailJob((int) $emailQueue->id))->delay($emailQueue->scheduled_at);
         }
 
         // Update rule usage stats
@@ -220,7 +224,7 @@ class EmailManager
     protected function getServerFromGroup(string $group, EmailRoutingRule $rule): ?EmailServer
     {
         $servers = EmailServer::where('server_group', $group)
-            ->where('status', 'active')
+            ->where('status', EmailServerStatus::ACTIVE->value)
             ->orderBy('priority')
             ->get();
 
@@ -249,12 +253,12 @@ class EmailManager
     protected function getFailoverServer(EmailRoutingRule $rule): ?EmailServer
     {
         // Try primary server first
-        if ($rule->server && $rule->server->status === 'active') {
+        if ($rule->server && $rule->server->status === EmailServerStatus::ACTIVE->value) {
             return $rule->server;
         }
 
         // Try failover
-        if ($rule->failoverServer && $rule->failoverServer->status === 'active') {
+        if ($rule->failoverServer && $rule->failoverServer->status === EmailServerStatus::ACTIVE->value) {
             return $rule->failoverServer;
         }
 
@@ -276,7 +280,7 @@ class EmailManager
         }
 
         $this->defaultServer = EmailServer::where('is_default', true)
-            ->where('status', 'active')
+            ->where('status', EmailServerStatus::ACTIVE->value)
             ->first();
 
         return $this->defaultServer;
@@ -350,11 +354,14 @@ class EmailManager
      */
     protected function replaceVariables(string $content, array $data): string
     {
-        foreach ($data as $key => $value) {
-            if (is_string($value) || is_numeric($value)) {
-                $content = str_replace('{{' . $key . '}}', $value, $content);
-            }
-        }
-        return $content;
+        /** @var TemplateVariableRenderer $renderer */
+        $renderer = app(TemplateVariableRenderer::class);
+
+        return (string) $renderer->render($content, $data, [
+            'app_name' => config('app.name'),
+            'app_url' => rtrim((string) config('app.url'), '/'),
+            'current_year' => now()->year,
+            'current_date' => now()->format('Y-m-d'),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -9,6 +10,15 @@ class EmailQueue extends BaseModel
 {
     
     protected $table = "email_queue";
+    protected $casts = [
+        self::CC => 'array',
+        self::BCC => 'array',
+        self::PROVIDER_RESPONSE => 'array',
+        self::SCHEDULED_AT => 'datetime',
+        self::EXPIRES_AT => 'datetime',
+        self::LAST_ATTEMPT_AT => 'datetime',
+        self::SENT_AT => 'datetime',
+    ];
     
     const EMAIL_UID = "email_uid";
     const TO_EMAIL = "to_email";
@@ -82,5 +92,15 @@ class EmailQueue extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, self::USER_ID);
+    }
+
+    public function assignedServer(): BelongsTo
+    {
+        return $this->belongsTo(EmailServer::class, self::ASSIGNED_SERVER_ID);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(EmailAttachment::class, EmailAttachment::EMAIL_QUEUE_ID);
     }
 }

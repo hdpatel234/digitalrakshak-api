@@ -12,6 +12,11 @@ class EmailTemplateRepository extends BaseRepository
     }
 
     // column constants
+    public function serverId()
+    {
+        return $this->model::SERVER_ID;
+    }
+    
     public function templateName()
     {
         return $this->model::TEMPLATE_NAME;

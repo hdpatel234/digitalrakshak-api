@@ -191,8 +191,8 @@ class CandidateService extends BaseService
 
             $candidate = $this->create([
                 $this->clientId() => $clientId,
-                $this->firstName() => trim((string) ($payload['firstName'] ?? '')),
-                $this->lastName() => trim((string) ($payload['lastName'] ?? '')),
+                $this->firstName() => trim((string) ($payload['first_name'] ?? '')),
+                $this->lastName() => trim((string) ($payload['last_name'] ?? '')),
                 $this->email() => strtolower(trim((string) ($payload['email'] ?? ''))),
                 $this->phone() => $this->buildPhone(
                     (string) ($payload['dialCode'] ?? ''),

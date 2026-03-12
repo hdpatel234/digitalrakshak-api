@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailServer extends BaseModel
 {
     
     protected $table = "email_servers";
+    protected $casts = [
+        self::IS_DEFAULT => 'boolean',
+        self::VERIFY_SSL => 'boolean',
+    ];
     
     const SERVER_NAME = "server_name";
     const SERVER_TYPE_ID = "server_type_id";
@@ -77,4 +82,9 @@ class EmailServer extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function serverType(): BelongsTo
+    {
+        return $this->belongsTo(EmailServerType::class, self::SERVER_TYPE_ID);
+    }
 }
