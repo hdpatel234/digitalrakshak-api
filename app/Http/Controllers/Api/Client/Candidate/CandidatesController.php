@@ -7,6 +7,9 @@ use App\Http\Requests\Api\Client\Candidate\StoreCandidateImportRequest;
 use App\Http\Requests\Api\Client\Candidate\StoreCandidateRequest;
 use App\Models\CandidateImportHistory;
 use App\Services\CandidateService;
+use App\Services\CityService;
+use App\Services\CountryService;
+use App\Services\StateService;
 use App\Services\Webhook\ClientWebhookDispatcher;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -22,11 +25,23 @@ class CandidatesController extends BaseController
 {
     use ApiResponse;
     protected CandidateService $candidateService;
+    protected CountryService $countryService;
+    protected StateService $stateService;
+    protected CityService $cityService;
     protected ClientWebhookDispatcher $clientWebhookDispatcher;
 
-    public function __construct(CandidateService $candidateService, ClientWebhookDispatcher $clientWebhookDispatcher)
+    public function __construct(
+        CandidateService $candidateService,
+        CountryService $countryService,
+        StateService $stateService,
+        CityService $cityService,
+        ClientWebhookDispatcher $clientWebhookDispatcher
+    )
     {
         $this->candidateService = $candidateService;
+        $this->countryService = $countryService;
+        $this->stateService = $stateService;
+        $this->cityService = $cityService;
         $this->clientWebhookDispatcher = $clientWebhookDispatcher;
     }
 
@@ -80,6 +95,88 @@ class CandidatesController extends BaseController
                 'max_per_page' => 100,
             ]
         );
+
+        if (is_array($result) && isset($result['list']) && is_array($result['list'])) {
+            $list = collect($result['list'])
+                ->map(static fn($item) => is_array($item) ? $item : $item->toArray())
+                ->values();
+
+            $missingCountryIds = $list
+                ->filter(fn($row) => empty($row[$this->candidateService->country()] ?? null) && !empty($row[$this->candidateService->countryId()] ?? null))
+                ->pluck($this->candidateService->countryId())
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $missingStateIds = $list
+                ->filter(fn($row) => empty($row[$this->candidateService->state()] ?? null) && !empty($row[$this->candidateService->stateId()] ?? null))
+                ->pluck($this->candidateService->stateId())
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $missingCityIds = $list
+                ->filter(fn($row) => empty($row[$this->candidateService->city()] ?? null) && !empty($row[$this->candidateService->cityId()] ?? null))
+                ->pluck($this->candidateService->cityId())
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $countryNamesById = $missingCountryIds === []
+                ? collect()
+                : $this->countryService->query()
+                    ->whereIn($this->countryService->id(), $missingCountryIds)
+                    ->get()
+                    ->pluck($this->countryService->name(), $this->countryService->id());
+
+            $stateNamesById = $missingStateIds === []
+                ? collect()
+                : $this->stateService->query()
+                    ->whereIn($this->stateService->id(), $missingStateIds)
+                    ->get()
+                    ->pluck($this->stateService->name(), $this->stateService->id());
+
+            $cityNamesById = $missingCityIds === []
+                ? collect()
+                : $this->cityService->query()
+                    ->whereIn($this->cityService->id(), $missingCityIds)
+                    ->get()
+                    ->pluck($this->cityService->name(), $this->cityService->id());
+
+            $result['list'] = $list
+                ->map(function (array $row) use ($countryNamesById, $stateNamesById, $cityNamesById) {
+                    if (empty($row[$this->candidateService->country()] ?? null)) {
+                        $countryId = (int) ($row[$this->candidateService->countryId()] ?? 0);
+                        if ($countryId > 0) {
+                            $row[$this->candidateService->country()] = $countryNamesById->get($countryId);
+                        }
+                    }
+
+                    if (empty($row[$this->candidateService->state()] ?? null)) {
+                        $stateId = (int) ($row[$this->candidateService->stateId()] ?? 0);
+                        if ($stateId > 0) {
+                            $row[$this->candidateService->state()] = $stateNamesById->get($stateId);
+                        }
+                    }
+
+                    if (empty($row[$this->candidateService->city()] ?? null)) {
+                        $cityId = (int) ($row[$this->candidateService->cityId()] ?? 0);
+                        if ($cityId > 0) {
+                            $row[$this->candidateService->city()] = $cityNamesById->get($cityId);
+                        }
+                    }
+
+                    return $row;
+                })
+                ->values()
+                ->all();
+        }
 
         $statusList = array_map(
             static fn (CandidateStatus $status): array => [

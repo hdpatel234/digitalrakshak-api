@@ -22,6 +22,12 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']); // Pending
     Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']); // Pending
 
+    Route::prefix('public')->group(function () {
+        Route::get('countries', [CountryController::class, 'index']);
+        Route::get('states', [StateController::class, 'index']);
+        Route::get('cities', [CityController::class, 'index']);
+    });
+
     Route::middleware(['auth:api'])->group(function () {
         Route::post('refresh-token', [RefreshTokenController::class, 'refreshToken']);
         Route::post('logout', [LogoutController::class, 'logout']);
@@ -37,8 +43,8 @@ Route::prefix('v1/auth')->group(function () {
         Route::post('notifications/{id}/read', [LoginController::class, 'markAsRead']); // Pending
         Route::post('notifications/read-all', [LoginController::class, 'markAllAsRead']); // Pending
 
-        Route::get('config', [UserConfigController::class,'index']);
-        Route::post('config' , [UserConfigController::class,'store']);
+        Route::get('config', [UserConfigController::class, 'index']);
+        Route::post('config', [UserConfigController::class, 'store']);
 
         Route::get('countries', [CountryController::class, 'index']);
         Route::get('states', [StateController::class, 'index']);

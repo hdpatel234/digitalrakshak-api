@@ -6,6 +6,7 @@ enum CandidateStatus: string
 {
     case CREATED = 'created';
     case INVITED = 'invited';
+    case SENT = 'sent';
     case ACTIVE = 'active';
 
     /**
@@ -16,4 +17,3 @@ enum CandidateStatus: string
         return array_map(static fn (self $status): string => $status->value, self::cases());
     }
 }
-

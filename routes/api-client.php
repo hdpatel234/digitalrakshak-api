@@ -22,26 +22,27 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::post('candidates/import', [CandidatesController::class, 'import']);
     Route::get('candidates/imports', [CandidatesController::class, 'imports']);
     Route::apiResource('candidates', CandidatesController::class);
-    Route::post('candidates/bulk-delete', [Controller::class, 'bulkDelete']); // Pending
-    Route::get('candidates/export', [Controller::class, 'export']); // Pending
+    Route::post('candidates/bulk-delete', [CandidatesController::class, 'bulkDelete']); // Pending
+    Route::get('candidates/export', [CandidatesController::class, 'export']); // Pending
 
     // Candidate Invitations
     Route::post('candidates/{candidate}/invite', [CandidateInvitationController::class, 'invite']);
     Route::post('candidates/bulk-invite', [CandidateInvitationController::class, 'store']);
     Route::get('invitations', [CandidateInvitationController::class, 'index']);
-    Route::get('invitations/{invitation}', [Controller::class, 'show']); // Pending
-    Route::post('invitations/{invitation}/resend', [Controller::class, 'resend']); // Pending
-    Route::delete('invitations/{invitation}', [Controller::class, 'destroy']); // Pending
-    Route::get('invitations/{invitation}/logs', [Controller::class, 'logs']); // Pending
-    Route::get('invitations/stats', [Controller::class, 'stats']); // Pending
+    Route::get('invitations/{invitation_token}', [CandidateInvitationController::class, 'showByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
+    Route::post('invitations/{invitation_token}', [CandidateInvitationController::class, 'updateByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
+    Route::post('invitations/{invitation}/resend', [CandidateInvitationController::class, 'resend']); // Pending
+    Route::delete('invitations/{invitation}', [CandidateInvitationController::class, 'destroy']); // Pending
+    Route::get('invitations/{invitation}/logs', [CandidateInvitationController::class, 'logs']); // Pending
+    Route::get('invitations/stats', [CandidateInvitationController::class, 'stats']); // Pending
 
     // Package Management (Client Packages)
     Route::get('packages', [PackageController::class, 'index']);
-    Route::apiResource('packages', Controller::class)->except(['index', 'show']); // Pending
-    Route::get('packages/available', [Controller::class, 'available']); // Pending
-    Route::get('packages/{package}', [Controller::class, 'show']); // Pending
-    Route::get('packages/{package}/services', [Controller::class, 'services']); // Pending
-    Route::post('packages/{package}/duplicate', [Controller::class, 'duplicate']); // Pending
+    Route::apiResource('packages', PackageController::class)->except(['index', 'show']); // Pending
+    Route::get('packages/available', [PackageController::class, 'available']); // Pending
+    Route::get('packages/{package}', [PackageController::class, 'show']); // Pending
+    Route::get('packages/{package}/services', [PackageController::class, 'services']); // Pending
+    Route::post('packages/{package}/duplicate', [PackageController::class, 'duplicate']); // Pending
 
     // Service Management (for client reference)
     Route::get('services', [ServicesController::class, 'index']);
