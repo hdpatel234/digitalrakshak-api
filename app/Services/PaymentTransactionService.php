@@ -6,6 +6,7 @@ use App\Repositories\PaymentTransactionRepository;
 
 class PaymentTransactionService extends BaseService
 {
+    protected $repository;
     
     public function __construct(PaymentTransactionRepository $repository)
     {
@@ -13,14 +14,14 @@ class PaymentTransactionService extends BaseService
     }
 
     // column constants
+    public function transactionUuid()
+    {
+        return $this->repository->transactionUuid();
+    }
+
     public function clientId()
     {
         return $this->repository->clientId();
-    }
-
-    public function invoiceId()
-    {
-        return $this->repository->invoiceId();
     }
 
     public function orderId()
@@ -28,24 +29,24 @@ class PaymentTransactionService extends BaseService
         return $this->repository->orderId();
     }
 
-    public function billingConfigId()
+    public function invoiceId()
     {
-        return $this->repository->billingConfigId();
+        return $this->repository->invoiceId();
     }
 
-    public function externalTransactionId()
+    public function gatewayConfigId()
     {
-        return $this->repository->externalTransactionId();
+        return $this->repository->gatewayConfigId();
     }
 
-    public function transactionReference()
+    public function clientGatewayId()
     {
-        return $this->repository->transactionReference();
+        return $this->repository->clientGatewayId();
     }
 
-    public function paymentMethod()
+    public function methodTypeId()
     {
-        return $this->repository->paymentMethod();
+        return $this->repository->methodTypeId();
     }
 
     public function amount()
@@ -58,19 +59,114 @@ class PaymentTransactionService extends BaseService
         return $this->repository->currency();
     }
 
+    public function taxAmount()
+    {
+        return $this->repository->taxAmount();
+    }
+
+    public function feeAmount()
+    {
+        return $this->repository->feeAmount();
+    }
+
+    public function netAmount()
+    {
+        return $this->repository->netAmount();
+    }
+
+    public function gatewayTransactionId()
+    {
+        return $this->repository->gatewayTransactionId();
+    }
+
+    public function gatewayOrderId()
+    {
+        return $this->repository->gatewayOrderId();
+    }
+
+    public function gatewayPaymentId()
+    {
+        return $this->repository->gatewayPaymentId();
+    }
+
+    public function bankReference()
+    {
+        return $this->repository->bankReference();
+    }
+
+    public function paymentMethod()
+    {
+        return $this->repository->paymentMethod();
+    }
+
+    public function paymentDetails()
+    {
+        return $this->repository->paymentDetails();
+    }
+
     public function status()
     {
         return $this->repository->status();
     }
 
-    public function transactionDate()
+    public function paymentStatus()
     {
-        return $this->repository->transactionDate();
+        return $this->repository->paymentStatus();
+    }
+
+    public function initiatedAt()
+    {
+        return $this->repository->initiatedAt();
+    }
+
+    public function authorizedAt()
+    {
+        return $this->repository->authorizedAt();
+    }
+
+    public function capturedAt()
+    {
+        return $this->repository->capturedAt();
+    }
+
+    public function successAt()
+    {
+        return $this->repository->successAt();
+    }
+
+    public function failedAt()
+    {
+        return $this->repository->failedAt();
+    }
+
+    public function refundedAt()
+    {
+        return $this->repository->refundedAt();
+    }
+
+    public function gatewayRequest()
+    {
+        return $this->repository->gatewayRequest();
     }
 
     public function gatewayResponse()
     {
         return $this->repository->gatewayResponse();
+    }
+
+    public function gatewayWebhook()
+    {
+        return $this->repository->gatewayWebhook();
+    }
+
+    public function errorCode()
+    {
+        return $this->repository->errorCode();
+    }
+
+    public function errorMessage()
+    {
+        return $this->repository->errorMessage();
     }
 
     public function refundAmount()
@@ -83,19 +179,34 @@ class PaymentTransactionService extends BaseService
         return $this->repository->refundReason();
     }
 
-    public function refundDate()
+    public function refundTransactionId()
     {
-        return $this->repository->refundDate();
+        return $this->repository->refundTransactionId();
     }
 
-    public function syncStatus()
+    public function ipAddress()
     {
-        return $this->repository->syncStatus();
+        return $this->repository->ipAddress();
     }
 
-    public function syncMessage()
+    public function userAgent()
     {
-        return $this->repository->syncMessage();
+        return $this->repository->userAgent();
+    }
+
+    public function customerName()
+    {
+        return $this->repository->customerName();
+    }
+
+    public function customerEmail()
+    {
+        return $this->repository->customerEmail();
+    }
+
+    public function customerPhone()
+    {
+        return $this->repository->customerPhone();
     }
 
     public function createdBy()

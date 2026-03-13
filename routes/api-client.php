@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
 use App\Http\Controllers\Api\Client\Invitation\CandidateInvitationController;
+use App\Http\Controllers\Api\Client\Order\OrderController;
 use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
 use Illuminate\Support\Facades\Route;
@@ -11,56 +12,69 @@ use App\Http\Controllers\Controller;
 Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
-    Route::get('/dashboard/recent-orders', [Controller::class, 'recentOrders']); // Pending
-    Route::get('/dashboard/recent-candidates', [Controller::class, 'recentCandidates']); // Pending
-    Route::get('/dashboard/credit-balance', [Controller::class, 'creditBalance']); // Pending
-    Route::get('/dashboard/processing-summary', [Controller::class, 'processingSummary']); // Pending
+    Route::prefix('dashboard')->group(function () {
+        Route::get('stats', [Controller::class, 'stats']); // Pending
+        Route::get('recent-orders', [Controller::class, 'recentOrders']); // Pending
+        Route::get('recent-candidates', [Controller::class, 'recentCandidates']); // Pending
+        Route::get('credit-balance', [Controller::class, 'creditBalance']); // Pending
+        Route::get('processing-summary', [Controller::class, 'processingSummary']); // Pending
+    });
 
     // Candidate Management
-    Route::get('candidates/import/sample', [CandidatesController::class, 'importSample']);
-    Route::post('candidates/import', [CandidatesController::class, 'import']);
-    Route::get('candidates/imports', [CandidatesController::class, 'imports']);
-    Route::apiResource('candidates', CandidatesController::class);
-    Route::post('candidates/bulk-delete', [CandidatesController::class, 'bulkDelete']); // Pending
-    Route::get('candidates/export', [CandidatesController::class, 'export']); // Pending
+    Route::prefix('candidates')->group(function () {
+        Route::apiResource('', CandidatesController::class);
+        Route::get('import/sample', [CandidatesController::class, 'importSample']);
+        Route::post('import', [CandidatesController::class, 'import']);
+        Route::get('imports', [CandidatesController::class, 'imports']);
+        Route::post('bulk-delete', [CandidatesController::class, 'bulkDelete']); // Pending
+        Route::get('export', [CandidatesController::class, 'export']); // Pending
+        Route::post('{candidate}/invite', [CandidateInvitationController::class, 'invite']);
+        Route::post('bulk-invite', [CandidateInvitationController::class, 'store']);
+    });
 
     // Candidate Invitations
-    Route::post('candidates/{candidate}/invite', [CandidateInvitationController::class, 'invite']);
-    Route::post('candidates/bulk-invite', [CandidateInvitationController::class, 'store']);
-    Route::get('invitations', [CandidateInvitationController::class, 'index']);
-    Route::get('invitations/{invitation_token}', [CandidateInvitationController::class, 'showByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
-    Route::post('invitations/{invitation_token}', [CandidateInvitationController::class, 'updateByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
-    Route::post('invitations/{invitation}/resend', [CandidateInvitationController::class, 'resend']); // Pending
-    Route::delete('invitations/{invitation}', [CandidateInvitationController::class, 'destroy']); // Pending
-    Route::get('invitations/{invitation}/logs', [CandidateInvitationController::class, 'logs']); // Pending
-    Route::get('invitations/stats', [CandidateInvitationController::class, 'stats']); // Pending
+    Route::prefix('invitations')->group(function () {
+        Route::get('', [CandidateInvitationController::class, 'index']);
+        Route::get('{invitation_token}', [CandidateInvitationController::class, 'showByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
+        Route::post('{invitation_token}', [CandidateInvitationController::class, 'updateByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
+        Route::post('{invitation}/resend', [CandidateInvitationController::class, 'resend']); // Pending
+        Route::delete('{invitation}', [CandidateInvitationController::class, 'destroy']); // Pending
+        Route::get('{invitation}/logs', [CandidateInvitationController::class, 'logs']); // Pending
+        Route::get('stats', [CandidateInvitationController::class, 'stats']); // Pending
+    });
 
     // Package Management (Client Packages)
-    Route::get('packages', [PackageController::class, 'index']);
-    Route::apiResource('packages', PackageController::class)->except(['index', 'show']); // Pending
-    Route::get('packages/available', [PackageController::class, 'available']); // Pending
-    Route::get('packages/{package}', [PackageController::class, 'show']); // Pending
-    Route::get('packages/{package}/services', [PackageController::class, 'services']); // Pending
-    Route::post('packages/{package}/duplicate', [PackageController::class, 'duplicate']); // Pending
+    Route::prefix('packages')->group(function () {
+        Route::get('', [PackageController::class, 'index']);
+        Route::apiResource('', PackageController::class)->except(['index', 'show']); // Pending
+        Route::get('available', [PackageController::class, 'available']); // Pending
+        Route::get('{package}', [PackageController::class, 'show']);
+        Route::get('{package}/services', [PackageController::class, 'services']);
+        Route::get('{package}/candidates', [PackageController::class, 'candidates']);
+        Route::post('{package}/duplicate', [PackageController::class, 'duplicate']); // Pending
+    });
 
     // Service Management (for client reference)
-    Route::get('services', [ServicesController::class, 'index']);
-    Route::get('services/{service}', [ServicesController::class, 'show']); // Pending
-    Route::get('services/{service}/fields', [ServicesController::class, 'fields']); // Pending
-    Route::get('services/{service}/price', [ServicesController::class, 'getPrice']); // Pending
+    Route::prefix('services')->group(function () {
+        Route::get('', [ServicesController::class, 'index']);
+        Route::get('{service}', [ServicesController::class, 'show']); // Pending
+        Route::get('{service}/fields', [ServicesController::class, 'fields']); // Pending
+        Route::get('{service}/price', [ServicesController::class, 'getPrice']); // Pending
+    });
 
     // Order Management
-    Route::apiResource('orders', Controller::class);
-    Route::post('orders/preview', [Controller::class, 'preview']); // Pending
-    Route::post('orders/{order}/confirm', [Controller::class, 'confirm']); // Pending
-    Route::post('orders/{order}/cancel', [Controller::class, 'cancel']); // Pending
-    Route::get('orders/{order}/summary', [Controller::class, 'summary']); // Pending
-    Route::get('orders/{order}/timeline', [Controller::class, 'timeline']); // Pending
-    Route::get('orders/{order}/candidates', [Controller::class, 'candidates']); // Pending
-    Route::get('orders/{order}/invoice', [Controller::class, 'invoice']); // Pending
-    Route::get('orders/{order}/track', [Controller::class, 'track']); // Pending
-    Route::post('orders/{order}/payment', [Controller::class, 'initiatePayment']); // Pending
+    Route::prefix('orders')->group(function () {
+        Route::apiResource('', OrderController::class);
+        Route::post('preview', [OrderController::class, 'preview']); // Pending
+        Route::post('{order}/confirm', [OrderController::class, 'confirm']); // Pending
+        Route::post('{order}/cancel', [OrderController::class, 'cancel']); // Pending
+        Route::get('{order}/summary', [OrderController::class, 'summary']); // Pending
+        Route::get('{order}/timeline', [OrderController::class, 'timeline']); // Pending
+        Route::get('{order}/candidates', [OrderController::class, 'candidates']); // Pending
+        Route::get('{order}/invoice', [OrderController::class, 'invoice']); // Pending
+        Route::get('{order}/track', [OrderController::class, 'track']); // Pending
+        Route::post('{order}/payment', [OrderController::class, 'initiatePayment']); // Pending
+    });
 
     // Candidate Services (Verification Status)
     Route::get('candidates/{candidate}/services', [Controller::class, 'candidateServices']); // Pending
@@ -77,6 +91,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('billing/transactions', [Controller::class, 'transactions']); // Pending
     Route::get('billing/credit-history', [Controller::class, 'creditHistory']); // Pending
     Route::post('billing/add-credit', [Controller::class, 'addCredit']); // Pending
+    Route::get('billing/payment-methods', [Controller::class, 'paymentMethods']); // Pending
 
     // Support Tickets (via UVdesk or other)
     Route::apiResource('tickets', Controller::class);

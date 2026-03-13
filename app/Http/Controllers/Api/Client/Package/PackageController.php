@@ -246,4 +246,200 @@ class PackageController extends BaseController
 
         return $code;
     }
+
+    public function show(Request $request, int $package): JsonResponse
+    {
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $packageModel = $this->service->query()
+            ->where($this->service->id(), $package)
+            ->where(function ($builder) {
+                $builder->where($this->service->status(), 'active')
+                    ->orWhere($this->service->status(), 1);
+            })
+            ->where(function ($builder) {
+                $builder->where($this->service->isActive(), 'active')
+                    ->orWhere($this->service->isActive(), 1);
+            })
+            ->where(function ($builder) use ($clientId) {
+                $builder->where($this->service->clientId(), $clientId)
+                    ->orWhere($this->service->clientId(), 0);
+            })
+            ->first();
+
+        if (!$packageModel) {
+            return $this->error('Package not found.', 404);
+        }
+
+        $packageData = $packageModel->toArray();
+        $totalPrice = $packageData[$this->service->totalPrice()] ?? null;
+        $finalPrice = $packageData[$this->service->finalPrice()] ?? null;
+
+        $availableCandidates = (int) $this->candidateInvitationService->query()
+            ->where($this->candidateInvitationService->packageId(), (int) ($packageData[$this->service->id()] ?? 0))
+            ->where($this->candidateInvitationService->status(), CandidateInvitationStatus::COMPLETED->value)
+            ->distinct($this->candidateInvitationService->candidateId())
+            ->count($this->candidateInvitationService->candidateId());
+
+        $packageData['price'] = $finalPrice ?? $totalPrice;
+        $packageData['is_discounted'] = $finalPrice !== null && $totalPrice !== null && (float) $finalPrice < (float) $totalPrice;
+        $packageData['available_candidates'] = $availableCandidates;
+
+        return $this->success('Package fetched successfully.', $packageData);
+    }
+
+    public function services(Request $request, int $package): JsonResponse
+    {
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $packageModel = $this->service->query()
+            ->where($this->service->id(), $package)
+            ->where(function ($builder) {
+                $builder->where($this->service->status(), 'active')
+                    ->orWhere($this->service->status(), 1);
+            })
+            ->where(function ($builder) {
+                $builder->where($this->service->isActive(), 'active')
+                    ->orWhere($this->service->isActive(), 1);
+            })
+            ->where(function ($builder) use ($clientId) {
+                $builder->where($this->service->clientId(), $clientId)
+                    ->orWhere($this->service->clientId(), 0);
+            })
+            ->first();
+
+        if (!$packageModel) {
+            return $this->error('Package not found.', 404);
+        }
+
+        $packageServiceRows = $this->packageServiceService->query()
+            ->where($this->packageServiceService->packageId(), $package)
+            ->where(function ($builder) {
+                $builder->where($this->packageServiceService->status(), 'active')
+                    ->orWhere($this->packageServiceService->status(), 1);
+            })
+            ->orderBy($this->packageServiceService->displayOrder(), 'asc')
+            ->get();
+
+        $serviceIds = $packageServiceRows
+            ->pluck($this->packageServiceService->serviceId())
+            ->map(static fn($id) => (int) $id)
+            ->filter(static fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $servicesById = $serviceIds === []
+            ? collect()
+            : $this->serviceService->query()
+                ->whereIn($this->serviceService->id(), $serviceIds)
+                ->get()
+                ->keyBy($this->serviceService->id());
+
+        $services = $packageServiceRows
+            ->map(function ($row) use ($servicesById) {
+                $serviceId = (int) ($row->{$this->packageServiceService->serviceId()} ?? 0);
+                $service = $servicesById->get($serviceId);
+                $basePrice = $service?->{$this->serviceService->basePrice()};
+                $priceOverride = $row->{$this->packageServiceService->priceOverride()};
+
+                return [
+                    'package_service_id' => $row->{$this->packageServiceService->id()},
+                    'package_id' => $row->{$this->packageServiceService->packageId()},
+                    'service_id' => $serviceId,
+                    'service_name' => $service?->{$this->serviceService->serviceName()},
+                    'service_code' => $service?->{$this->serviceService->serviceCode()},
+                    'service_category' => $service?->{$this->serviceService->serviceCategory()},
+                    'description' => $service?->{$this->serviceService->description()},
+                    'base_price' => $basePrice,
+                    'price_override' => $priceOverride,
+                    'effective_price' => $priceOverride ?? $basePrice,
+                    'is_mandatory' => $row->{$this->packageServiceService->isMandatory()},
+                    'display_order' => $row->{$this->packageServiceService->displayOrder()},
+                    'status' => $row->{$this->packageServiceService->status()},
+                    'service_status' => $service?->{$this->serviceService->status()},
+                ];
+            })
+            ->values()
+            ->all();
+
+        return $this->success('Package services fetched successfully.', [
+            'package_id' => $packageModel->{$this->service->id()},
+            'package_name' => $packageModel->{$this->service->packageName()},
+            'package_code' => $packageModel->{$this->service->packageCode()},
+            'services' => $services,
+        ]);
+    }
+    public function candidates(Request $request, int $package): JsonResponse
+    {
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $packageModel = $this->service->query()
+            ->where($this->service->id(), $package)
+            ->where(function ($builder) {
+                $builder->where($this->service->status(), 'active')
+                    ->orWhere($this->service->status(), 1);
+            })
+            ->where(function ($builder) {
+                $builder->where($this->service->isActive(), 'active')
+                    ->orWhere($this->service->isActive(), 1);
+            })
+            ->where(function ($builder) use ($clientId) {
+                $builder->where($this->service->clientId(), $clientId)
+                    ->orWhere($this->service->clientId(), 0);
+            })
+            ->first();
+
+        if (!$packageModel) {
+            return $this->error('Package not found.', 404);
+        }
+
+        $completedInvitations = $this->candidateInvitationService->query()
+            ->where($this->candidateInvitationService->packageId(), $package)
+            ->where($this->candidateInvitationService->clientId(), $clientId)
+            ->where($this->candidateInvitationService->status(), CandidateInvitationStatus::COMPLETED->value)
+            ->with('candidate')
+            ->orderByDesc($this->candidateInvitationService->completedAt())
+            ->orderByDesc($this->candidateInvitationService->id())
+            ->get();
+
+        $candidates = $completedInvitations
+            ->unique($this->candidateInvitationService->candidateId())
+            ->map(function ($invitation) {
+                $candidate = $invitation->candidate;
+                $candidateData = $candidate ? $candidate->toArray() : [];
+
+                return [
+                    'candidate_id' => (int) ($invitation->{$this->candidateInvitationService->candidateId()} ?? 0),
+                    'invitation_id' => (int) ($invitation->{$this->candidateInvitationService->id()} ?? 0),
+                    'completed_at' => $invitation->{$this->candidateInvitationService->completedAt()},
+                    'candidate' => $candidateData,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return $this->success('Package candidates fetched successfully.', [
+            'package_id' => (int) $packageModel->{$this->service->id()},
+            'package_name' => $packageModel->{$this->service->packageName()},
+            'package_code' => $packageModel->{$this->service->packageCode()},
+            'total_candidates' => count($candidates),
+            'candidates' => $candidates,
+        ]);
+    }
 }
