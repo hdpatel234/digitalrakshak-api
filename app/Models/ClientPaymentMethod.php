@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientPaymentMethod extends BaseModel
@@ -35,4 +36,14 @@ class ClientPaymentMethod extends BaseModel
         self::MAX_AMOUNT,
         self::INSTRUCTIONS,
     ];
+
+    public function methodType(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethodType::class, self::METHOD_TYPE_ID);
+    }
+
+    public function gatewayConfig(): BelongsTo
+    {
+        return $this->belongsTo(PaymentGatewayConfig::class, self::GATEWAY_CONFIG_ID);
+    }
 }

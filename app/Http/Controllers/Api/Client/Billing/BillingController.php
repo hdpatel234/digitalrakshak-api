@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api\Client\Billing;
 
 use App\Http\Controllers\Api\Client\BaseController;
-use App\Services\ClientPaymentGatewayService;
-use App\Services\ClientPaymentMethodService;
 use App\Services\PaymentGatewayConfigService;
 use App\Services\PaymentGatewayService;
 use App\Services\PaymentMethodTypeService;
@@ -14,23 +12,15 @@ use Illuminate\Http\Request;
 class BillingController extends BaseController
 {
     use ApiResponse;
-
-    protected ClientPaymentMethodService $service;
-    protected ClientPaymentGatewayService $clientPaymentGatewayService;
     protected PaymentGatewayConfigService $paymentGatewayConfigService;
     protected PaymentGatewayService $paymentGatewayService;
     protected PaymentMethodTypeService $paymentMethodTypeService;
 
     public function __construct(
-        ClientPaymentMethodService $service,
-        ClientPaymentGatewayService $clientPaymentGatewayService,
         PaymentGatewayConfigService $paymentGatewayConfigService,
         PaymentGatewayService $paymentGatewayService,
         PaymentMethodTypeService $paymentMethodTypeService
-    )
-    {
-        $this->service = $service;
-        $this->clientPaymentGatewayService = $clientPaymentGatewayService;
+    ) {
         $this->paymentGatewayConfigService = $paymentGatewayConfigService;
         $this->paymentGatewayService = $paymentGatewayService;
         $this->paymentMethodTypeService = $paymentMethodTypeService;
@@ -38,73 +28,54 @@ class BillingController extends BaseController
 
     public function paymentGateways(Request $request)
     {
-        $user = $request->user('api') ?? $request->user();
-        $clientId = (int) ($user?->client_id ?? 0);
-
-        if ($clientId <= 0) {
-            return $this->error('Client context not found for this user.', 422);
-        }
-
-        $clientGatewayRows = $this->clientPaymentGatewayService->query()
+        $gatewayRows = $this->paymentGatewayService->query()
             ->select([
-                $this->clientPaymentGatewayService->id(),
-                $this->clientPaymentGatewayService->gatewayConfigId(),
-                $this->clientPaymentGatewayService->displayName(),
-                $this->clientPaymentGatewayService->displayOrder(),
-                $this->clientPaymentGatewayService->isDefault(),
-                $this->clientPaymentGatewayService->isEnabled(),
+                $this->paymentGatewayService->id(),
+                $this->paymentGatewayService->gatewayName(),
+                $this->paymentGatewayService->gatewayCode(),
+                $this->paymentGatewayService->providerCompany(),
+                $this->paymentGatewayService->logo(),
+                $this->paymentGatewayService->website(),
+                $this->paymentGatewayService->supportedMethods(),
+                $this->paymentGatewayService->isActive(),
+                $this->paymentGatewayService->isDefault(),
+                $this->paymentGatewayService->displayOrder(),
             ])
             ->with([
-                'gatewayConfig' => function ($query) {
+                'gatewayConfigs' => function ($query) {
                     $query->select([
                         $this->paymentGatewayConfigService->id(),
                         $this->paymentGatewayConfigService->gatewayId(),
+                        $this->paymentGatewayConfigService->configName(),
+                        $this->paymentGatewayConfigService->environment(),
+                        $this->paymentGatewayConfigService->baseUrl(),
                         $this->paymentGatewayConfigService->isActive(),
+                        $this->paymentGatewayConfigService->isDefault(),
+                        $this->paymentGatewayConfigService->isSandbox(),
                     ])->where($this->paymentGatewayConfigService->isActive(), 1);
                 },
-                'gatewayConfig.gateway' => function ($query) {
-                    $query->select([
-                        $this->paymentGatewayService->id(),
-                        $this->paymentGatewayService->gatewayName(),
-                        $this->paymentGatewayService->gatewayCode(),
-                        $this->paymentGatewayService->providerCompany(),
-                        $this->paymentGatewayService->logo(),
-                        $this->paymentGatewayService->website(),
-                        $this->paymentGatewayService->supportedMethods(),
-                        $this->paymentGatewayService->isActive(),
-                    ])->where($this->paymentGatewayService->isActive(), 1);
-                },
             ])
-            ->where($this->clientPaymentGatewayService->clientId(), $clientId)
-            ->where($this->clientPaymentGatewayService->isEnabled(), 1)
-            ->whereHas('gatewayConfig', function ($query) {
+            ->where($this->paymentGatewayService->isActive(), 1)
+            ->whereHas('gatewayConfigs', function ($query) {
                 $query->where($this->paymentGatewayConfigService->isActive(), 1);
             })
-            ->whereHas('gatewayConfig.gateway', function ($query) {
-                $query->where($this->paymentGatewayService->isActive(), 1);
-            })
-            ->orderBy($this->clientPaymentGatewayService->displayOrder(), 'asc')
+            ->orderBy($this->paymentGatewayService->displayOrder(), 'asc')
             ->get();
 
-        if ($clientGatewayRows->isEmpty()) {
+        if ($gatewayRows->isEmpty()) {
             return $this->success('Client payment gateways fetched successfully.', []);
         }
 
         $allMethodTypeIds = collect();
-        foreach ($clientGatewayRows as $clientGateway) {
-            $gateway = $clientGateway->gatewayConfig?->gateway;
-            if (!$gateway) {
-                continue;
-            }
-
+        foreach ($gatewayRows as $gateway) {
             $allMethodTypeIds = $allMethodTypeIds->merge(
                 $this->extractMethodTypeIds($gateway->{$this->paymentGatewayService->supportedMethods()} ?? null)
             );
         }
 
         $methodTypesById = $allMethodTypeIds
-            ->map(static fn ($id) => (int) $id)
-            ->filter(static fn ($id) => $id > 0)
+            ->map(static fn($id) => (int) $id)
+            ->filter(static fn($id) => $id > 0)
             ->unique()
             ->pipe(function ($ids) {
                 if ($ids->isEmpty()) {
@@ -128,69 +99,55 @@ class BillingController extends BaseController
                     ->keyBy($this->paymentMethodTypeService->id());
             });
 
-        $response = $clientGatewayRows
-            ->map(function ($clientGateway) use ($methodTypesById) {
-                $gatewayConfig = $clientGateway->gatewayConfig;
-                if (!$gatewayConfig) {
-                    return null;
-                }
+        $response = collect();
+        foreach ($gatewayRows as $gateway) {
+            $supportedMethodTypeIds = $this->extractMethodTypeIds(
+                $gateway->{$this->paymentGatewayService->supportedMethods()} ?? null
+            );
 
-                $configId = (int) ($gatewayConfig->{$this->paymentGatewayConfigService->id()} ?? 0);
-                $gatewayId = (int) ($gatewayConfig->{$this->paymentGatewayConfigService->gatewayId()} ?? 0);
-                $gateway = $gatewayConfig->gateway;
-                if (!$gateway) {
-                    return null;
-                }
+            $supportedMethods = collect($supportedMethodTypeIds)
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->map(function ($methodTypeId) use ($methodTypesById) {
+                    $methodType = $methodTypesById->get($methodTypeId);
+                    if (!$methodType) {
+                        return null;
+                    }
 
-                $supportedMethodTypeIds = $this->extractMethodTypeIds(
-                    $gateway->{$this->paymentGatewayService->supportedMethods()} ?? null
-                );
+                    return [
+                        'id' => (int) $methodType->{$this->paymentMethodTypeService->id()},
+                        'method_name' => $methodType->{$this->paymentMethodTypeService->methodName()},
+                        'method_code' => $methodType->{$this->paymentMethodTypeService->methodCode()},
+                        'category' => $methodType->{$this->paymentMethodTypeService->category()},
+                        'icon' => $methodType->{$this->paymentMethodTypeService->icon()},
+                        'description' => $methodType->{$this->paymentMethodTypeService->description()},
+                        'display_order' => $methodType->{$this->paymentMethodTypeService->displayOrder()},
+                    ];
+                })
+                ->filter()
+                ->values()
+                ->all();
 
-                $supportedMethods = collect($supportedMethodTypeIds)
-                    ->map(static fn ($id) => (int) $id)
-                    ->filter(static fn ($id) => $id > 0)
-                    ->unique()
-                    ->map(function ($methodTypeId) use ($methodTypesById) {
-                        $methodType = $methodTypesById->get($methodTypeId);
-                        if (!$methodType) {
-                            return null;
-                        }
-
-                        return [
-                            'id' => (int) $methodType->{$this->paymentMethodTypeService->id()},
-                            'method_name' => $methodType->{$this->paymentMethodTypeService->methodName()},
-                            'method_code' => $methodType->{$this->paymentMethodTypeService->methodCode()},
-                            'category' => $methodType->{$this->paymentMethodTypeService->category()},
-                            'icon' => $methodType->{$this->paymentMethodTypeService->icon()},
-                            'description' => $methodType->{$this->paymentMethodTypeService->description()},
-                            'display_order' => $methodType->{$this->paymentMethodTypeService->displayOrder()},
-                        ];
-                    })
-                    ->filter()
-                    ->values()
-                    ->all();
-
-                return [
-                    'client_gateway_id' => (int) $clientGateway->{$this->clientPaymentGatewayService->id()},
-                    'gateway_config_id' => $configId,
-                    'gateway_id' => $gatewayId,
-                    'display_name' => $clientGateway->{$this->clientPaymentGatewayService->displayName()}
-                        ?: $gateway->{$this->paymentGatewayService->gatewayName()},
+            foreach ($gateway->gatewayConfigs as $gatewayConfig) {
+                $response->push([
+                    'client_gateway_id' => 0,
+                    'gateway_config_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
+                    'gateway_id' => (int) $gateway->{$this->paymentGatewayService->id()},
+                    'display_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
                     'gateway_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
                     'gateway_code' => $gateway->{$this->paymentGatewayService->gatewayCode()},
                     'provider_company' => $gateway->{$this->paymentGatewayService->providerCompany()},
                     'logo' => $gateway->{$this->paymentGatewayService->logo()},
                     'website' => $gateway->{$this->paymentGatewayService->website()},
-                    'is_default' => (int) ($clientGateway->{$this->clientPaymentGatewayService->isDefault()} ?? 0),
-                    'display_order' => (int) ($clientGateway->{$this->clientPaymentGatewayService->displayOrder()} ?? 0),
+                    'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+                    'display_order' => (int) ($gateway->{$this->paymentGatewayService->displayOrder()} ?? 0),
                     'supported_methods' => $supportedMethods,
-                ];
-            })
-            ->filter()
-            ->values()
-            ->all();
+                ]);
+            }
+        }
 
-        return $this->success('Client payment gateways fetched successfully.', $response);
+        return $this->success('Client payment gateways fetched successfully.', $response->values()->all());
     }
 
     protected function extractMethodTypeIds($value): array
@@ -218,5 +175,223 @@ class BillingController extends BaseController
         }
 
         return [$trimmed];
+    }
+
+    public function paymentMethods(Request $request)
+    {
+        $gatewayRows = $this->paymentGatewayService->query()
+            ->select([
+                $this->paymentGatewayService->id(),
+                $this->paymentGatewayService->supportedMethods(),
+                $this->paymentGatewayService->isActive(),
+            ])
+            ->with([
+                'gatewayConfigs' => function ($query) {
+                    $query->select([
+                        $this->paymentGatewayConfigService->id(),
+                        $this->paymentGatewayConfigService->gatewayId(),
+                        $this->paymentGatewayConfigService->minAmount(),
+                        $this->paymentGatewayConfigService->maxAmount(),
+                        $this->paymentGatewayConfigService->isActive(),
+                    ])->where($this->paymentGatewayConfigService->isActive(), 1);
+                },
+            ])
+            ->where($this->paymentGatewayService->isActive(), 1)
+            ->whereHas('gatewayConfigs', function ($query) {
+                $query->where($this->paymentGatewayConfigService->isActive(), 1);
+            })
+            ->get();
+
+        if ($gatewayRows->isEmpty()) {
+            return $this->success('Client payment methods fetched successfully.', []);
+        }
+
+        $methodTypeIds = collect();
+        foreach ($gatewayRows as $gateway) {
+            $methodTypeIds = $methodTypeIds->merge(
+                $this->extractMethodTypeIds($gateway->{$this->paymentGatewayService->supportedMethods()} ?? null)
+            );
+        }
+
+        $methodTypeIds = $methodTypeIds
+            ->map(static fn($id) => (int) $id)
+            ->filter(static fn($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($methodTypeIds->isEmpty()) {
+            return $this->success('Client payment methods fetched successfully.', []);
+        }
+
+        $methodTypesById = $this->paymentMethodTypeService->query()
+            ->whereIn($this->paymentMethodTypeService->id(), $methodTypeIds->all())
+            ->where($this->paymentMethodTypeService->isActive(), 1)
+            ->select([
+                $this->paymentMethodTypeService->id(),
+                $this->paymentMethodTypeService->methodName(),
+                $this->paymentMethodTypeService->methodCode(),
+                $this->paymentMethodTypeService->category(),
+                $this->paymentMethodTypeService->icon(),
+                $this->paymentMethodTypeService->description(),
+                $this->paymentMethodTypeService->configurationSchema(),
+                $this->paymentMethodTypeService->displayOrder(),
+            ])
+            ->orderBy($this->paymentMethodTypeService->displayOrder(), 'asc')
+            ->get()
+            ->keyBy($this->paymentMethodTypeService->id());
+
+        $response = collect();
+        foreach ($gatewayRows as $gateway) {
+            $supportedMethodTypeIds = collect(
+                $this->extractMethodTypeIds($gateway->{$this->paymentGatewayService->supportedMethods()} ?? null)
+            )
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values();
+
+            foreach ($gateway->gatewayConfigs as $gatewayConfig) {
+                foreach ($supportedMethodTypeIds as $methodTypeId) {
+                    $methodType = $methodTypesById->get($methodTypeId);
+                    if (!$methodType) {
+                        continue;
+                    }
+
+                    $response->push([
+                        'client_payment_method_id' => 0,
+                        'method_type_id' => (int) $methodType->{$this->paymentMethodTypeService->id()},
+                        'gateway_config_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
+                        'gateway_id' => (int) $gateway->{$this->paymentGatewayService->id()},
+                        'display_name' => $methodType->{$this->paymentMethodTypeService->methodName()},
+                        'description' => $methodType->{$this->paymentMethodTypeService->description()},
+                        'icon' => $methodType->{$this->paymentMethodTypeService->icon()},
+                        'display_order' => (int) ($methodType->{$this->paymentMethodTypeService->displayOrder()} ?? 0),
+                        'is_default' => 0,
+                        'min_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->minAmount()},
+                        'max_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->maxAmount()},
+                        'instructions' => null,
+                        'method_type' => [
+                            'id' => (int) $methodType->{$this->paymentMethodTypeService->id()},
+                            'method_name' => $methodType->{$this->paymentMethodTypeService->methodName()},
+                            'method_code' => $methodType->{$this->paymentMethodTypeService->methodCode()},
+                            'category' => $methodType->{$this->paymentMethodTypeService->category()},
+                            'icon' => $methodType->{$this->paymentMethodTypeService->icon()},
+                            'description' => $methodType->{$this->paymentMethodTypeService->description()},
+                            'configuration_schema' => $methodType->{$this->paymentMethodTypeService->configurationSchema()},
+                            'display_order' => (int) ($methodType->{$this->paymentMethodTypeService->displayOrder()} ?? 0),
+                        ],
+                    ]);
+                }
+            }
+        }
+
+        return $this->success('Client payment methods fetched successfully.', $response->values()->all());
+    }
+
+    public function paymentGatewaysByMethod(Request $request, $payment_method)
+    {
+        $methodTypeId = (int) $payment_method;
+
+        if ($methodTypeId <= 0) {
+            return $this->error('Invalid payment method.', 422);
+        }
+
+        $gatewayRows = $this->paymentGatewayService->query()
+            ->select([
+                $this->paymentGatewayService->id(),
+                $this->paymentGatewayService->gatewayName(),
+                $this->paymentGatewayService->gatewayCode(),
+                $this->paymentGatewayService->providerCompany(),
+                $this->paymentGatewayService->logo(),
+                $this->paymentGatewayService->website(),
+                $this->paymentGatewayService->supportedMethods(),
+                $this->paymentGatewayService->isActive(),
+                $this->paymentGatewayService->displayOrder(),
+            ])
+            ->with([
+                'gatewayConfigs' => function ($query) {
+                    $query->select([
+                        $this->paymentGatewayConfigService->id(),
+                        $this->paymentGatewayConfigService->gatewayId(),
+                        $this->paymentGatewayConfigService->configName(),
+                        $this->paymentGatewayConfigService->environment(),
+                        $this->paymentGatewayConfigService->baseUrl(),
+                        $this->paymentGatewayConfigService->enabledMethods(),
+                        $this->paymentGatewayConfigService->currencies(),
+                        $this->paymentGatewayConfigService->minAmount(),
+                        $this->paymentGatewayConfigService->maxAmount(),
+                        $this->paymentGatewayConfigService->transactionFeeType(),
+                        $this->paymentGatewayConfigService->transactionFeeFixed(),
+                        $this->paymentGatewayConfigService->transactionFeePercentage(),
+                        $this->paymentGatewayConfigService->isActive(),
+                        $this->paymentGatewayConfigService->isDefault(),
+                        $this->paymentGatewayConfigService->isSandbox(),
+                    ])->where($this->paymentGatewayConfigService->isActive(), 1);
+                },
+            ])
+            ->where($this->paymentGatewayService->isActive(), 1)
+            ->whereHas('gatewayConfigs', function ($query) {
+                $query->where($this->paymentGatewayConfigService->isActive(), 1);
+            })
+            ->orderBy($this->paymentGatewayService->displayOrder(), 'asc')
+            ->get();
+
+        if ($gatewayRows->isEmpty()) {
+            return $this->success('Client payment gateways fetched successfully.', []);
+        }
+
+        $response = collect();
+        foreach ($gatewayRows as $gateway) {
+            $supportedMethodTypeIds = collect(
+                $this->extractMethodTypeIds($gateway->{$this->paymentGatewayService->supportedMethods()} ?? null)
+            )
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values();
+
+            if (!$supportedMethodTypeIds->contains($methodTypeId)) {
+                continue;
+            }
+
+            foreach ($gateway->gatewayConfigs as $gatewayConfig) {
+                $response->push([
+                    'client_payment_method_id' => 0,
+                    'gateway_config_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
+                    'gateway_id' => (int) $gateway->{$this->paymentGatewayService->id()},
+                    'display_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
+                    'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+                    'display_order' => (int) ($gateway->{$this->paymentGatewayService->displayOrder()} ?? 0),
+                    'gateway_config' => [
+                        'id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
+                        'gateway_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->gatewayId()},
+                        'config_name' => $gatewayConfig->{$this->paymentGatewayConfigService->configName()},
+                        'environment' => $gatewayConfig->{$this->paymentGatewayConfigService->environment()},
+                        'base_url' => $gatewayConfig->{$this->paymentGatewayConfigService->baseUrl()},
+                        'enabled_methods' => $gatewayConfig->{$this->paymentGatewayConfigService->enabledMethods()},
+                        'currencies' => $gatewayConfig->{$this->paymentGatewayConfigService->currencies()},
+                        'min_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->minAmount()},
+                        'max_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->maxAmount()},
+                        'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeType()},
+                        'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
+                        'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
+                        'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
+                        'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+                        'is_sandbox' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isSandbox()} ?? 0),
+                    ],
+                    'gateway' => [
+                        'id' => (int) $gateway->{$this->paymentGatewayService->id()},
+                        'gateway_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
+                        'gateway_code' => $gateway->{$this->paymentGatewayService->gatewayCode()},
+                        'provider_company' => $gateway->{$this->paymentGatewayService->providerCompany()},
+                        'logo' => $gateway->{$this->paymentGatewayService->logo()},
+                        'website' => $gateway->{$this->paymentGatewayService->website()},
+                        'supported_methods' => $gateway->{$this->paymentGatewayService->supportedMethods()},
+                    ],
+                ]);
+            }
+        }
+
+        return $this->success('Client payment gateways fetched successfully.', $response->values()->all());
     }
 }
