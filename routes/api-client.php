@@ -66,7 +66,8 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Order Management
     Route::prefix('orders')->group(function () {
-        Route::apiResource('', OrderController::class);
+        Route::apiResource('', OrderController::class)->except(['show']);
+        Route::get('{order}', [OrderController::class,'show']);
         Route::post('preview', [OrderController::class, 'preview']); // Pending
         Route::post('{order}/confirm', [OrderController::class, 'confirm']); // Pending
         Route::post('{order}/cancel', [OrderController::class, 'cancel']); // Pending
@@ -75,7 +76,8 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('{order}/candidates', [OrderController::class, 'candidates']); // Pending
         Route::get('{order}/invoice', [OrderController::class, 'invoice']); // Pending
         Route::get('{order}/track', [OrderController::class, 'track']); // Pending
-        Route::post('{order}/payment', [OrderController::class, 'initiatePayment']); // Pending
+        Route::post('{order}/payment', [OrderController::class, 'initiatePayment']);
+        Route::post('{order}/payment/complete', [OrderController::class, 'completePayment']);
     });
 
     // Candidate Services (Verification Status)
