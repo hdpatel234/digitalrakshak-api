@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Client\Billing\BillingController;
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
 use App\Http\Controllers\Api\Client\Invitation\CandidateInvitationController;
+use App\Http\Controllers\Api\Client\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Client\Order\OrderController;
 use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
@@ -77,29 +79,39 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     });
 
     // Candidate Services (Verification Status)
-    Route::get('candidates/{candidate}/services', [Controller::class, 'candidateServices']); // Pending
-    Route::get('candidates/{candidate}/services/{service}', [Controller::class, 'showCandidateService']); // Pending
-    Route::get('candidates/{candidate}/services/{service}/details', [Controller::class, 'getCandidateServiceDetails']); // Pending
-    Route::get('candidates/{candidate}/services/{service}/timeline', [Controller::class, 'getCandidateServiceTimeline']); // Pending
+    Route::prefix('candidates')->group(function () {
+        Route::get('{candidate}/services', [Controller::class, 'candidateServices']); // Pending
+        Route::get('{candidate}/services/{service}', [Controller::class, 'showCandidateService']); // Pending
+        Route::get('{candidate}/services/{service}/details', [Controller::class, 'getCandidateServiceDetails']); // Pending
+        Route::get('{candidate}/services/{service}/timeline', [Controller::class, 'getCandidateServiceTimeline']); // Pending
+    });
 
     // Billing & Invoices
-    Route::get('invoices', [Controller::class, 'index']); // Pending
-    Route::get('invoices/{invoice}', [Controller::class, 'show']); // Pending
-    Route::get('invoices/{invoice}/pdf', [Controller::class, 'downloadPdf']); // Pending
-    Route::get('invoices/{invoice}/payment-history', [Controller::class, 'paymentHistory']); // Pending
-    Route::get('billing/summary', [Controller::class, 'summary']); // Pending
-    Route::get('billing/transactions', [Controller::class, 'transactions']); // Pending
-    Route::get('billing/credit-history', [Controller::class, 'creditHistory']); // Pending
-    Route::post('billing/add-credit', [Controller::class, 'addCredit']); // Pending
-    Route::get('billing/payment-methods', [Controller::class, 'paymentMethods']); // Pending
+    Route::prefix('invoices')->group(function () {
+        Route::get('', [InvoiceController::class, 'index']); // Pending
+        Route::get('{invoice}', [InvoiceController::class, 'show']); // Pending
+        Route::get('{invoice}/pdf', [InvoiceController::class, 'downloadPdf']); // Pending
+        Route::get('{invoice}/payment-history', [InvoiceController::class, 'paymentHistory']); // Pending
+    });
+
+    Route::prefix('billing')->group(function () {
+        Route::get('summary', [BillingController::class, 'summary']); // Pending
+        Route::get('transactions', [BillingController::class, 'transactions']); // Pending
+        Route::get('credit-history', [BillingController::class, 'creditHistory']); // Pending
+        Route::post('add-credit', [BillingController::class, 'addCredit']); // Pending
+        Route::get('payment-methods', [BillingController::class, 'paymentMethods']); // Pending
+        Route::get('payment-gateways', [BillingController::class, 'paymentGateways']); // Pending
+    });
 
     // Support Tickets (via UVdesk or other)
-    Route::apiResource('tickets', Controller::class);
-    Route::post('tickets/{ticket}/reply', [Controller::class, 'reply']); // Pending
-    Route::post('tickets/{ticket}/close', [Controller::class, 'close']); // Pending
-    Route::post('tickets/{ticket}/reopen', [Controller::class, 'reopen']); // Pending
-    Route::get('tickets/{ticket}/conversations', [Controller::class, 'conversations']); // Pending
-    Route::post('tickets/{ticket}/attachments', [Controller::class, 'uploadAttachment']); // Pending
+    Route::prefix('tickets')->group(function () {
+        Route::apiResource('', Controller::class);
+        Route::post('{ticket}/reply', [Controller::class, 'reply']); // Pending
+        Route::post('{ticket}/close', [Controller::class, 'close']); // Pending
+        Route::post('{ticket}/reopen', [Controller::class, 'reopen']); // Pending
+        Route::get('{ticket}/conversations', [Controller::class, 'conversations']); // Pending
+        Route::post('{ticket}/attachments', [Controller::class, 'uploadAttachment']); // Pending
+    });
 
     // Reports (Client-specific)
     Route::prefix('reports')->group(function () {

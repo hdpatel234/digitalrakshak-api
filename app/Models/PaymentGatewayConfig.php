@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentGatewayConfig extends BaseModel
@@ -79,4 +81,14 @@ class PaymentGatewayConfig extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function gateway(): BelongsTo
+    {
+        return $this->belongsTo(PaymentGateway::class, self::GATEWAY_ID);
+    }
+
+    public function clientPaymentGateways(): HasMany
+    {
+        return $this->hasMany(ClientPaymentGateway::class, ClientPaymentGateway::GATEWAY_CONFIG_ID);
+    }
 }

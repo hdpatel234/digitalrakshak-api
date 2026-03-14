@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientPaymentGateway extends BaseModel
@@ -53,4 +54,9 @@ class ClientPaymentGateway extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function gatewayConfig(): BelongsTo
+    {
+        return $this->belongsTo(PaymentGatewayConfig::class, self::GATEWAY_CONFIG_ID);
+    }
 }

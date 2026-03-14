@@ -6,8 +6,6 @@ use App\Repositories\ClientPaymentGatewayRepository;
 
 class ClientPaymentGatewayService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(ClientPaymentGatewayRepository $repository)
     {
         $this->repository = $repository;

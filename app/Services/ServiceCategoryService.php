@@ -6,8 +6,6 @@ use App\Repositories\ServiceCategoryRepository;
 
 class ServiceCategoryService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(ServiceCategoryRepository $repository)
     {
         $this->repository = $repository;

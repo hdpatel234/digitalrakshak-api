@@ -6,8 +6,6 @@ use App\Repositories\ClientBankAccountRepository;
 
 class ClientBankAccountService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(ClientBankAccountRepository $repository)
     {
         $this->repository = $repository;

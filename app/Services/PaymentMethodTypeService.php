@@ -6,8 +6,6 @@ use App\Repositories\PaymentMethodTypeRepository;
 
 class PaymentMethodTypeService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(PaymentMethodTypeRepository $repository)
     {
         $this->repository = $repository;

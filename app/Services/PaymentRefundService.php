@@ -6,8 +6,6 @@ use App\Repositories\PaymentRefundRepository;
 
 class PaymentRefundService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(PaymentRefundRepository $repository)
     {
         $this->repository = $repository;

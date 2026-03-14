@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentGateway extends BaseModel
@@ -33,4 +34,9 @@ class PaymentGateway extends BaseModel
         self::IS_DEFAULT,
         self::DISPLAY_ORDER,
     ];
+
+    public function gatewayConfigs(): HasMany
+    {
+        return $this->hasMany(PaymentGatewayConfig::class, PaymentGatewayConfig::GATEWAY_ID);
+    }
 }

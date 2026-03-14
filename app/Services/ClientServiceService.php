@@ -6,8 +6,6 @@ use App\Repositories\ClientServiceRepository;
 
 class ClientServiceService extends BaseService
 {
-    protected $repository;
-    
     public function __construct(ClientServiceRepository $repository)
     {
         $this->repository = $repository;
