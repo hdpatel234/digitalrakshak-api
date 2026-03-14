@@ -2,22 +2,17 @@
 
 namespace App\Services;
 
-use App\Repositories\ClientBillingConfigRepository;
+use App\Repositories\BillingConfigRepository;
 
-class ClientBillingConfigService extends BaseService
+class BillingConfigService extends BaseService
 {
-    
-    public function __construct(ClientBillingConfigRepository $repository)
+    protected $repository;
+    public function __construct(BillingConfigRepository $repository)
     {
         $this->repository = $repository;
     }
 
     // column constants
-    public function clientId()
-    {
-        return $this->repository->clientId();
-    }
-
     public function billingPlatformId()
     {
         return $this->repository->billingPlatformId();

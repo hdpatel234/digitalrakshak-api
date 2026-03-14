@@ -2,22 +2,17 @@
 
 namespace App\Services;
 
-use App\Repositories\ClientSupportConfigRepository;
+use App\Repositories\SupportConfigRepository;
 
-class ClientSupportConfigService extends BaseService
+class SupportConfigService extends BaseService
 {
-    
-    public function __construct(ClientSupportConfigRepository $repository)
+    protected $repository;
+    public function __construct(SupportConfigRepository $repository)
     {
         $this->repository = $repository;
     }
 
     // column constants
-    public function clientId()
-    {
-        return $this->repository->clientId();
-    }
-
     public function supportPlatformId()
     {
         return $this->repository->supportPlatformId();

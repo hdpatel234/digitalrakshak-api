@@ -5,12 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ClientDocumentConfig extends BaseModel
+class DocumentConfig extends BaseModel
 {
-    
     protected $table = "client_document_configs";
-    
-    const CLIENT_ID = "client_id";
+
     const DOCUMENT_PLATFORM_ID = "document_platform_id";
     const CONFIG_NAME = "config_name";
     const IS_DEFAULT = "is_default";
@@ -36,7 +34,6 @@ class ClientDocumentConfig extends BaseModel
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [
-        self::CLIENT_ID,
         self::DOCUMENT_PLATFORM_ID,
         self::CONFIG_NAME,
         self::IS_DEFAULT,

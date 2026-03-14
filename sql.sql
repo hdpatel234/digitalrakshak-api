@@ -2343,3 +2343,73 @@ CREATE TABLE IF NOT EXISTS `tblsaved_payment_methods` (
   PRIMARY KEY (`id`),
   KEY `saved_payment_methods_user` (`user_id`, `is_default`, `is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Drop foreign key if exists
+SET @fk_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'tblclient_billing_configs'
+    AND CONSTRAINT_NAME = 'tblclient_billing_configs_ibfk_1'
+);
+
+SET @sql = IF(@fk_exists > 0,
+    'ALTER TABLE tblclient_billing_configs DROP FOREIGN KEY tblclient_billing_configs_ibfk_1;',
+    'SELECT "Foreign key already removed";'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+-- Drop index if exists
+SET @idx_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'tblclient_billing_configs'
+    AND INDEX_NAME = 'client_billing_config'
+);
+
+SET @sql = IF(@idx_exists > 0,
+    'ALTER TABLE tblclient_billing_configs DROP INDEX client_billing_config;',
+    'SELECT "Index already removed";'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+-- Drop column if exists
+SET @col_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'tblclient_billing_configs'
+    AND COLUMN_NAME = 'client_id'
+);
+
+SET @sql = IF(@col_exists > 0,
+    'ALTER TABLE tblclient_billing_configs DROP COLUMN client_id;',
+    'SELECT "Column already removed";'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+-- Rename table if exists
+SET @tbl_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'tblclient_billing_configs'
+);
+
+SET @sql = IF(@tbl_exists > 0,
+    'RENAME TABLE tblclient_billing_configs TO tblbilling_configs;',
+    'SELECT "Table already renamed";'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

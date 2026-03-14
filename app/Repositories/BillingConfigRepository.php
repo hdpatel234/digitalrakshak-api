@@ -2,24 +2,19 @@
 
 namespace App\Repositories;
 
-use App\Models\ClientSupportConfig;
+use App\Models\BillingConfig;
 
-class ClientSupportConfigRepository extends BaseRepository
+class BillingConfigRepository extends BaseRepository
 {
-    public function __construct(ClientSupportConfig $model)
+    public function __construct(BillingConfig $model)
     {
         parent::__construct($model);
     }
 
     // column constants
-    public function clientId()
+    public function billingPlatformId()
     {
-        return $this->model::CLIENT_ID;
-    }
-
-    public function supportPlatformId()
-    {
-        return $this->model::SUPPORT_PLATFORM_ID;
+        return $this->model::BILLING_PLATFORM_ID;
     }
 
     public function configName()
@@ -62,19 +57,29 @@ class ClientSupportConfigRepository extends BaseRepository
         return $this->model::ADDITIONAL_CONFIG;
     }
 
-    public function defaultPriority()
+    public function invoicePrefix()
     {
-        return $this->model::DEFAULT_PRIORITY;
+        return $this->model::INVOICE_PREFIX;
     }
 
-    public function defaultDepartment()
+    public function invoiceSeries()
     {
-        return $this->model::DEFAULT_DEPARTMENT;
+        return $this->model::INVOICE_SERIES;
     }
 
-    public function defaultAssignee()
+    public function taxRate()
     {
-        return $this->model::DEFAULT_ASSIGNEE;
+        return $this->model::TAX_RATE;
+    }
+
+    public function currency()
+    {
+        return $this->model::CURRENCY;
+    }
+
+    public function paymentTermsDays()
+    {
+        return $this->model::PAYMENT_TERMS_DAYS;
     }
 
     public function status()

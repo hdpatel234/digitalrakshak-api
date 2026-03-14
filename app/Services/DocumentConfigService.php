@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Repositories\ClientDocumentConfigRepository;
+use App\Repositories\DocumentConfigRepository;
 
-class ClientDocumentConfigService extends BaseService
+class DocumentConfigService extends BaseService
 {
-    
-    public function __construct(ClientDocumentConfigRepository $repository)
+    protected $repository;
+    public function __construct(DocumentConfigRepository $repository)
     {
         $this->repository = $repository;
     }

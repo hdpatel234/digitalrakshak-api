@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ClientSupportConfig extends BaseModel
+class BillingConfig extends BaseModel
 {
+    protected $table = "billing_configs";
     
-    protected $table = "client_support_configs";
-    
-    const CLIENT_ID = "client_id";
-    const SUPPORT_PLATFORM_ID = "support_platform_id";
+    const BILLING_PLATFORM_ID = "billing_platform_id";
     const CONFIG_NAME = "config_name";
     const IS_DEFAULT = "is_default";
     const API_URL = "api_url";
@@ -20,15 +18,16 @@ class ClientSupportConfig extends BaseModel
     const API_TOKEN = "api_token";
     const WEBHOOK_SECRET = "webhook_secret";
     const ADDITIONAL_CONFIG = "additional_config";
-    const DEFAULT_PRIORITY = "default_priority";
-    const DEFAULT_DEPARTMENT = "default_department";
-    const DEFAULT_ASSIGNEE = "default_assignee";
+    const INVOICE_PREFIX = "invoice_prefix";
+    const INVOICE_SERIES = "invoice_series";
+    const TAX_RATE = "tax_rate";
+    const CURRENCY = "currency";
+    const PAYMENT_TERMS_DAYS = "payment_terms_days";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [
-        self::CLIENT_ID,
-        self::SUPPORT_PLATFORM_ID,
+        self::BILLING_PLATFORM_ID,
         self::CONFIG_NAME,
         self::IS_DEFAULT,
         self::API_URL,
@@ -37,9 +36,11 @@ class ClientSupportConfig extends BaseModel
         self::API_TOKEN,
         self::WEBHOOK_SECRET,
         self::ADDITIONAL_CONFIG,
-        self::DEFAULT_PRIORITY,
-        self::DEFAULT_DEPARTMENT,
-        self::DEFAULT_ASSIGNEE,
+        self::INVOICE_PREFIX,
+        self::INVOICE_SERIES,
+        self::TAX_RATE,
+        self::CURRENCY,
+        self::PAYMENT_TERMS_DAYS,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,
@@ -50,8 +51,8 @@ class ClientSupportConfig extends BaseModel
         self::IS_DEFAULT => 'boolean',
     ];
 
-    public function supportPlatform(): BelongsTo
+    public function billingPlatform(): BelongsTo
     {
-        return $this->belongsTo(SupportPlatform::class, self::SUPPORT_PLATFORM_ID);
+        return $this->belongsTo(BillingPlatform::class, self::BILLING_PLATFORM_ID);
     }
 }

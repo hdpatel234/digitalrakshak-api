@@ -2,21 +2,16 @@
 
 namespace App\Repositories;
 
-use App\Models\ClientDocumentConfig;
+use App\Models\DocumentConfig;
 
-class ClientDocumentConfigRepository extends BaseRepository
+class DocumentConfigRepository extends BaseRepository
 {
-    public function __construct(ClientDocumentConfig $model)
+    public function __construct(DocumentConfig $model)
     {
         parent::__construct($model);
     }
 
     // column constants
-    public function clientId()
-    {
-        return $this->model::CLIENT_ID;
-    }
-
     public function documentPlatformId()
     {
         return $this->model::DOCUMENT_PLATFORM_ID;
