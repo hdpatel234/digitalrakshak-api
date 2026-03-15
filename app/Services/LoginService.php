@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\Http;
 use App\Repositories\UserSessionRepository;
+use Illuminate\Support\Facades\Log;
 
 class LoginService extends BaseService
 {
@@ -41,6 +42,8 @@ class LoginService extends BaseService
                 'password' => $request->password,
                 'scope' => '',
             ]);
+
+            Log::info('Login response: ' . json_encode($response->json()));
 
             if ($response->failed()) {
                 $return_array['status'] = false;
