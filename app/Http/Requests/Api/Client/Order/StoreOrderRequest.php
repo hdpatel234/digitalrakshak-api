@@ -14,13 +14,16 @@ class StoreOrderRequest extends BaseRequest
 
     public function rules(): array
     {
+        $isDraft = $this->boolean('save_draft');
+
         return [
+            'id' => ['sometimes', 'integer', 'min:1', 'exists:candidate_orders,id'],
             'package_id' => ['required', 'integer', 'min:1', 'exists:packages,id'],
-            'candidate_ids' => ['required', 'array', 'min:1'],
-            'candidate_ids.*' => ['required', 'integer', 'distinct', 'exists:candidates,id'],
+            'candidate_ids' => [Rule::requiredIf(!$isDraft), 'array', 'min:1'],
+            'candidate_ids.*' => ['required_with:candidate_ids', 'integer', 'distinct', 'exists:candidates,id'],
             'save_draft' => ['sometimes', 'boolean'],
             'payment_method_id' => [
-                'required',
+                Rule::requiredIf(!$isDraft),
                 'integer',
                 'min:1',
                 Rule::exists('payment_method_types', 'id')->where(function ($query) {
@@ -28,7 +31,7 @@ class StoreOrderRequest extends BaseRequest
                 }),
             ],
             'payment_provider_id' => [
-                'required',
+                Rule::requiredIf(!$isDraft),
                 'integer',
                 'min:1',
                 Rule::exists('payment_gateway_configs', 'id')->where(function ($query) {
@@ -38,3 +41,11 @@ class StoreOrderRequest extends BaseRequest
         ];
     }
 }
+
+
+
+
+
+
+
+

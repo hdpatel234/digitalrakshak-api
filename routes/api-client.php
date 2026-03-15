@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
 
-Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user'])->group(function () {
+Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user', 'throttle:100,1'])->group(function () {
 
     // Dashboard
     Route::prefix('dashboard')->group(function () {
@@ -67,7 +67,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     // Order Management
     Route::prefix('orders')->group(function () {
         Route::apiResource('', OrderController::class)->except(['show']);
-        Route::get('{order}', [OrderController::class,'show']);
+        Route::get('{order}', [OrderController::class, 'show']);
         Route::post('preview', [OrderController::class, 'preview']); // Pending
         Route::post('{order}/confirm', [OrderController::class, 'confirm']); // Pending
         Route::post('{order}/cancel', [OrderController::class, 'cancel']); // Pending

@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\StateController;
 use App\Http\Controllers\Api\Auth\UserConfigController;
 
-Route::prefix('v1/auth')->group(function () {
+Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
     Route::post('forgot-password', [LoginController::class, 'forgotPassword']);
     Route::post('reset-password', [LoginController::class, 'resetPassword']);

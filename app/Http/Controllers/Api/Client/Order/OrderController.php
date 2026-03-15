@@ -184,11 +184,104 @@ class OrderController extends BaseController
             });
 
         if (is_array($result) && isset($result['list']) && is_array($result['list'])) {
-            $result['list'] = collect($result['list'])
-                ->map(function ($item) use ($paymentMethodNameById, $paymentMethodColumn) {
-                    $row = is_array($item) ? $item : $item->toArray();
+            $orderList = collect($result['list'])
+                ->map(static fn($item) => is_array($item) ? $item : $item->toArray());
+
+            $billingConfigIds = $orderList
+                ->pluck($this->service->billingConfigId())
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $gatewayConfigsById = $billingConfigIds === []
+                ? collect()
+                : $this->paymentGatewayConfigService->query()
+                    ->select([
+                        $this->paymentGatewayConfigService->id(),
+                        $this->paymentGatewayConfigService->gatewayId(),
+                        $this->paymentGatewayConfigService->configName(),
+                        $this->paymentGatewayConfigService->environment(),
+                        $this->paymentGatewayConfigService->baseUrl(),
+                        $this->paymentGatewayConfigService->enabledMethods(),
+                        $this->paymentGatewayConfigService->currencies(),
+                        $this->paymentGatewayConfigService->minAmount(),
+                        $this->paymentGatewayConfigService->maxAmount(),
+                        $this->paymentGatewayConfigService->transactionFeeType(),
+                        $this->paymentGatewayConfigService->transactionFeeFixed(),
+                        $this->paymentGatewayConfigService->transactionFeePercentage(),
+                        $this->paymentGatewayConfigService->isActive(),
+                        $this->paymentGatewayConfigService->isDefault(),
+                        $this->paymentGatewayConfigService->isSandbox(),
+                    ])
+                    ->with([
+                        'gateway' => function ($query) {
+                            $query->select([
+                                $this->paymentGatewayService->id(),
+                                $this->paymentGatewayService->gatewayName(),
+                                $this->paymentGatewayService->gatewayCode(),
+                                $this->paymentGatewayService->providerCompany(),
+                                $this->paymentGatewayService->logo(),
+                                $this->paymentGatewayService->website(),
+                                $this->paymentGatewayService->supportedMethods(),
+                                $this->paymentGatewayService->isActive(),
+                                $this->paymentGatewayService->displayOrder(),
+                            ]);
+                        },
+                    ])
+                    ->whereIn($this->paymentGatewayConfigService->id(), $billingConfigIds)
+                    ->get()
+                    ->keyBy($this->paymentGatewayConfigService->id());
+
+            $result['list'] = $orderList
+                ->map(function (array $row) use ($paymentMethodNameById, $paymentMethodColumn, $gatewayConfigsById) {
                     $methodId = (int) ($row[$paymentMethodColumn] ?? 0);
                     $row['payment_method_name'] = $paymentMethodNameById->get($methodId);
+
+                    $paymentStatus = strtolower(trim((string) ($row[$this->service->paymentStatus()] ?? '')));
+                    if (!in_array($paymentStatus, ['paid', 'success', 'completed'], true)) {
+                        $row['payment_gateway'] = null;
+                        return $row;
+                    }
+
+                    $billingConfigId = (int) ($row[$this->service->billingConfigId()] ?? 0);
+                    $gatewayConfig = $billingConfigId > 0 ? $gatewayConfigsById->get($billingConfigId) : null;
+
+                    if (!$gatewayConfig) {
+                        $row['payment_gateway'] = null;
+                        return $row;
+                    }
+
+                    $gateway = $gatewayConfig->gateway;
+                    $row['payment_gateway'] = [
+                        'gateway_config_id' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->id()} ?? 0),
+                        'gateway_id' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->gatewayId()} ?? 0),
+                        'config_name' => $gatewayConfig->{$this->paymentGatewayConfigService->configName()},
+                        'environment' => $gatewayConfig->{$this->paymentGatewayConfigService->environment()},
+                        'base_url' => $gatewayConfig->{$this->paymentGatewayConfigService->baseUrl()},
+                        'enabled_methods' => $gatewayConfig->{$this->paymentGatewayConfigService->enabledMethods()},
+                        'currencies' => $gatewayConfig->{$this->paymentGatewayConfigService->currencies()},
+                        'min_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->minAmount()},
+                        'max_amount' => $gatewayConfig->{$this->paymentGatewayConfigService->maxAmount()},
+                        'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeType()},
+                        'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
+                        'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
+                        'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
+                        'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+                        'is_sandbox' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isSandbox()} ?? 0),
+                        'gateway' => $gateway ? [
+                            'id' => (int) ($gateway->{$this->paymentGatewayService->id()} ?? 0),
+                            'gateway_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
+                            'gateway_code' => $gateway->{$this->paymentGatewayService->gatewayCode()},
+                            'provider_company' => $gateway->{$this->paymentGatewayService->providerCompany()},
+                            'logo' => $gateway->{$this->paymentGatewayService->logo()},
+                            'website' => $gateway->{$this->paymentGatewayService->website()},
+                            'supported_methods' => $gateway->{$this->paymentGatewayService->supportedMethods()},
+                            'is_active' => (int) ($gateway->{$this->paymentGatewayService->isActive()} ?? 0),
+                            'display_order' => (int) ($gateway->{$this->paymentGatewayService->displayOrder()} ?? 0),
+                        ] : null,
+                    ];
 
                     return $row;
                 })
@@ -221,10 +314,12 @@ class OrderController extends BaseController
         }
 
         $payload = $request->validated();
+        $orderId = (int) ($payload['id'] ?? 0);
         $packageId = (int) ($payload['package_id'] ?? 0);
         $paymentMethodId = (int) ($payload['payment_method_id'] ?? 0);
         $paymentProviderId = (int) ($payload['payment_provider_id'] ?? 0);
         $isDraft = (bool) ($payload['save_draft'] ?? false);
+        $hasCandidateIds = array_key_exists('candidate_ids', $payload);
         $candidateIds = collect($payload['candidate_ids'] ?? [])
             ->map(static fn($id) => (int) $id)
             ->filter(static fn($id) => $id > 0)
@@ -252,50 +347,58 @@ class OrderController extends BaseController
             return $this->error('Package not found.', 404);
         }
 
-        $selectedCandidates = $this->candidateService->query()
-            ->whereIn($this->candidateService->id(), $candidateIds)
-            ->where($this->candidateService->clientId(), $clientId)
-            ->get();
+        $selectedCandidates = collect();
+        if ($candidateIds !== []) {
+            $selectedCandidates = $this->candidateService->query()
+                ->whereIn($this->candidateService->id(), $candidateIds)
+                ->where($this->candidateService->clientId(), $clientId)
+                ->get();
 
-        $validCandidateIds = $selectedCandidates
-            ->pluck($this->candidateService->id())
-            ->map(static fn($id) => (int) $id)
-            ->values()
-            ->all();
+            $validCandidateIds = $selectedCandidates
+                ->pluck($this->candidateService->id())
+                ->map(static fn($id) => (int) $id)
+                ->values()
+                ->all();
 
-        $invalidCandidateIds = array_values(array_diff($candidateIds, $validCandidateIds));
-        if ($invalidCandidateIds !== []) {
-            return $this->validationError([
-                'candidate_ids' => ['Some candidates are invalid or not accessible.'],
-                'invalid_candidate_ids' => $invalidCandidateIds,
-            ]);
+            $invalidCandidateIds = array_values(array_diff($candidateIds, $validCandidateIds));
+            if ($invalidCandidateIds !== []) {
+                return $this->validationError([
+                    'candidate_ids' => ['Some candidates are invalid or not accessible.'],
+                    'invalid_candidate_ids' => $invalidCandidateIds,
+                ]);
+            }
         }
 
-        $gatewayConfig = $this->paymentGatewayConfigService->query()
-            ->with([
-                'gateway' => function ($query) {
-                    $query->where($this->paymentGatewayService->isActive(), 1);
+        $gatewayConfig = null;
+        if ($paymentProviderId > 0) {
+            $gatewayConfig = $this->paymentGatewayConfigService->query()
+                ->with([
+                    'gateway' => function ($query) {
+                        $query->where($this->paymentGatewayService->isActive(), 1);
+                    }
+                ])
+                ->where($this->paymentGatewayConfigService->id(), $paymentProviderId)
+                ->where($this->paymentGatewayConfigService->isActive(), 1)
+                ->first();
+
+            if (!$gatewayConfig || !$gatewayConfig->gateway) {
+                return $this->error('Invalid payment provider.', 422);
+            }
+
+            if ($paymentMethodId > 0) {
+                $supportedMethodIds = $this->extractMethodTypeIds(
+                    $gatewayConfig->gateway->{$this->paymentGatewayService->supportedMethods()} ?? null
+                );
+                $supportedMethodIds = collect($supportedMethodIds)
+                    ->map(static fn($id) => (int) $id)
+                    ->filter(static fn($id) => $id > 0)
+                    ->unique()
+                    ->values();
+
+                if ($supportedMethodIds->isNotEmpty() && !$supportedMethodIds->contains($paymentMethodId)) {
+                    return $this->error('Payment method is not supported by this provider.', 422);
                 }
-            ])
-            ->where($this->paymentGatewayConfigService->id(), $paymentProviderId)
-            ->where($this->paymentGatewayConfigService->isActive(), 1)
-            ->first();
-
-        if (!$gatewayConfig || !$gatewayConfig->gateway) {
-            return $this->error('Invalid payment provider.', 422);
-        }
-
-        $supportedMethodIds = $this->extractMethodTypeIds(
-            $gatewayConfig->gateway->{$this->paymentGatewayService->supportedMethods()} ?? null
-        );
-        $supportedMethodIds = collect($supportedMethodIds)
-            ->map(static fn($id) => (int) $id)
-            ->filter(static fn($id) => $id > 0)
-            ->unique()
-            ->values();
-
-        if ($supportedMethodIds->isNotEmpty() && !$supportedMethodIds->contains($paymentMethodId)) {
-            return $this->error('Payment method is not supported by this provider.', 422);
+            }
         }
 
         $unitPrice = (float) (
@@ -305,6 +408,86 @@ class OrderController extends BaseController
         );
 
         $subtotal = $unitPrice * count($candidateIds);
+
+        if ($orderId > 0) {
+            $orderRow = $this->service->query()
+                ->where($this->service->id(), $orderId)
+                ->where($this->service->clientId(), $clientId)
+                ->first();
+
+            if (!$orderRow) {
+                return $this->error('Order not found.', 404);
+            }
+
+            $existingStatus = (string) ($orderRow->{$this->service->status()} ?? '');
+            $isExistingDraft = $existingStatus === OrderStatus::DRAFT->value;
+
+            if ($hasCandidateIds && !$isExistingDraft) {
+                return $this->error('Candidates cannot be changed after order is created.', 422);
+            }
+
+            $orderStatus = $isDraft ? OrderStatus::DRAFT->value : OrderStatus::PENDING->value;
+
+            $updateData = [
+                $this->service->packageId() => $package->{$this->packageService->id()},
+                $this->service->status() => $orderStatus,
+                $this->service->updatedBy() => $user?->id,
+            ];
+
+            if ($paymentMethodId > 0) {
+                $updateData[$this->service->paymentMethod()] = (string) $paymentMethodId;
+            }
+
+            if ($gatewayConfig) {
+                $updateData[$this->service->billingConfigId()] = $gatewayConfig->{$this->paymentGatewayConfigService->id()};
+            }
+
+            if ($hasCandidateIds) {
+                $updateData[$this->service->subtotal()] = $subtotal;
+                $updateData[$this->service->discountAmount()] = 0;
+                $updateData[$this->service->taxAmount()] = 0;
+                $updateData[$this->service->taxPercentage()] = 0;
+                $updateData[$this->service->totalAmount()] = $subtotal;
+            }
+
+            $orderRow->update($updateData);
+
+            if ($hasCandidateIds && $isExistingDraft) {
+                $this->orderCandidateService->query()
+                    ->where($this->orderCandidateService->orderId(), $orderRow->{$this->service->id()})
+                    ->delete();
+
+                foreach ($candidateIds as $candidateId) {
+                    $this->orderCandidateService->create([
+                        $this->orderCandidateService->orderId() => $orderRow->{$this->service->id()},
+                        $this->orderCandidateService->candidateId() => $candidateId,
+                        $this->orderCandidateService->subtotal() => $unitPrice,
+                        $this->orderCandidateService->discountAmount() => 0,
+                        $this->orderCandidateService->taxAmount() => 0,
+                        $this->orderCandidateService->totalAmount() => $unitPrice,
+                        $this->orderCandidateService->status() => 'pending',
+                        $this->orderCandidateService->createdBy() => $user?->id,
+                    ]);
+                }
+            }
+
+            return $this->success('Order updated successfully.', [
+                'id' => $orderRow->{$this->service->id()},
+                'order_number' => $orderRow->{$this->service->orderNumber()},
+                'package_id' => $orderRow->{$this->service->packageId()},
+                'payment_provider_id' => $gatewayConfig ? $gatewayConfig->{$this->paymentGatewayConfigService->id()} : null,
+                'payment_provider_name' => $gatewayConfig?->gateway?->{$this->paymentGatewayService->gatewayName()},
+                'payment_method_id' => $paymentMethodId > 0 ? $paymentMethodId : (int) ($orderRow->{$this->service->paymentMethod()} ?? 0),
+                'billing_config_id' => $orderRow->{$this->service->billingConfigId()},
+                'order_type' => $orderRow->{$this->service->orderType()},
+                'subtotal' => $orderRow->{$this->service->subtotal()},
+                'total_amount' => (int) $orderRow->{$this->service->totalAmount()},
+                'total_amount_in_paise' => (int) $orderRow->{$this->service->totalAmount()} * 100,
+                'payment_status' => $orderRow->{$this->service->paymentStatus()},
+                'status' => $orderRow->{$this->service->status()},
+                'candidate_ids' => $candidateIds,
+            ]);
+        }
 
         $created = DB::transaction(function () use ($package, $candidateIds, $clientId, $user, $unitPrice, $subtotal, $gatewayConfig, $paymentMethodId, $isDraft) {
             $orderNumber = $this->generateOrderNumber($clientId);
@@ -774,9 +957,111 @@ class OrderController extends BaseController
         return $this->success('Payment initiated successfully.', $response);
     }
 
-    public function completePayment(Request $request)
+    public function completePayment(Request $request, int $order)
     {
         Log::info('Order payment complete request', $request->all());
+
+        $validator = Validator::make($request->all(), [
+            'provider' => ['required', 'string'],
+            'transaction_uuid' => ['required', 'string'],
+            'payment_id' => ['required', 'string'],
+            'order_id' => ['required', 'string'],
+            'signature' => ['nullable', 'string'],
+            'gateway_data' => ['nullable', 'array'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationError($validator->errors());
+        }
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $orderId = (int) $order;
+        if ($orderId <= 0) {
+            return $this->error('Invalid order id.', 422);
+        }
+
+        $orderRow = $this->service->query()
+            ->where($this->service->id(), $orderId)
+            ->where($this->service->clientId(), $clientId)
+            ->first();
+
+        if (!$orderRow) {
+            return $this->error('Order not found.', 404);
+        }
+
+        $transactionUuid = trim((string) $request->input('transaction_uuid', ''));
+        $gatewayPaymentId = trim((string) $request->input('payment_id', ''));
+        $gatewayOrderId = trim((string) $request->input('order_id', ''));
+        $provider = trim((string) $request->input('provider', ''));
+        $signature = $request->input('signature');
+        $gatewayData = $request->input('gateway_data', []);
+
+        $transaction = $this->paymentTransactionService->query()
+            ->where($this->paymentTransactionService->transactionUuid(), $transactionUuid)
+            ->where($this->paymentTransactionService->orderId(), $orderId)
+            ->where($this->paymentTransactionService->clientId(), $clientId)
+            ->first();
+
+        if (!$transaction && $gatewayOrderId !== '') {
+            $transaction = $this->paymentTransactionService->query()
+                ->where($this->paymentTransactionService->gatewayOrderId(), $gatewayOrderId)
+                ->where($this->paymentTransactionService->orderId(), $orderId)
+                ->where($this->paymentTransactionService->clientId(), $clientId)
+                ->first();
+        }
+
+        if (!$transaction) {
+            return $this->error('Payment transaction not found.', 404);
+        }
+
+        $currentStatus = strtolower(trim((string) ($transaction->{$this->paymentTransactionService->paymentStatus()} ?? '')));
+        if (in_array($currentStatus, ['paid', 'success', 'completed'], true)) {
+            return $this->success('Payment already completed.', [
+                'order_id' => $orderId,
+                'transaction_uuid' => $transaction->{$this->paymentTransactionService->transactionUuid()},
+            ]);
+        }
+
+        $gatewayPayload = [
+            'provider' => $provider,
+            'payment_id' => $gatewayPaymentId,
+            'order_id' => $gatewayOrderId,
+            'signature' => $signature,
+            'gateway_data' => $gatewayData,
+        ];
+
+        $transaction->update([
+            $this->paymentTransactionService->gatewayOrderId() => $gatewayOrderId ?: $transaction->{$this->paymentTransactionService->gatewayOrderId()},
+            $this->paymentTransactionService->gatewayPaymentId() => $gatewayPaymentId,
+            $this->paymentTransactionService->paymentStatus() => 'success',
+            $this->paymentTransactionService->status() => 'completed',
+            $this->paymentTransactionService->successAt() => now(),
+            $this->paymentTransactionService->gatewayResponse() => json_encode($gatewayPayload),
+            $this->paymentTransactionService->paymentDetails() => json_encode($gatewayData),
+            $this->paymentTransactionService->updatedBy() => $user?->id,
+        ]);
+
+        $orderRow->update([
+            $this->service->paymentStatus() => 'paid',
+            $this->service->paymentReference() => $gatewayPaymentId,
+            $this->service->status() => OrderStatus::PROCESSING->value,
+            $this->service->processedAt() => now(),
+            $this->service->updatedBy() => $user?->id,
+        ]);
+
+        return $this->success('Payment completed successfully.', [
+            'order_id' => $orderId,
+            'order_status' => $orderRow->{$this->service->status()},
+            'payment_status' => $orderRow->{$this->service->paymentStatus()},
+            'transaction_uuid' => $transaction->{$this->paymentTransactionService->transactionUuid()},
+            'gateway_payment_id' => $gatewayPaymentId,
+            'gateway_order_id' => $gatewayOrderId,
+        ]);
     }
 
     protected function providerMatches(string $input, string $gatewayName, string $gatewayCode): bool

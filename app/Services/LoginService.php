@@ -43,8 +43,6 @@ class LoginService extends BaseService
                 'scope' => '',
             ]);
 
-            Log::info('Login response: ' . json_encode($response->json()));
-
             if ($response->failed()) {
                 $return_array['status'] = false;
                 $return_array['message'] = 'auth.login.response_messages.invalid_credentials';
