@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Services\LogoutService;
 use App\Traits\ApiResponse;
-
+use Illuminate\Http\Request;
 
 class LogoutController extends BaseController
 {
@@ -44,8 +44,10 @@ class LogoutController extends BaseController
      *     )
      * )
      */
-    public function logout()
+    public function logout(Request $request)
     {
+        addInfoLog("Logout request");
+
         $result = $this->logoutService->logout(auth()->user());
 
         if ($result['status'] == false) {
@@ -85,6 +87,8 @@ class LogoutController extends BaseController
      */
     public function logoutAll()
     {
+        addInfoLog("Logout all request");
+
         $result = $this->logoutService->logoutAll(auth()->user());
 
         if ($result['status'] == false) {

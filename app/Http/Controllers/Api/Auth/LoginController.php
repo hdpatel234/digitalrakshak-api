@@ -19,6 +19,8 @@ class LoginController extends BaseController
 
     public function login(LoginRequest $request)
     {
+        addInfoLog("Login request");
+
         $result = $this->loginService->login($request);
 
         if ($result['status'] == false) {

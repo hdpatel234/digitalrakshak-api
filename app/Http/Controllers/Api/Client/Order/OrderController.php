@@ -17,7 +17,6 @@ use App\Services\PaymentTransactionService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -60,6 +59,8 @@ class OrderController extends BaseController
 
     public function index(Request $request)
     {
+        addInfoLog("Order list request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -304,7 +305,7 @@ class OrderController extends BaseController
     }
     public function store(StoreOrderRequest $request)
     {
-        Log::info("Order create requst", $request->all());
+        addInfoLog("Order store request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -530,6 +531,9 @@ class OrderController extends BaseController
 
         [$order, $orderCandidateRows] = $created;
 
+        //TODO: Send Email notification
+        //TODO: Generate Invoice and attch with order
+
         return $this->success('Order created successfully.', [
             'id' => $order->{$this->service->id()},
             'order_number' => $order->{$this->service->orderNumber()},
@@ -553,6 +557,8 @@ class OrderController extends BaseController
     }
     public function show(Request $request, int $order)
     {
+        addInfoLog("Order show request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -792,8 +798,7 @@ class OrderController extends BaseController
 
     public function initiatePayment(Request $request, $order)
     {
-        Log::info('Order payment create', $request->all());
-        Log::info('Order id' . $order);
+        addInfoLog("Initiate payment for order $order request");
 
         $validator = Validator::make($request->all(), [
             'payment_provider_name' => ['required', 'string'],
@@ -896,19 +901,11 @@ class OrderController extends BaseController
             $driver = $this->paymentGatewayDriverFactory->driver($gatewayConfig);
             $gatewayResponse = $driver->initiatePayment($gatewayPayload);
         } catch (InvalidArgumentException | RuntimeException $e) {
-            Log::warning('Payment initiation rejected', [
-                'order_id' => $orderId,
-                'gateway_config_id' => $gatewayConfigId,
-                'error' => $e->getMessage(),
-            ]);
+            addWarningLog("Initiate payment for order $order warning" . $e->getMessage());
 
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
-            Log::error('Payment initiation failed', [
-                'order_id' => $orderId,
-                'gateway_config_id' => $gatewayConfigId,
-                'error' => $e->getMessage(),
-            ]);
+            addErrorLog("Initiate payment for order $order error". $e->getMessage());
 
             return $this->error('Unable to initiate payment.', 500);
         }
@@ -959,7 +956,7 @@ class OrderController extends BaseController
 
     public function completePayment(Request $request, int $order)
     {
-        Log::info('Order payment complete request', $request->all());
+        addInfoLog("Complete payment for order $order request");
 
         $validator = Validator::make($request->all(), [
             'provider' => ['required', 'string'],
