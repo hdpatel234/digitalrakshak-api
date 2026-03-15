@@ -305,6 +305,8 @@ class CandidatesController extends BaseController
 
     public function import(StoreCandidateImportRequest $request): JsonResponse
     {
+        Log::info('Candiate import request', $request->all());
+
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
 
