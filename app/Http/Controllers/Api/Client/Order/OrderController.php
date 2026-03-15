@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Client\Order;
 
+use App\Enums\EmailPriority;
+use App\Enums\EmailQueueStatus;
+use App\Enums\EmailTemplateCode;
 use App\Http\Controllers\Api\Client\BaseController;
 use App\Http\Requests\Api\Client\Order\StoreOrderRequest;
 use App\Enums\OrderStatus;
@@ -21,10 +24,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Services\EmailTemplateService;
+use App\Services\ClientService;
+use App\Services\EmailQueueService;
 
 class OrderController extends BaseController
 {
     use ApiResponse;
+    protected ClientService $clientService;
     protected CandidateOrderService $service;
     protected OrderCandidateService $orderCandidateService;
     protected PackageService $packageService;
@@ -34,8 +41,11 @@ class OrderController extends BaseController
     protected PaymentGatewayService $paymentGatewayService;
     protected PaymentMethodTypeService $paymentMethodTypeService;
     protected PaymentTransactionService $paymentTransactionService;
+    protected EmailTemplateService $emailTemplateService;
+    protected EmailQueueService $emailQueueService;
 
     public function __construct(
+        ClientService $clientService,
         CandidateOrderService $service,
         OrderCandidateService $orderCandidateService,
         PackageService $packageService,
@@ -44,7 +54,9 @@ class OrderController extends BaseController
         PaymentGatewayConfigService $paymentGatewayConfigService,
         PaymentGatewayService $paymentGatewayService,
         PaymentMethodTypeService $paymentMethodTypeService,
-        PaymentTransactionService $paymentTransactionService
+        PaymentTransactionService $paymentTransactionService,
+        EmailTemplateService $emailTemplateService,
+        EmailQueueService $emailQueueService
     ) {
         $this->service = $service;
         $this->orderCandidateService = $orderCandidateService;
@@ -55,6 +67,8 @@ class OrderController extends BaseController
         $this->paymentGatewayService = $paymentGatewayService;
         $this->paymentMethodTypeService = $paymentMethodTypeService;
         $this->paymentTransactionService = $paymentTransactionService;
+        $this->emailTemplateService = $emailTemplateService;
+        $this->emailQueueService = $emailQueueService;
     }
 
     public function index(Request $request)
@@ -314,6 +328,10 @@ class OrderController extends BaseController
             return $this->error('Client context not found for this user.', 422);
         }
 
+        $client = $this->clientService->query()
+            ->where($this->clientService->id(), $clientId)
+            ->first();
+
         $payload = $request->validated();
         $orderId = (int) ($payload['id'] ?? 0);
         $packageId = (int) ($payload['package_id'] ?? 0);
@@ -531,7 +549,40 @@ class OrderController extends BaseController
 
         [$order, $orderCandidateRows] = $created;
 
-        //TODO: Send Email notification
+        $orderConfimationTemplate = $this->emailTemplateService->findActiveByCode(
+            EmailTemplateCode::CLIENT_ORDER_CONFIRMATION->value
+        );
+
+        if ($orderConfimationTemplate) {
+            $clientCompanyName = $client->{$this->clientService->companyName()};
+
+            $rendered = $this->emailTemplateService->renderTemplate($orderConfimationTemplate, [
+                'client_company_name' => $clientCompanyName,
+                'company_name' => (string) config('app.name') ?? env('APP_NAME'),
+            ]);
+
+            $this->emailQueueService->create([
+                $this->emailQueueService->emailUid() => 'email_' . Str::uuid(),
+                $this->emailQueueService->toEmail() => $client?->{$this->clientService->email()} ?? null,
+                $this->emailQueueService->toName() => $clientCompanyName,
+                $this->emailQueueService->subject() => (string) ($rendered['subject'] ?? ''),
+                $this->emailQueueService->bodyHtml() => $rendered['body_html'] ?? null,
+                $this->emailQueueService->bodyText() => $rendered['body_text'] ?? null,
+                $this->emailQueueService->templateId() => $orderConfimationTemplate->{$this->emailTemplateService->id()},
+                $this->emailQueueService->emailType() => (string) ($orderConfimationTemplate->{$this->emailTemplateService->emailType()} ?? 'client_order_confirmation'),
+                $this->emailQueueService->priority() => (string) ($orderConfimationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
+                $this->emailQueueService->clientId() => $clientId,
+                $this->emailQueueService->candidateId() => 0,
+                $this->emailQueueService->userId() => $user?->id,
+                $this->emailQueueService->assignedServerId() => $orderConfimationTemplate->{$this->emailTemplateService->serverId()},
+                $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
+                $this->emailQueueService->attempts() => 0,
+                $this->emailQueueService->maxAttempts() => 3,
+                $this->emailQueueService->scheduledAt() => now(),
+                $this->emailQueueService->expiresAt() => now()->addMinutes(30),
+            ]);
+        }
+
         //TODO: Generate Invoice and attch with order
 
         return $this->success('Order created successfully.', [
@@ -905,7 +956,7 @@ class OrderController extends BaseController
 
             return $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
-            addErrorLog("Initiate payment for order $order error". $e->getMessage());
+            addErrorLog("Initiate payment for order $order error" . $e->getMessage());
 
             return $this->error('Unable to initiate payment.', 500);
         }
