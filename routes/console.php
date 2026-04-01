@@ -19,3 +19,6 @@ Schedule::command('candidates:process-imports')->everyMinute();
 
 // Process email queue
 Schedule::command('emails:process-queue --limit=100')->everyMinute();
+
+// Reset AI accounts daily usage
+Schedule::command('ai:reset-daily-usage')->dailyAt('01:00')->timezone(config('app.timezone', 'Asia/Kolkata'));

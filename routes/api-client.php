@@ -39,6 +39,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('', [CandidateInvitationController::class, 'index']);
         Route::get('{invitation_token}', [CandidateInvitationController::class, 'showByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
         Route::post('{invitation_token}', [CandidateInvitationController::class, 'updateByToken'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
+        Route::post('{invitation_token}/parse-resume', [CandidateInvitationController::class, 'parseResume'])->withoutMiddleware(['auth:api', 'role:client_admin|client_user']);
         Route::post('{invitation}/resend', [CandidateInvitationController::class, 'resend']); // Pending
         Route::delete('{invitation}', [CandidateInvitationController::class, 'destroy']); // Pending
         Route::get('{invitation}/logs', [CandidateInvitationController::class, 'logs']); // Pending

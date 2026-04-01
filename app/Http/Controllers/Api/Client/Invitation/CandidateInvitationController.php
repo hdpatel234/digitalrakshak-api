@@ -18,6 +18,7 @@ use App\Services\CandidateServiceDataService;
 use App\Services\CandidateServiceService;
 use App\Services\ClientService;
 use App\Services\ConfigurationService;
+use App\Services\Ai\AiManager;
 use App\Services\EmailQueueService;
 use App\Services\EmailTemplateService;
 use App\Services\PackageService;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Smalot\PdfParser\Parser as PdfParser;
 
 class CandidateInvitationController extends BaseController
 {
@@ -47,6 +49,7 @@ class CandidateInvitationController extends BaseController
     protected CandidateServiceService $candidateServiceService;
     protected CandidateServiceDataService $candidateServiceDataService;
     protected CandidateInvitationService $service;
+    protected AiManager $aiManager;
 
     public function __construct(
         CandidateInvitationService $service,
@@ -61,7 +64,8 @@ class CandidateInvitationController extends BaseController
         ServiceService $serviceService,
         ServicesFieldService $servicesFieldService,
         CandidateServiceService $candidateServiceService,
-        CandidateServiceDataService $candidateServiceDataService
+        CandidateServiceDataService $candidateServiceDataService,
+        AiManager $aiManager
     ) {
         $this->service = $service;
         $this->candidateService = $candidateService;
@@ -76,6 +80,7 @@ class CandidateInvitationController extends BaseController
         $this->servicesFieldService = $servicesFieldService;
         $this->candidateServiceService = $candidateServiceService;
         $this->candidateServiceDataService = $candidateServiceDataService;
+        $this->aiManager = $aiManager;
     }
 
     public function index(Request $request)
@@ -872,5 +877,58 @@ class CandidateInvitationController extends BaseController
             ->unique($this->candidateServiceDataService->fieldId())
             ->keyBy($this->candidateServiceDataService->fieldId())
             ->map(fn($row) => $row->{$this->candidateServiceDataService->fieldValue()});
+    }
+
+    public function parseResume(Request $request, \App\Services\Ai\ResumeParserService $parserService)
+    {
+        addInfoLog('parseResume request');
+
+        $validator = Validator::make($request->all(), [
+            'resume' => ['required', 'file', 'mimes:pdf,docx,txt', 'max:10240'],
+            'prompt_code' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        if ($validator->fails()) {
+            addErrorLog('Resume validation failed', $validator->errors()->toArray());
+            return $this->validationError($validator->errors()->toArray());
+        }
+
+        $file = $request->file('resume');
+        if (!$file) {
+            addErrorLog('Resume file not found in request');
+            return $this->error('Resume file not found.', 422);
+        }
+
+        $originalName = (string) $file->getClientOriginalName();
+        $extension = strtolower((string) $file->getClientOriginalExtension());
+        $tempPath = $file->getRealPath();
+
+        if (!$tempPath || !file_exists($tempPath)) {
+            addErrorLog('Uploaded file could not be accessed', ['temp_path' => $tempPath]);
+            return $this->error('Uploaded file could not be accessed.', 422);
+        }
+
+        try {
+            $promptCode = (string) ($request->input('prompt_code') ?? 'resume_parse');
+            
+            $result = $parserService->parseResumeFile($tempPath, $extension, $originalName, $promptCode);
+            
+            if (!$result['success']) {
+                return $this->error($result['error'], $result['status_code'] ?? 422, $result['details'] ?? []);
+            }
+
+            return $this->success('Resume parsed successfully.', $result['data']);
+        } finally {
+            $this->cleanupTempFile($tempPath);
+        }
+    }
+
+    protected function cleanupTempFile(?string $path): void
+    {
+        if (!$path || !is_file($path)) {
+            return;
+        }
+
+        @unlink($path);
     }
 }

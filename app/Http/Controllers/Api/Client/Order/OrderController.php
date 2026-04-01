@@ -27,49 +27,26 @@ use RuntimeException;
 use App\Services\EmailTemplateService;
 use App\Services\ClientService;
 use App\Services\EmailQueueService;
+use App\Services\UserService;
 
 class OrderController extends BaseController
 {
     use ApiResponse;
-    protected ClientService $clientService;
-    protected CandidateOrderService $service;
-    protected OrderCandidateService $orderCandidateService;
-    protected PackageService $packageService;
-    protected CandidateService $candidateService;
-    protected PaymentGatewayDriverFactory $paymentGatewayDriverFactory;
-    protected PaymentGatewayConfigService $paymentGatewayConfigService;
-    protected PaymentGatewayService $paymentGatewayService;
-    protected PaymentMethodTypeService $paymentMethodTypeService;
-    protected PaymentTransactionService $paymentTransactionService;
-    protected EmailTemplateService $emailTemplateService;
-    protected EmailQueueService $emailQueueService;
-
     public function __construct(
-        ClientService $clientService,
-        CandidateOrderService $service,
-        OrderCandidateService $orderCandidateService,
-        PackageService $packageService,
-        CandidateService $candidateService,
-        PaymentGatewayDriverFactory $paymentGatewayDriverFactory,
-        PaymentGatewayConfigService $paymentGatewayConfigService,
-        PaymentGatewayService $paymentGatewayService,
-        PaymentMethodTypeService $paymentMethodTypeService,
-        PaymentTransactionService $paymentTransactionService,
-        EmailTemplateService $emailTemplateService,
-        EmailQueueService $emailQueueService
-    ) {
-        $this->service = $service;
-        $this->orderCandidateService = $orderCandidateService;
-        $this->packageService = $packageService;
-        $this->candidateService = $candidateService;
-        $this->paymentGatewayDriverFactory = $paymentGatewayDriverFactory;
-        $this->paymentGatewayConfigService = $paymentGatewayConfigService;
-        $this->paymentGatewayService = $paymentGatewayService;
-        $this->paymentMethodTypeService = $paymentMethodTypeService;
-        $this->paymentTransactionService = $paymentTransactionService;
-        $this->emailTemplateService = $emailTemplateService;
-        $this->emailQueueService = $emailQueueService;
-    }
+        protected ClientService $clientService,
+        protected CandidateOrderService $service,
+        protected OrderCandidateService $orderCandidateService,
+        protected PackageService $packageService,
+        protected CandidateService $candidateService,
+        protected PaymentGatewayDriverFactory $paymentGatewayDriverFactory,
+        protected PaymentGatewayConfigService $paymentGatewayConfigService,
+        protected PaymentGatewayService $paymentGatewayService,
+        protected PaymentMethodTypeService $paymentMethodTypeService,
+        protected PaymentTransactionService $paymentTransactionService,
+        protected EmailTemplateService $emailTemplateService,
+        protected EmailQueueService $emailQueueService,
+        protected UserService $userService
+    ) {}
 
     public function index(Request $request)
     {
@@ -194,7 +171,7 @@ class OrderController extends BaseController
             ->mapWithKeys(function ($method) {
                 return [
                     (int) $method->{$this->paymentMethodTypeService->id()} =>
-                        $method->{$this->paymentMethodTypeService->methodName()},
+                    $method->{$this->paymentMethodTypeService->methodName()},
                 ];
             });
 
@@ -213,41 +190,41 @@ class OrderController extends BaseController
             $gatewayConfigsById = $billingConfigIds === []
                 ? collect()
                 : $this->paymentGatewayConfigService->query()
-                    ->select([
-                        $this->paymentGatewayConfigService->id(),
-                        $this->paymentGatewayConfigService->gatewayId(),
-                        $this->paymentGatewayConfigService->configName(),
-                        $this->paymentGatewayConfigService->environment(),
-                        $this->paymentGatewayConfigService->baseUrl(),
-                        $this->paymentGatewayConfigService->enabledMethods(),
-                        $this->paymentGatewayConfigService->currencies(),
-                        $this->paymentGatewayConfigService->minAmount(),
-                        $this->paymentGatewayConfigService->maxAmount(),
-                        $this->paymentGatewayConfigService->transactionFeeType(),
-                        $this->paymentGatewayConfigService->transactionFeeFixed(),
-                        $this->paymentGatewayConfigService->transactionFeePercentage(),
-                        $this->paymentGatewayConfigService->isActive(),
-                        $this->paymentGatewayConfigService->isDefault(),
-                        $this->paymentGatewayConfigService->isSandbox(),
-                    ])
-                    ->with([
-                        'gateway' => function ($query) {
-                            $query->select([
-                                $this->paymentGatewayService->id(),
-                                $this->paymentGatewayService->gatewayName(),
-                                $this->paymentGatewayService->gatewayCode(),
-                                $this->paymentGatewayService->providerCompany(),
-                                $this->paymentGatewayService->logo(),
-                                $this->paymentGatewayService->website(),
-                                $this->paymentGatewayService->supportedMethods(),
-                                $this->paymentGatewayService->isActive(),
-                                $this->paymentGatewayService->displayOrder(),
-                            ]);
-                        },
-                    ])
-                    ->whereIn($this->paymentGatewayConfigService->id(), $billingConfigIds)
-                    ->get()
-                    ->keyBy($this->paymentGatewayConfigService->id());
+                ->select([
+                    $this->paymentGatewayConfigService->id(),
+                    $this->paymentGatewayConfigService->gatewayId(),
+                    $this->paymentGatewayConfigService->configName(),
+                    $this->paymentGatewayConfigService->environment(),
+                    $this->paymentGatewayConfigService->baseUrl(),
+                    $this->paymentGatewayConfigService->enabledMethods(),
+                    $this->paymentGatewayConfigService->currencies(),
+                    $this->paymentGatewayConfigService->minAmount(),
+                    $this->paymentGatewayConfigService->maxAmount(),
+                    $this->paymentGatewayConfigService->transactionFeeType(),
+                    $this->paymentGatewayConfigService->transactionFeeFixed(),
+                    $this->paymentGatewayConfigService->transactionFeePercentage(),
+                    $this->paymentGatewayConfigService->isActive(),
+                    $this->paymentGatewayConfigService->isDefault(),
+                    $this->paymentGatewayConfigService->isSandbox(),
+                ])
+                ->with([
+                    'gateway' => function ($query) {
+                        $query->select([
+                            $this->paymentGatewayService->id(),
+                            $this->paymentGatewayService->gatewayName(),
+                            $this->paymentGatewayService->gatewayCode(),
+                            $this->paymentGatewayService->providerCompany(),
+                            $this->paymentGatewayService->logo(),
+                            $this->paymentGatewayService->website(),
+                            $this->paymentGatewayService->supportedMethods(),
+                            $this->paymentGatewayService->isActive(),
+                            $this->paymentGatewayService->displayOrder(),
+                        ]);
+                    },
+                ])
+                ->whereIn($this->paymentGatewayConfigService->id(), $billingConfigIds)
+                ->get()
+                ->keyBy($this->paymentGatewayConfigService->id());
 
             $result['list'] = $orderList
                 ->map(function (array $row) use ($paymentMethodNameById, $paymentMethodColumn, $gatewayConfigsById) {
@@ -558,6 +535,7 @@ class OrderController extends BaseController
 
             $rendered = $this->emailTemplateService->renderTemplate($orderConfimationTemplate, [
                 'client_company_name' => $clientCompanyName,
+                'client_order_id' => $order->{$this->service->orderNumber()} ?? null,
                 'company_name' => (string) config('app.name') ?? env('APP_NAME'),
             ]);
 
@@ -573,7 +551,7 @@ class OrderController extends BaseController
                 $this->emailQueueService->priority() => (string) ($orderConfimationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
                 $this->emailQueueService->clientId() => $clientId,
                 $this->emailQueueService->candidateId() => 0,
-                $this->emailQueueService->userId() => $user?->id,
+                $this->emailQueueService->userId() => $user?->{$this->userService->id()},
                 $this->emailQueueService->assignedServerId() => $orderConfimationTemplate->{$this->emailTemplateService->serverId()},
                 $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
                 $this->emailQueueService->attempts() => 0,
@@ -649,9 +627,9 @@ class OrderController extends BaseController
         $candidatesById = $candidateIds === []
             ? collect()
             : $this->candidateService->query()
-                ->whereIn($this->candidateService->id(), $candidateIds)
-                ->get()
-                ->keyBy($this->candidateService->id());
+            ->whereIn($this->candidateService->id(), $candidateIds)
+            ->get()
+            ->keyBy($this->candidateService->id());
 
         $candidates = $orderCandidateRows
             ->map(function ($row) use ($candidatesById) {
