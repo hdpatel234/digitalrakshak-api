@@ -28,6 +28,7 @@ use App\Services\EmailTemplateService;
 use App\Services\ClientService;
 use App\Services\EmailQueueService;
 use App\Services\UserService;
+use App\Services\InvoiceService;
 
 class OrderController extends BaseController
 {
@@ -45,7 +46,8 @@ class OrderController extends BaseController
         protected PaymentTransactionService $paymentTransactionService,
         protected EmailTemplateService $emailTemplateService,
         protected EmailQueueService $emailQueueService,
-        protected UserService $userService
+        protected UserService $userService,
+        protected InvoiceService $invoiceService
     ) {}
 
     public function index(Request $request)
@@ -1071,6 +1073,7 @@ class OrderController extends BaseController
             $this->paymentTransactionService->transactionUuid() => (string) Str::uuid(),
             $this->paymentTransactionService->clientId() => $clientId,
             $this->paymentTransactionService->orderId() => $orderId,
+            $this->paymentTransactionService->invoiceId() => 0,
             $this->paymentTransactionService->gatewayConfigId() => $gatewayConfigId,
             $this->paymentTransactionService->amount() => $amount,
             $this->paymentTransactionService->currency() => $currency,
@@ -1189,6 +1192,10 @@ class OrderController extends BaseController
             'gateway_data' => $gatewayData,
         ];
 
+        $localInvoice = $this->invoiceService->query()
+            ->where($this->invoiceService->orderId(), $orderId)
+            ->first();
+
         $transaction->update([
             $this->paymentTransactionService->gatewayOrderId() => $gatewayOrderId ?: $transaction->{$this->paymentTransactionService->gatewayOrderId()},
             $this->paymentTransactionService->gatewayPaymentId() => $gatewayPaymentId,
@@ -1198,6 +1205,7 @@ class OrderController extends BaseController
             $this->paymentTransactionService->gatewayResponse() => json_encode($gatewayPayload),
             $this->paymentTransactionService->paymentDetails() => json_encode($gatewayData),
             $this->paymentTransactionService->updatedBy() => $user?->id,
+            $this->paymentTransactionService->invoiceId() => $localInvoice ? $localInvoice->id : 0,
         ]);
 
         $orderRow->update([
@@ -1209,35 +1217,27 @@ class OrderController extends BaseController
         ]);
 
         try {
-            $localInvoice = \App\Models\Invoice::where(\App\Models\Invoice::ORDER_ID, $orderId)->first();
-
             if ($localInvoice) {
-                // First mark invoice paid in internal db table
                 $localInvoice->update([
-                    \App\Models\Invoice::PAYMENT_STATUS => 'paid',
-                    \App\Models\Invoice::STATUS => 'paid',
+                    $this->invoiceService->paymentStatus() => 'paid',
+                    $this->invoiceService->status() => 'paid',
                 ]);
 
-                /** @var \App\Services\Billing\BillingManager $billingManager */
                 $billingManager = app(\App\Services\Billing\BillingManager::class);
 
-                /** @var \App\Models\Client|null $client */
-                $client = $this->clientService->query()
-                    ->where($this->clientService->id(), $clientId)
-                    ->first();
+                $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
 
                 $billingDriver = null;
                 if ($client) {
                     try {
                         $billingDriver = $billingManager->driver($client);
                     } catch (\Exception $e) {
-                        \Illuminate\Support\Facades\Log::warning("Billing driver not resolved for client {$clientId}: " . $e->getMessage());
+                        addWarningLog("Billing driver not resolved for client {$clientId}: " . $e->getMessage());
                     }
                 }
 
-                if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver && $localInvoice->external_invoice_id) {
-                    // Call billing provider and first get invoice data by calling getinvoice api
-                    $invoiceData = $billingDriver->getInvoice($localInvoice->external_invoice_id);
+                if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver && $localInvoice->{$this->invoiceService->externalInvoiceId()}) {
+                    $invoiceData = $billingDriver->getInvoice($localInvoice->{$this->invoiceService->externalInvoiceId()});
 
                     $externalClientId = $invoiceData['data']['client_id'] ?? null;
                     $invoiceAmount = $invoiceData['data']['amount'] ?? $transaction->amount;
@@ -1253,7 +1253,6 @@ class OrderController extends BaseController
                         }
                         $typeId = $billingDriver->getInvoiceNinjaPaymentTypeId($methodName);
 
-                        // Call api for add payment
                         $paymentPayload = [
                             'client_id' => $externalClientId,
                             'amount' => (string) $invoiceAmount,
@@ -1273,7 +1272,7 @@ class OrderController extends BaseController
                 }
             }
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to process invoice payment for order {$orderId}: " . $e->getMessage());
+            addErrorLog("Failed to process invoice payment for order {$orderId}: " . $e->getMessage());
         }
 
         return $this->success('Payment completed successfully.', [

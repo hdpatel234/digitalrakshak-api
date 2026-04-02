@@ -89,7 +89,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('{candidate}/services/{service}/timeline', [Controller::class, 'getCandidateServiceTimeline']); // Pending
     });
 
-    // Billing & Invoices
+    // Invoices
     Route::prefix('invoices')->group(function () {
         Route::get('', [InvoiceController::class, 'index']);
         Route::get('{invoice}', [InvoiceController::class, 'show']);
@@ -97,6 +97,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('{invoice}/payment-history', [InvoiceController::class, 'paymentHistory']); // Pending
     });
 
+    // Billing
     Route::prefix('billing')->group(function () {
         Route::get('{payment_method}/payment-gateways', [BillingController::class, 'paymentGatewaysByMethod']);
         Route::get('summary', [BillingController::class, 'summary']); // Pending
@@ -107,7 +108,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('payment-gateways', [BillingController::class, 'paymentGateways']);
     });
 
-    // Support Tickets (via UVdesk or other)
+    // Support Tickets
     Route::prefix('tickets')->group(function () {
         Route::apiResource('', Controller::class);
         Route::post('{ticket}/reply', [Controller::class, 'reply']); // Pending
@@ -117,7 +118,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::post('{ticket}/attachments', [Controller::class, 'uploadAttachment']); // Pending
     });
 
-    // Reports (Client-specific)
+    // Reports
     Route::prefix('reports')->group(function () {
         Route::get('spending', [Controller::class, 'spending']); // Pending
         Route::get('orders', [Controller::class, 'orders']); // Pending
