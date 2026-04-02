@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Client\Candidate;
 
 use App\Enums\CandidateStatus;
@@ -24,29 +25,17 @@ use ZipArchive;
 class CandidatesController extends BaseController
 {
     use ApiResponse;
-    protected CandidateService $candidateService;
-    protected CountryService $countryService;
-    protected StateService $stateService;
-    protected CityService $cityService;
-    protected ClientWebhookDispatcher $clientWebhookDispatcher;
-
     public function __construct(
-        CandidateService $candidateService,
-        CountryService $countryService,
-        StateService $stateService,
-        CityService $cityService,
-        ClientWebhookDispatcher $clientWebhookDispatcher
-    )
-    {
-        $this->candidateService = $candidateService;
-        $this->countryService = $countryService;
-        $this->stateService = $stateService;
-        $this->cityService = $cityService;
-        $this->clientWebhookDispatcher = $clientWebhookDispatcher;
-    }
-
+        protected CandidateService $candidateService,
+        protected CountryService $countryService,
+        protected StateService $stateService,
+        protected CityService $cityService,
+        protected ClientWebhookDispatcher $clientWebhookDispatcher
+    ) {}
     public function index(Request $request)
     {
+        addInfoLog("Candiates list request");
+
         $query = $this->candidateService->query();
 
         $user = $request->user('api') ?? $request->user();
@@ -131,23 +120,23 @@ class CandidatesController extends BaseController
             $countryNamesById = $missingCountryIds === []
                 ? collect()
                 : $this->countryService->query()
-                    ->whereIn($this->countryService->id(), $missingCountryIds)
-                    ->get()
-                    ->pluck($this->countryService->name(), $this->countryService->id());
+                ->whereIn($this->countryService->id(), $missingCountryIds)
+                ->get()
+                ->pluck($this->countryService->name(), $this->countryService->id());
 
             $stateNamesById = $missingStateIds === []
                 ? collect()
                 : $this->stateService->query()
-                    ->whereIn($this->stateService->id(), $missingStateIds)
-                    ->get()
-                    ->pluck($this->stateService->name(), $this->stateService->id());
+                ->whereIn($this->stateService->id(), $missingStateIds)
+                ->get()
+                ->pluck($this->stateService->name(), $this->stateService->id());
 
             $cityNamesById = $missingCityIds === []
                 ? collect()
                 : $this->cityService->query()
-                    ->whereIn($this->cityService->id(), $missingCityIds)
-                    ->get()
-                    ->pluck($this->cityService->name(), $this->cityService->id());
+                ->whereIn($this->cityService->id(), $missingCityIds)
+                ->get()
+                ->pluck($this->cityService->name(), $this->cityService->id());
 
             $result['list'] = $list
                 ->map(function (array $row) use ($countryNamesById, $stateNamesById, $cityNamesById) {
@@ -179,7 +168,7 @@ class CandidatesController extends BaseController
         }
 
         $statusList = array_map(
-            static fn (CandidateStatus $status): array => [
+            static fn(CandidateStatus $status): array => [
                 'key' => $status->value,
                 'name' => ucwords(str_replace('_', ' ', $status->value)),
             ],
@@ -200,6 +189,8 @@ class CandidatesController extends BaseController
 
     public function store(StoreCandidateRequest $request)
     {
+        addInfoLog("Candidate Store request");
+
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -215,7 +206,7 @@ class CandidatesController extends BaseController
             );
 
             $candidate = $created['candidate'] ?? null;
-            
+
             $this->clientWebhookDispatcher->dispatchForClient(
                 $clientId,
                 ClientWebhookDispatcher::EVENT_CANDIDATE_CREATED,
@@ -244,6 +235,8 @@ class CandidatesController extends BaseController
 
     public function importSample(Request $request): Response
     {
+        addInfoLog("Candiate Sheet Sample Request");
+
         $format = strtolower((string) $request->query('format', 'csv'));
         if (!in_array($format, ['csv', 'xlsx'], true)) {
             return $this->error('Invalid format. Allowed formats: csv, xlsx.', 422);
@@ -305,7 +298,7 @@ class CandidatesController extends BaseController
 
     public function import(StoreCandidateImportRequest $request): JsonResponse
     {
-        Log::info('Candiate import request', $request->all());
+        addInfoLog("Candiate Import Request");
 
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -355,6 +348,8 @@ class CandidatesController extends BaseController
 
     public function imports(Request $request): JsonResponse
     {
+        addInfoLog("Candidates Import List Request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 

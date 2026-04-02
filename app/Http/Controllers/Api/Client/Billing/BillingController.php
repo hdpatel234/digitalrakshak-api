@@ -12,22 +12,16 @@ use Illuminate\Http\Request;
 class BillingController extends BaseController
 {
     use ApiResponse;
-    protected PaymentGatewayConfigService $paymentGatewayConfigService;
-    protected PaymentGatewayService $paymentGatewayService;
-    protected PaymentMethodTypeService $paymentMethodTypeService;
-
     public function __construct(
-        PaymentGatewayConfigService $paymentGatewayConfigService,
-        PaymentGatewayService $paymentGatewayService,
-        PaymentMethodTypeService $paymentMethodTypeService
-    ) {
-        $this->paymentGatewayConfigService = $paymentGatewayConfigService;
-        $this->paymentGatewayService = $paymentGatewayService;
-        $this->paymentMethodTypeService = $paymentMethodTypeService;
-    }
+        protected PaymentGatewayConfigService $paymentGatewayConfigService,
+        protected PaymentGatewayService $paymentGatewayService,
+        protected PaymentMethodTypeService $paymentMethodTypeService
+    ) {}
 
     public function paymentGateways(Request $request)
     {
+        addInfoLog("Billing payment gateway list request");
+
         $gatewayRows = $this->paymentGatewayService->query()
             ->select([
                 $this->paymentGatewayService->id(),
@@ -179,6 +173,8 @@ class BillingController extends BaseController
 
     public function paymentMethods(Request $request)
     {
+        addInfoLog("Billing payment method list request");
+
         $gatewayRows = $this->paymentGatewayService->query()
             ->select([
                 $this->paymentGatewayService->id(),
@@ -290,6 +286,8 @@ class BillingController extends BaseController
 
     public function paymentGatewaysByMethod(Request $request, $payment_method)
     {
+        addInfoLog("Billing payment gateway by method request");
+
         $methodTypeId = (int) $payment_method;
 
         if ($methodTypeId <= 0) {

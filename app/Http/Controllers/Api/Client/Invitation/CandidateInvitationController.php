@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\Client\Invitation;
 
 use App\Enums\CandidateInvitationStatus;
@@ -31,60 +32,31 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Smalot\PdfParser\Parser as PdfParser;
 
 class CandidateInvitationController extends BaseController
 {
     use ApiResponse;
-    protected CandidateService $candidateService;
-    protected PackageService $packageService;
-    protected ClientService $clientService;
-    protected EmailTemplateService $emailTemplateService;
-    protected EmailQueueService $emailQueueService;
-    protected CandidateInvitationsLogService $candidateInvitationsLogService;
-    protected ConfigurationService $configurationService;
-    protected PackageServiceService $packageServiceService;
-    protected ServiceService $serviceService;
-    protected ServicesFieldService $servicesFieldService;
-    protected CandidateServiceService $candidateServiceService;
-    protected CandidateServiceDataService $candidateServiceDataService;
-    protected CandidateInvitationService $service;
-    protected AiManager $aiManager;
-
     public function __construct(
-        CandidateInvitationService $service,
-        CandidateService $candidateService,
-        PackageService $packageService,
-        ClientService $clientService,
-        EmailTemplateService $emailTemplateService,
-        EmailQueueService $emailQueueService,
-        CandidateInvitationsLogService $candidateInvitationsLogService,
-        ConfigurationService $configurationService,
-        PackageServiceService $packageServiceService,
-        ServiceService $serviceService,
-        ServicesFieldService $servicesFieldService,
-        CandidateServiceService $candidateServiceService,
-        CandidateServiceDataService $candidateServiceDataService,
-        AiManager $aiManager
-    ) {
-        $this->service = $service;
-        $this->candidateService = $candidateService;
-        $this->packageService = $packageService;
-        $this->clientService = $clientService;
-        $this->emailTemplateService = $emailTemplateService;
-        $this->emailQueueService = $emailQueueService;
-        $this->candidateInvitationsLogService = $candidateInvitationsLogService;
-        $this->configurationService = $configurationService;
-        $this->packageServiceService = $packageServiceService;
-        $this->serviceService = $serviceService;
-        $this->servicesFieldService = $servicesFieldService;
-        $this->candidateServiceService = $candidateServiceService;
-        $this->candidateServiceDataService = $candidateServiceDataService;
-        $this->aiManager = $aiManager;
-    }
+        protected CandidateInvitationService $service,
+        protected CandidateService $candidateService,
+        protected PackageService $packageService,
+        protected ClientService $clientService,
+        protected EmailTemplateService $emailTemplateService,
+        protected EmailQueueService $emailQueueService,
+        protected CandidateInvitationsLogService $candidateInvitationsLogService,
+        protected ConfigurationService $configurationService,
+        protected PackageServiceService $packageServiceService,
+        protected ServiceService $serviceService,
+        protected ServicesFieldService $servicesFieldService,
+        protected CandidateServiceService $candidateServiceService,
+        protected CandidateServiceDataService $candidateServiceDataService,
+        protected AiManager $aiManager
+    ) {}
 
     public function index(Request $request)
     {
+        addInfoLog("Candidates Invitation list index");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -210,11 +182,15 @@ class CandidateInvitationController extends BaseController
 
     public function store(StoreCandidateInvitationRequest $request)
     {
+        addInfoLog("Candiate Invitation create request");
+
         return $this->createInvitations($request, $request->validated());
     }
 
     public function invite(StoreCandidateInvitationRequest $request, int $candidate)
     {
+        addInfoLog("Candiate Invitation send request");
+
         $payload = $request->validated();
         $payload['candidate_ids'] = [$candidate];
 
@@ -499,6 +475,8 @@ class CandidateInvitationController extends BaseController
 
     public function showByToken(Request $request, $token)
     {
+        addInfoLog("Candiate Invitation show by token request");
+
         $token = trim((string) $token);
         if ($token === '') {
             return $this->error('Invitation token is required.', 422);
@@ -591,6 +569,8 @@ class CandidateInvitationController extends BaseController
 
     public function updateByToken(Request $request, $token)
     {
+        addInfoLog("Candidate invitation data update by token");
+
         $token = trim((string) $token);
         if ($token === '') {
             return $this->error('Invitation token is required.', 422);
@@ -910,9 +890,9 @@ class CandidateInvitationController extends BaseController
 
         try {
             $promptCode = (string) ($request->input('prompt_code') ?? 'resume_parse');
-            
+
             $result = $parserService->parseResumeFile($tempPath, $extension, $originalName, $promptCode);
-            
+
             if (!$result['success']) {
                 return $this->error($result['error'], $result['status_code'] ?? 422, $result['details'] ?? []);
             }

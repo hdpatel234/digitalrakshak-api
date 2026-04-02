@@ -99,13 +99,13 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Billing
     Route::prefix('billing')->group(function () {
-        Route::get('{payment_method}/payment-gateways', [BillingController::class, 'paymentGatewaysByMethod']);
         Route::get('summary', [BillingController::class, 'summary']); // Pending
         Route::get('transactions', [BillingController::class, 'transactions']); // Pending
         Route::get('credit-history', [BillingController::class, 'creditHistory']); // Pending
         Route::post('add-credit', [BillingController::class, 'addCredit']); // Pending
         Route::get('payment-methods', [BillingController::class, 'paymentMethods']);
         Route::get('payment-gateways', [BillingController::class, 'paymentGateways']);
+        Route::get('{payment_method}/payment-gateways', [BillingController::class, 'paymentGatewaysByMethod']);
     });
 
     // Support Tickets

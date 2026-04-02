@@ -143,6 +143,8 @@ class InvoiceController extends BaseController
 
     public function downloadPdf(Request $request, $invoiceId)
     {
+        addInfoLog("Invoice download pdf request");
+
         $invoice = $this->service->query()->find($invoiceId);
 
         if (!$invoice) {
