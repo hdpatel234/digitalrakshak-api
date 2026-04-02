@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BillingPlatform extends BaseModel
 {
-    
+
     protected $table = "billing_platforms";
-    
+
     const PLATFORM_NAME = "platform_name";
     const PLATFORM_CODE = "platform_code";
     const DESCRIPTION = "description";
@@ -23,6 +23,6 @@ class BillingPlatform extends BaseModel
 
     public function clientBillingConfigs(): HasMany
     {
-        return $this->hasMany(ClientBillingConfig::class, ClientBillingConfig::BILLING_PLATFORM_ID);
+        return $this->hasMany(BillingConfig::class, BillingConfig::BILLING_PLATFORM_ID);
     }
 }

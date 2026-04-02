@@ -561,7 +561,135 @@ class OrderController extends BaseController
             ]);
         }
 
-        //TODO: Generate Invoice and attch with order
+        try {
+            /** @var \App\Services\Billing\BillingManager $billingManager */
+            $billingManager = app(\App\Services\Billing\BillingManager::class);
+
+            $billingDriver = null;
+            try {
+                $billingDriver = $billingManager->driver($client);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning("Billing driver not resolved for client {$client->{$this->clientService->id()}}: " . $e->getMessage());
+            }
+
+            if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver) {
+                $email = $client->{$this->clientService->email()} ?? '';
+                $externalClient = $email ? $billingManager->getClientByEmail($client, $email) : null;
+
+                if (!$externalClient) {
+                    $fullName = $client->{$this->clientService->contactPerson()} ?? '';
+                    $nameParts = explode(' ', $fullName, 2);
+
+                    $externalClient = $billingManager->createClient($client, [
+                        'name' => $client->{$this->clientService->companyName()} ?: $fullName,
+                        'contacts' => [
+                            [
+                                'email' => $email,
+                                'first_name' => $nameParts[0] ?? '',
+                                'last_name' => $nameParts[1] ?? '',
+                                'phone' => $client->{$this->clientService->phone()} ?? '',
+                                'send_email' => true,
+                            ]
+                        ]
+                    ]);
+                }
+
+                $clientIdExternal = $externalClient['data']['id'] ?? $externalClient['id'] ?? null;
+
+                if ($clientIdExternal) {
+                    $mapping = \App\Models\BillingServiceMapping::where('billing_platform_id', $client->{$this->clientService->defaultBillingConfigId()})
+                        ->where('package_id', $package->{$this->packageService->id()})
+                        ->first();
+
+                    $externalItemId = $mapping ? $mapping->external_service_id : null;
+                    $productKey = $package->{$this->packageService->packageName()} ?? 'Package order';
+
+                    if (!$externalItemId) {
+                        $product = $billingManager->getProductByKey($client, $productKey);
+
+                        if (!$product) {
+                            $product = $billingManager->createProduct($client, [
+                                'product_key' => $productKey,
+                                'notes' => $package->description ?? $productKey,
+                                'cost' => 0,
+                                'price' => $unitPrice,
+                            ]);
+                        }
+
+                        $externalItemId = $product['data']['product_key'] ?? $product['product_key'] ?? null;
+
+                        if ($externalItemId) {
+                            \App\Models\BillingServiceMapping::create([
+                                'billing_platform_id' => $client->{$this->clientService->defaultBillingConfigId()},
+                                'package_id' => $package->{$this->packageService->id()},
+                                'external_service_id' => $externalItemId,
+                                'created_by' => $user?->id ?? null,
+                                'status' => 'active'
+                            ]);
+                        }
+                    }
+
+                    $invoicePayload = [
+                        'client_id' => $clientIdExternal,
+                        'date' => date('Y-m-d'),
+                        'public_notes' => 'Invoice for Order #' . $order->{$this->service->orderNumber()},
+                        'private_notes' => 'Internal Order ID: ' . $order->{$this->service->id()},
+                        'line_items' => [
+                            [
+                                'product_key' => $externalItemId ?: $productKey,
+                                'notes' => $package->description ?? $productKey,
+                                'cost' => $unitPrice,
+                                'quantity' => count($candidateIds),
+                            ]
+                        ],
+                    ];
+
+                    $invoice = $billingManager->createInvoice($client, $invoicePayload);
+
+                    $invoiceId = $invoice['data']['id'] ?? $invoice['id'] ?? null;
+                    $invoiceNumber = $invoice['data']['number'] ?? $invoice['number'] ?? null;
+
+                    if ($invoiceId || $invoiceNumber) {
+                        $localInvoice = \App\Models\Invoice::create([
+                            \App\Models\Invoice::CLIENT_ID => $client->{$this->clientService->id()},
+                            \App\Models\Invoice::ORDER_ID => $order->{$this->service->id()},
+                            \App\Models\Invoice::BILLING_CONFIG_ID => $order->{$this->service->billingConfigId()},
+                            \App\Models\Invoice::EXTERNAL_INVOICE_ID => $invoiceId,
+                            \App\Models\Invoice::EXTERNAL_INVOICE_NUMBER => $invoiceNumber,
+                            \App\Models\Invoice::INVOICE_NUMBER => $invoiceNumber,
+                            \App\Models\Invoice::INVOICE_DATE => date('Y-m-d'),
+                            \App\Models\Invoice::SUBTOTAL => $subtotal,
+                            \App\Models\Invoice::TOTAL_AMOUNT => $subtotal,
+                            \App\Models\Invoice::AMOUNT_DUE => $subtotal,
+                            \App\Models\Invoice::STATUS => 'sent',
+                            \App\Models\Invoice::PAYMENT_STATUS => 'unpaid',
+                            \App\Models\Invoice::SYNC_STATUS => 'synced',
+                            \App\Models\Invoice::LAST_SYNC_AT => now(),
+                            \App\Models\Invoice::CREATED_BY => $user?->id ?? null,
+                        ]);
+
+                        \App\Models\InvoiceItem::create([
+                            \App\Models\InvoiceItem::INVOICE_ID => $localInvoice->id,
+                            \App\Models\InvoiceItem::ITEM_TYPE => 'package',
+                            \App\Models\InvoiceItem::DESCRIPTION => $productKey,
+                            \App\Models\InvoiceItem::QUANTITY => count($candidateIds),
+                            \App\Models\InvoiceItem::UNIT_PRICE => $unitPrice,
+                            \App\Models\InvoiceItem::TOTAL_PRICE => $subtotal,
+                            \App\Models\InvoiceItem::EXTERNAL_ITEM_ID => $externalItemId ?: $productKey,
+                        ]);
+
+                        $order->update([
+                            $this->service->invoiceId() => $localInvoice->id,
+                            $this->service->invoiceNumber() => $invoiceNumber,
+                            $this->service->billingSyncStatus() => 'synced',
+                            $this->service->invoiceGeneratedAt() => now(),
+                        ]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to generate invoice for order {$order->{$this->service->id()}}: " . $e->getMessage());
+        }
 
         return $this->success('Order created successfully.', [
             'id' => $order->{$this->service->id()},
@@ -1079,6 +1207,74 @@ class OrderController extends BaseController
             $this->service->processedAt() => now(),
             $this->service->updatedBy() => $user?->id,
         ]);
+
+        try {
+            $localInvoice = \App\Models\Invoice::where(\App\Models\Invoice::ORDER_ID, $orderId)->first();
+
+            if ($localInvoice) {
+                // First mark invoice paid in internal db table
+                $localInvoice->update([
+                    \App\Models\Invoice::PAYMENT_STATUS => 'paid',
+                    \App\Models\Invoice::STATUS => 'paid',
+                ]);
+
+                /** @var \App\Services\Billing\BillingManager $billingManager */
+                $billingManager = app(\App\Services\Billing\BillingManager::class);
+
+                /** @var \App\Models\Client|null $client */
+                $client = $this->clientService->query()
+                    ->where($this->clientService->id(), $clientId)
+                    ->first();
+
+                $billingDriver = null;
+                if ($client) {
+                    try {
+                        $billingDriver = $billingManager->driver($client);
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::warning("Billing driver not resolved for client {$clientId}: " . $e->getMessage());
+                    }
+                }
+
+                if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver && $localInvoice->external_invoice_id) {
+                    // Call billing provider and first get invoice data by calling getinvoice api
+                    $invoiceData = $billingDriver->getInvoice($localInvoice->external_invoice_id);
+
+                    $externalClientId = $invoiceData['data']['client_id'] ?? null;
+                    $invoiceAmount = $invoiceData['data']['amount'] ?? $transaction->amount;
+
+                    if ($externalClientId) {
+                        $paymentMethodId = (int) ($orderRow->{$this->service->paymentMethod()} ?? 0);
+                        $methodName = '';
+                        if ($paymentMethodId > 0) {
+                            $methodRow = $this->paymentMethodTypeService->query()
+                                ->where($this->paymentMethodTypeService->id(), $paymentMethodId)
+                                ->first();
+                            $methodName = (string) ($methodRow ? $methodRow->{$this->paymentMethodTypeService->methodName()} : '');
+                        }
+                        $typeId = $billingDriver->getInvoiceNinjaPaymentTypeId($methodName);
+
+                        // Call api for add payment
+                        $paymentPayload = [
+                            'client_id' => $externalClientId,
+                            'amount' => (string) $invoiceAmount,
+                            'transaction_reference' => $gatewayPaymentId ?: $transactionUuid,
+                            'date' => date('Y-m-d'),
+                            'type_id' => $typeId,
+                            'invoices' => [
+                                [
+                                    'invoice_id' => $localInvoice->external_invoice_id,
+                                    'amount' => (string) $invoiceAmount
+                                ]
+                            ]
+                        ];
+
+                        $billingDriver->recordPayment($paymentPayload);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to process invoice payment for order {$orderId}: " . $e->getMessage());
+        }
 
         return $this->success('Payment completed successfully.', [
             'order_id' => $orderId,

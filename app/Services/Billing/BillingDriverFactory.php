@@ -3,7 +3,7 @@
 namespace App\Services\Billing;
 
 use App\Models\Client;
-use App\Models\ClientBillingConfig;
+use App\Models\BillingConfig;
 use App\Services\Billing\Drivers\AbstractBillingDriver;
 use App\Services\Billing\Drivers\InvoiceNinjaDriver;
 use InvalidArgumentException;
@@ -11,7 +11,7 @@ use RuntimeException;
 
 class BillingDriverFactory
 {
-    public function driver(Client $client, ?ClientBillingConfig $billingConfig = null): AbstractBillingDriver
+    public function driver(Client $client, ?BillingConfig $billingConfig = null): AbstractBillingDriver
     {
         $billingConfig ??= $this->resolveBillingConfig($client);
 
@@ -20,23 +20,39 @@ class BillingDriverFactory
         return new $driverClass($billingConfig);
     }
 
-    protected function resolveBillingConfig(Client $client): ClientBillingConfig
+    protected function resolveBillingConfig(Client $client): BillingConfig
     {
-        $client->loadMissing('defaultBillingConfig.billingPlatform', 'billingConfigs.billingPlatform');
+        $platformId = (int) $client->default_billing_config_id;
 
-        $billingConfig = $client->defaultBillingConfig
-            ?? $client->billingConfigs->firstWhere(ClientBillingConfig::IS_DEFAULT, true)
-            ?? $client->billingConfigs->firstWhere(ClientBillingConfig::STATUS, 'active')
-            ?? $client->billingConfigs->first();
-
-        if (!$billingConfig instanceof ClientBillingConfig) {
-            throw new RuntimeException("No billing configuration found for client [{$client->id}].");
+        if ($platformId <= 0) {
+            throw new RuntimeException("No default billing provider configured for client [{$client->id}].");
         }
+
+        $platform = \App\Models\BillingPlatform::find($platformId);
+
+        if (!$platform) {
+            throw new RuntimeException("Billing platform ID [$platformId] not found.");
+        }
+
+        $billingConfig = BillingConfig::where('billing_platform_id', $platformId)
+            ->where(function ($query) {
+                $query->where('is_default', true)
+                      ->orWhere('status', 'active');
+            })
+            ->first()
+            ?? BillingConfig::where('billing_platform_id', $platformId)
+                ->first();
+
+        if (!$billingConfig instanceof BillingConfig) {
+            throw new RuntimeException("No billing configuration found for billing platform [{$platformId}].");
+        }
+
+        $billingConfig->setRelation('billingPlatform', $platform);
 
         return $billingConfig;
     }
 
-    protected function resolveDriverClass(ClientBillingConfig $billingConfig): string
+    protected function resolveDriverClass(BillingConfig $billingConfig): string
     {
         $customDriverClass = data_get($billingConfig->additional_config, 'driver_class');
         if (is_string($customDriverClass) && class_exists($customDriverClass)) {
@@ -70,4 +86,3 @@ class BillingDriverFactory
         return $driverClass;
     }
 }
-

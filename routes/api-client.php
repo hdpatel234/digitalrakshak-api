@@ -91,9 +91,9 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Billing & Invoices
     Route::prefix('invoices')->group(function () {
-        Route::get('', [InvoiceController::class, 'index']); // Pending
-        Route::get('{invoice}', [InvoiceController::class, 'show']); // Pending
-        Route::get('{invoice}/pdf', [InvoiceController::class, 'downloadPdf']); // Pending
+        Route::get('', [InvoiceController::class, 'index']);
+        Route::get('{invoice}', [InvoiceController::class, 'show']);
+        Route::get('{invoice}/pdf', [InvoiceController::class, 'downloadPdf']);
         Route::get('{invoice}/payment-history', [InvoiceController::class, 'paymentHistory']); // Pending
     });
 

@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends BaseModel
 {
-    
+
     protected $table = "clients";
-    
+
     const COMPANY_NAME = "company_name";
     const CONTACT_PERSON = "contact_person";
     const EMAIL = "email";
@@ -64,19 +64,19 @@ class Client extends BaseModel
         self::DELETED_BY,
     ];
 
-    public function defaultBillingConfig(): BelongsTo
+    public function defaultBillingPlatform(): BelongsTo
     {
-        return $this->belongsTo(ClientBillingConfig::class, self::DEFAULT_BILLING_CONFIG_ID);
+        return $this->belongsTo(BillingPlatform::class, self::DEFAULT_BILLING_CONFIG_ID);
     }
 
     public function defaultSupportConfig(): BelongsTo
     {
-        return $this->belongsTo(ClientSupportConfig::class, self::DEFAULT_SUPPORT_CONFIG_ID);
+        return $this->belongsTo(SupportConfig::class, self::DEFAULT_SUPPORT_CONFIG_ID);
     }
 
     public function defaultDocumentConfig(): BelongsTo
     {
-        return $this->belongsTo(ClientDocumentConfig::class, self::DEFAULT_DOCUMENT_CONFIG_ID);
+        return $this->belongsTo(DocumentConfig::class, self::DEFAULT_DOCUMENT_CONFIG_ID);
     }
 
     public function candidates(): HasMany
@@ -114,14 +114,9 @@ class Client extends BaseModel
         return $this->hasMany(ClientApiQuota::class, ClientApiQuota::CLIENT_ID);
     }
 
-    public function billingConfigs(): HasMany
-    {
-        return $this->hasMany(ClientBillingConfig::class, ClientBillingConfig::CLIENT_ID);
-    }
-
     public function documentConfigs(): HasMany
     {
-        return $this->hasMany(ClientDocumentConfig::class, ClientDocumentConfig::CLIENT_ID);
+        return $this->hasMany(DocumentConfig::class);
     }
 
     public function servicePricings(): HasMany
@@ -131,7 +126,7 @@ class Client extends BaseModel
 
     public function supportConfigs(): HasMany
     {
-        return $this->hasMany(ClientSupportConfig::class, ClientSupportConfig::CLIENT_ID);
+        return $this->hasMany(SupportConfig::class);
     }
 
     public function webhooks(): HasMany

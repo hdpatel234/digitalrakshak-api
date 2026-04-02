@@ -2,14 +2,20 @@
 
 namespace App\Services\Billing\Drivers;
 
-use App\Models\ClientBillingConfig;
+use App\Models\BillingConfig;
 use InvalidArgumentException;
 
 abstract class AbstractBillingDriver
 {
-    public function __construct(protected ClientBillingConfig $billingConfig)
-    {
-    }
+    public function __construct(protected BillingConfig $billingConfig) {}
+
+    abstract public function getClientByEmail(string $email): ?array;
+
+    abstract public function createClient(array $payload): array;
+
+    abstract public function getProductByKey(string $productKey): ?array;
+
+    abstract public function createProduct(array $payload): array;
 
     abstract public function createInvoice(array $payload): array;
 
@@ -20,6 +26,8 @@ abstract class AbstractBillingDriver
     abstract public function voidInvoice(string $externalInvoiceId, array $payload = []): array;
 
     abstract public function syncInvoiceStatus(string $externalInvoiceId): array;
+
+    abstract public function downloadInvoice(string $externalInvoiceId): string;
 
     protected function requireConfig(string $key): mixed
     {
@@ -37,4 +45,3 @@ abstract class AbstractBillingDriver
         return data_get($this->billingConfig->additional_config, $key, $default);
     }
 }
-
