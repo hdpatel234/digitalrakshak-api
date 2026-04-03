@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentTransaction extends BaseModel
 {
-    
+
     protected $table = "payment_transactions";
-    
+
     const TRANSACTION_UUID = "transaction_uuid";
     const CLIENT_ID = "client_id";
     const ORDER_ID = "order_id";
@@ -93,4 +93,28 @@ class PaymentTransaction extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+    public function client()
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+    }
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class, self::INVOICE_ID);
+    }
+
+    public function gatewayConfig()
+    {
+        return $this->belongsTo(PaymentGatewayConfig::class, self::GATEWAY_CONFIG_ID);
+    }
+
+    public function methodType()
+    {
+        return $this->belongsTo(PaymentMethodType::class, self::METHOD_TYPE_ID);
+    }
 }

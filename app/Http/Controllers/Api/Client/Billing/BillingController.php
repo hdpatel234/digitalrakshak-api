@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Client\BaseController;
 use App\Services\PaymentGatewayConfigService;
 use App\Services\PaymentGatewayService;
 use App\Services\PaymentMethodTypeService;
+use App\Services\PaymentTransactionService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,8 @@ class BillingController extends BaseController
     public function __construct(
         protected PaymentGatewayConfigService $paymentGatewayConfigService,
         protected PaymentGatewayService $paymentGatewayService,
-        protected PaymentMethodTypeService $paymentMethodTypeService
+        protected PaymentMethodTypeService $paymentMethodTypeService,
+        protected PaymentTransactionService $paymentTransactionService
     ) {}
 
     public function paymentGateways(Request $request)
@@ -391,5 +393,18 @@ class BillingController extends BaseController
         }
 
         return $this->success('Client payment gateways fetched successfully.', $response->values()->all());
+    }
+
+    public function transactions(Request $request)
+    {
+        addInfoLog("Transaction list request");
+
+        $query = $this->paymentTransactionService->query()
+            ->where($this->paymentTransactionService->paymentStatus(), 'success')
+            ->with(['client', 'order', 'invoice', 'gatewayConfig', 'methodType']);
+
+        $datatable = $this->paymentTransactionService->datatable($query, $request->all());
+
+        return $this->success('Transactions list fetched successfully.', $datatable);
     }
 }
