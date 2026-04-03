@@ -11,16 +11,17 @@ class UpdateCandidateInvitationByTokenRequest extends BaseRequest
         return true;
     }
 
-    public static function normalizePayload(array $input): array
+    protected function prepareForValidation(): void
     {
+        $input = $this->all();
         if (array_is_list($input) && isset($input[0]) && is_array($input[0])) {
             $input = $input[0];
         }
 
-        return [
+        $this->merge([
             'candidate_details' => is_array($input['candidate_details'] ?? null) ? $input['candidate_details'] : [],
             'fields' => is_array($input['fields'] ?? null) ? $input['fields'] : [],
-        ];
+        ]);
     }
 
     public function rules(): array
