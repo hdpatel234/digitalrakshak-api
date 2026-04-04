@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Client\Billing\BillingController;
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
 use App\Http\Controllers\Api\Client\Invitation\CandidateInvitationController;
 use App\Http\Controllers\Api\Client\Invoice\InvoiceController;
+use App\Http\Controllers\Api\Client\Members\MemberController;
 use App\Http\Controllers\Api\Client\Order\OrderController;
 use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
@@ -117,9 +118,6 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('{ticket}', [SupportTicketController::class, 'show']);
         Route::get('{ticket}/conversations', [SupportTicketController::class, 'conversations']);
         Route::post('{ticket}/reply', [SupportTicketController::class, 'reply']);
-        Route::post('{ticket}/close', [SupportTicketController::class, 'close']);
-        Route::post('{ticket}/reopen', [SupportTicketController::class, 'reopen']);
-        Route::post('{ticket}/attachments', [SupportTicketController::class, 'uploadAttachment']);
     });
 
     // Reports
@@ -175,17 +173,13 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Settings
     Route::prefix('settings')->group(function () {
-        Route::get('profile', [Controller::class, 'profile']); // Pending
-        Route::put('profile', [Controller::class, 'updateProfile']); // Pending
         Route::get('company', [Controller::class, 'company']); // Pending
         Route::put('company', [Controller::class, 'updateCompany']); // Pending
-        Route::get('users', [Controller::class, 'users']); // Pending
-        Route::post('users', [Controller::class, 'addUser']); // Pending
-        Route::put('users/{user}', [Controller::class, 'updateUser']); // Pending
-        Route::delete('users/{user}', [Controller::class, 'removeUser']); // Pending
+        Route::get('users', [MemberController::class, 'index']); // Pending
+        Route::post('users', [MemberController::class, 'store']); // Pending
+        Route::put('users/{user}', [MemberController::class, 'update']); // Pending
+        Route::delete('users/{user}', [MemberController::class, 'destroy']); // Pending
         Route::get('notifications/preferences', [Controller::class, 'notificationPreferences']); // Pending
         Route::put('notifications/preferences', [Controller::class, 'updateNotificationPreferences']); // Pending
-        Route::get('billing/config', [Controller::class, 'billingConfig']); // Pending
-        Route::get('support/config', [Controller::class, 'supportConfig']); // Pending
     });
 });

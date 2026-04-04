@@ -101,8 +101,11 @@ class UserRepository extends BaseRepository
     // functions
     public function getByEmail(string $email): ?User
     {
-        return $this->query()
-            ->where($this->email(), $email)
-            ->first();
+        return $this->query()->where($this->email(), $email)->first();
+    }
+
+    public function getUsersByClientId($clientId)
+    {
+        return $this->query()->where($this->clientID(), $clientId)->get();
     }
 }
