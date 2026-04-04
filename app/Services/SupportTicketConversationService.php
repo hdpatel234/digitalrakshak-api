@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Repositories\TicketConversationRepository;
+use App\Repositories\SupportTicketConversationRepository;
 
-class TicketConversationService extends BaseService
+class SupportTicketConversationService extends BaseService
 {
-    
-    public function __construct(TicketConversationRepository $repository)
+
+    public function __construct(SupportTicketConversationRepository $repository)
     {
         $this->repository = $repository;
     }

@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TicketConversation extends BaseModel
+class SupportTicketConversation extends BaseModel
 {
-    
-    protected $table = "ticket_conversations";
-    
+
+    protected $table = "support_ticket_conversations";
+
     const TICKET_ID = "ticket_id";
     const EXTERNAL_CONVERSATION_ID = "external_conversation_id";
     const MESSAGE = "message";

@@ -38,6 +38,46 @@ class SupportTicketController extends BaseController
         }
     }
 
+    public function show(Request $request, $id)
+    {
+        addInfoLog("Support ticket show request, ID: {$id}");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $result = $this->service->getTicket((int) $id, $clientId);
+            return $this->success('Support ticket fetched successfully.', $result);
+        } catch (\Exception $e) {
+            addErrorLog("Client support ticket show failed. ID: {$id}, Error: " . $e->getMessage());
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function conversations(Request $request, $id)
+    {
+        addInfoLog("Support ticket conversations request, ID: {$id}");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $result = $this->service->getTicketConversations((int) $id, $clientId);
+            return $this->success('Support ticket conversations fetched successfully.', $result);
+        } catch (\Exception $e) {
+            addErrorLog("Client support ticket conversations show failed. ID: {$id}, Error: " . $e->getMessage());
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
     public function store(StoreSupportTicketRequest $request)
     {
         addInfoLog("Support ticket store request");

@@ -8,6 +8,7 @@ use App\Repositories\SupportTicketRepository;
 use App\Services\BaseService;
 use App\Services\ClientService;
 use App\Services\Support\SupportManager;
+use App\Services\UserService;
 use Illuminate\Support\Str;
 
 /**
@@ -19,18 +20,21 @@ class SupportTicketService extends BaseService
     protected SupportPriorityRepository $priorityRepository;
     protected ClientService $clientService;
     protected SupportManager $supportManager;
+    protected UserService $userService;
 
     public function __construct(
         SupportTicketRepository $repository,
         SupportDepartmentRepository $departmentRepository,
         SupportPriorityRepository $priorityRepository,
         ClientService $clientService,
-        SupportManager $supportManager
+        SupportManager $supportManager,
+        UserService $userService
     ) {
         $this->departmentRepository = $departmentRepository;
         $this->priorityRepository = $priorityRepository;
         $this->clientService = $clientService;
         $this->supportManager = $supportManager;
+        $this->userService = $userService;
         parent::__construct($repository);
     }
 
@@ -160,6 +164,90 @@ class SupportTicketService extends BaseService
         return $result;
     }
 
+    public function getTicket(int $id, int $clientId): array
+    {
+        $ticket = $this->query()
+            ->with(['order:id,order_number', 'department:id,name', 'priority:id,name'])
+            ->where($this->repository->clientId(), $clientId)
+            ->where($this->repository->id(), $id)
+            ->first();
+
+        if (!$ticket) {
+            throw new \Exception("Ticket not found", 404);
+        }
+
+        $result = $ticket->toArray();
+        $result['order_number'] = $ticket->order->order_number ?? null;
+        $result['department_name'] = $ticket->department->name ?? null;
+        $result['priority_name'] = $ticket->priority->name ?? null;
+        $result['created_at_human'] = \App\Models\BaseModel::formatTimeAgo($ticket->created_at);
+
+        return $result;
+    }
+
+    public function getTicketConversations(int $id, int $clientId): array
+    {
+        $ticket = $this->query()
+            ->with(['order:id,order_number', 'department:id,name', 'priority:id,name'])
+            ->where($this->repository->clientId(), $clientId)
+            ->where($this->repository->id(), $id)
+            ->first();
+
+        if (!$ticket) {
+            throw new \Exception("Ticket not found", 404);
+        }
+
+        $externalTicketId = $ticket->{$this->repository->externalTicketId()};
+        $supportConfigId = $ticket->{$this->repository->supportConfigId()};
+
+        $threads = [];
+
+        if ($externalTicketId && $supportConfigId) {
+            try {
+                $supportConfig = \App\Models\SupportConfig::find($supportConfigId);
+                /** @var \App\Models\Client $client */
+                $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
+
+                if ($supportConfig && $client) {
+                    $externalData = $this->supportManager->getTicket($client, $externalTicketId, $supportConfig);
+
+                    if (isset($externalData['ticket']['threads']) && is_array($externalData['ticket']['threads'])) {
+                        foreach ($externalData['ticket']['threads'] as $thread) {
+                            $createdAt = $thread['createdAt'] ?? null;
+                            $formattedDate = null;
+                            $timeAgo = null;
+
+                            if ($createdAt) {
+                                try {
+                                    $carbonDate = \App\Models\BaseModel::convertToUserTimezone($createdAt);
+                                    $formattedDate = \App\Models\BaseModel::formatToUserDateTime($carbonDate);
+                                    $timeAgo = \App\Models\BaseModel::formatTimeAgo($carbonDate);
+                                } catch (\Exception $e) {
+                                    $formattedDate = $createdAt;
+                                }
+                            }
+
+                            $threads[] = [
+                                'id' => $thread['id'] ?? null,
+                                'message' => html_entity_decode($thread['message'] ?? ''),
+                                'sender_type' => $thread['createdBy'] ?? 'customer',
+                                'sender_name' => $thread['user']['name'] ?? 'Unknown',
+                                'sender_email' => $thread['user']['email'] ?? null,
+                                'created_at' => $formattedDate,
+                                'time_ago' => $timeAgo,
+                                'attachments' => $thread['attachments'] ?? [],
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                addErrorLog("Failed to fetch external ticket threads for ticket ID: {$id}. Error: " . $e->getMessage());
+            }
+        }
+
+        return $threads;
+    }
+
     public function createTicket(array $payload, int $clientId, ?object $user): array
     {
         /** @var \App\Models\Client $client */
@@ -170,7 +258,7 @@ class SupportTicketService extends BaseService
         }
 
         $email = $client->{$this->clientService->email()} ?? ($user->email ?? '');
-        $name = $user ? ($user->name ?? $user->first_name ?? '') : ($client->{$this->clientService->contactPerson()} ?? 'Unknown');
+        $name = $user ? ($user->{$this->userService->firstName()} .  $user->{$this->userService->lastName()}) : 'Client';
 
         $uvdeskPayload = [
             'message' => $payload['message'] ?? '',

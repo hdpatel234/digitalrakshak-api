@@ -2,11 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Models\TicketConversation;
+use App\Models\SupportTicketConversation;
 
-class TicketConversationRepository extends BaseRepository
+class SupportTicketConversationRepository extends BaseRepository
 {
-    public function __construct(TicketConversation $model)
+    public function __construct(SupportTicketConversation $model)
     {
         parent::__construct($model);
     }

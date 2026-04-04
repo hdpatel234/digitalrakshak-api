@@ -108,7 +108,7 @@ abstract class BaseModel extends Model
 
     protected function convertDateColumnsToUserTimezone(array $attributes): array
     {
-        $targetTimezone = $this->resolveUserTimezone();
+        $targetTimezone = static::getUserTimezone();
         $sourceTimezone = config('app.timezone', 'UTC');
         $dateTimeColumns = $this->getDateTimeColumns();
 
@@ -190,7 +190,7 @@ abstract class BaseModel extends Model
         return (string) config('app.user_time_format', 'H:i:s');
     }
 
-    protected function resolveUserTimezone(): string
+    public static function getUserTimezone(): string
     {
         $defaultTimezone = 'Asia/Kolkata';
         $userId = Auth::id();
@@ -204,12 +204,35 @@ abstract class BaseModel extends Model
         }
 
         $timezone = DB::table('user_datetime_preferences')
-            ->where(UserDatetimePreference::USER_ID, $userId)
-            ->value(UserDatetimePreference::TIMEZONE);
+            ->where('user_id', $userId)
+            ->value('timezone');
 
         static::$timezoneCacheUserId = $userId;
         static::$timezoneCacheValue = $timezone ?: $defaultTimezone;
 
         return static::$timezoneCacheValue;
+    }
+
+    public static function convertToUserTimezone($value, $sourceTimezone = 'UTC'): Carbon
+    {
+        $targetTimezone = static::getUserTimezone();
+        try {
+            if (is_string($value) && preg_match('/^\d{1,2}-\d{1,2}-\d{2}(\s|$)/', $value)) {
+                $value = str_replace('-', '/', $value);
+            }
+            return Carbon::parse($value, $sourceTimezone)->setTimezone($targetTimezone);
+        } catch (\Throwable $e) {
+            return Carbon::parse($value);
+        }
+    }
+
+    public static function formatTimeAgo(Carbon $date): string
+    {
+        return $date->diffForHumans();
+    }
+
+    public static function formatToUserDateTime(Carbon $date): string
+    {
+        return $date->format((string) config('app.user_datetime_format', 'Y-m-d H:i:s'));
     }
 }

@@ -115,11 +115,11 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('departments', [SupportTicketController::class, 'departments']);
         Route::get('priorities', [SupportTicketController::class, 'priorities']);
         Route::get('{ticket}', [SupportTicketController::class, 'show']);
-        Route::post('{ticket}/reply', [SupportTicketController::class, 'reply']); // Pending
-        Route::post('{ticket}/close', [SupportTicketController::class, 'close']); // Pending
-        Route::post('{ticket}/reopen', [SupportTicketController::class, 'reopen']); // Pending
-        Route::get('{ticket}/conversations', [SupportTicketController::class, 'conversations']); // Pending
-        Route::post('{ticket}/attachments', [SupportTicketController::class, 'uploadAttachment']); // Pending
+        Route::get('{ticket}/conversations', [SupportTicketController::class, 'conversations']);
+        Route::post('{ticket}/reply', [SupportTicketController::class, 'reply']);
+        Route::post('{ticket}/close', [SupportTicketController::class, 'close']);
+        Route::post('{ticket}/reopen', [SupportTicketController::class, 'reopen']);
+        Route::post('{ticket}/attachments', [SupportTicketController::class, 'uploadAttachment']);
     });
 
     // Reports
