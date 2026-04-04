@@ -28,11 +28,6 @@ class SupportTicketService extends BaseService
         return $this->repository->orderId();
     }
 
-    public function candidateId()
-    {
-        return $this->repository->candidateId();
-    }
-
     public function externalTicketId()
     {
         return $this->repository->externalTicketId();
@@ -53,24 +48,19 @@ class SupportTicketService extends BaseService
         return $this->repository->description();
     }
 
-    public function priority()
-    {
-        return $this->repository->priority();
-    }
-
     public function status()
     {
         return $this->repository->status();
     }
 
-    public function category()
+    public function departmentId()
     {
-        return $this->repository->category();
+        return $this->repository->departmentId();
     }
 
-    public function department()
+    public function priorityId()
     {
-        return $this->repository->department();
+        return $this->repository->priorityId();
     }
 
     public function assignedTo()

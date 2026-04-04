@@ -2,12 +2,12 @@
 
 namespace App\Services\Support\Drivers;
 
-use App\Models\ClientSupportConfig;
+use App\Models\SupportConfig;
 use InvalidArgumentException;
 
 abstract class AbstractSupportDriver
 {
-    public function __construct(protected ClientSupportConfig $supportConfig)
+    public function __construct(protected SupportConfig $supportConfig)
     {
     }
 

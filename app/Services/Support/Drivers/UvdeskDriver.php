@@ -9,26 +9,26 @@ class UvdeskDriver extends AbstractSupportDriver
 {
     public function createTicket(array $payload): array
     {
-        return $this->request('post', $this->endpoint('create_ticket', '/tickets'), $payload);
+        return $this->request('post', $this->endpoint('create_ticket', '/ticket'), $payload);
     }
 
     public function getTicket(string $externalTicketId): array
     {
-        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('get_ticket', '/tickets/{ticket_id}'));
+        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('get_ticket', '/ticket/{ticket_id}'));
 
         return $this->request('get', $path);
     }
 
     public function addReply(string $externalTicketId, array $payload): array
     {
-        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('add_reply', '/tickets/{ticket_id}/replies'));
+        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('add_reply', '/ticket/{ticket_id}/replies'));
 
         return $this->request('post', $path, $payload);
     }
 
     public function closeTicket(string $externalTicketId, array $payload = []): array
     {
-        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('close_ticket', '/tickets/{ticket_id}/close'));
+        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('close_ticket', '/ticket/{ticket_id}/close'));
 
         return $this->request('post', $path, $payload);
     }
@@ -48,8 +48,7 @@ class UvdeskDriver extends AbstractSupportDriver
         $baseUrl = rtrim((string) $this->requireConfig('api_url'), '/');
         $timeout = (int) $this->additionalConfig('timeout', 30);
 
-        $client = Http::timeout($timeout)
-            ->acceptJson();
+        $client = Http::timeout($timeout)->acceptJson();
 
         if (filled($this->supportConfig->api_token)) {
             $client = $client->withToken((string) $this->supportConfig->api_token);
@@ -59,7 +58,7 @@ class UvdeskDriver extends AbstractSupportDriver
             ]);
         }
 
-        $response = $client->{$method}($baseUrl . '/api' . $path, $payload);
+        $response = $client->{$method}($baseUrl . $path, $payload);
 
         if ($response->failed()) {
             throw new RuntimeException('UVDesk API request failed: ' . $response->body());

@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportConfig extends BaseModel
 {
-    protected $table = "client_support_configs";
-    
+    protected $table = "support_configs";
+
     const SUPPORT_PLATFORM_ID = "support_platform_id";
     const CONFIG_NAME = "config_name";
     const IS_DEFAULT = "is_default";

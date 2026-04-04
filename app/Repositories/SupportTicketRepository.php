@@ -27,11 +27,6 @@ class SupportTicketRepository extends BaseRepository
         return $this->model::ORDER_ID;
     }
 
-    public function candidateId()
-    {
-        return $this->model::CANDIDATE_ID;
-    }
-
     public function externalTicketId()
     {
         return $this->model::EXTERNAL_TICKET_ID;
@@ -52,24 +47,19 @@ class SupportTicketRepository extends BaseRepository
         return $this->model::DESCRIPTION;
     }
 
-    public function priority()
-    {
-        return $this->model::PRIORITY;
-    }
-
     public function status()
     {
         return $this->model::STATUS;
     }
 
-    public function category()
+    public function departmentId()
     {
-        return $this->model::CATEGORY;
+        return $this->model::DEPARTMENT_ID;
     }
 
-    public function department()
+    public function priorityId()
     {
-        return $this->model::DEPARTMENT;
+        return $this->model::PRIORITY_ID;
     }
 
     public function assignedTo()

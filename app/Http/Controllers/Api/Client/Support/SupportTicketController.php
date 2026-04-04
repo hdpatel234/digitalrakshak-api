@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Client\Support;
 use App\Http\Controllers\Api\Client\BaseController;
 use App\Services\ApiService\Client\SupportTicketService;
 use App\Traits\ApiResponse;
+use App\Http\Requests\Api\Client\Support\StoreSupportTicketRequest;
 use Illuminate\Http\Request;
 
 class SupportTicketController extends BaseController
@@ -18,9 +19,44 @@ class SupportTicketController extends BaseController
         $this->service = $service;
     }
 
-    public function store(Request $request)
+    public function index(Request $request)
+    {
+        addInfoLog("Support ticket list request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $result = $this->service->getTickets($request->all(), $clientId);
+            return $this->success('Support tickets fetched successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function store(StoreSupportTicketRequest $request)
     {
         addInfoLog("Support ticket store request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $result = $this->service->createTicket($request->validated(), $clientId, $user);
+
+            return $this->success('Support ticket created successfully.', $result, 201);
+        } catch (\Exception $e) {
+            addErrorLog("Client support ticket store failed. Error: " . $e->getMessage());
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
     }
 
     public function departments(Request $request)

@@ -4,24 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\CandidateOrder;
+use App\Models\SupportDepartment;
+use App\Models\SupportPriority;
 
 class SupportTicket extends BaseModel
 {
-
     protected $table = "support_tickets";
 
     const CLIENT_ID = "client_id";
     const SUPPORT_CONFIG_ID = "support_config_id";
     const ORDER_ID = "order_id";
-    const CANDIDATE_ID = "candidate_id";
     const EXTERNAL_TICKET_ID = "external_ticket_id";
+    const DEPARTMENT_ID = "department_id";
+    const PRIORITY_ID = "priority_id";
     const TICKET_NUMBER = "ticket_number";
     const SUBJECT = "subject";
     const DESCRIPTION = "description";
-    const PRIORITY = "priority";
     const STATUS = "status";
-    const CATEGORY = "category";
-    const DEPARTMENT = "department";
     const ASSIGNED_TO = "assigned_to";
     const ASSIGNED_NAME = "assigned_name";
     const RESOLUTION = "resolution";
@@ -38,15 +38,13 @@ class SupportTicket extends BaseModel
         self::CLIENT_ID,
         self::SUPPORT_CONFIG_ID,
         self::ORDER_ID,
-        self::CANDIDATE_ID,
         self::EXTERNAL_TICKET_ID,
+        self::DEPARTMENT_ID,
+        self::PRIORITY_ID,
         self::TICKET_NUMBER,
         self::SUBJECT,
         self::DESCRIPTION,
-        self::PRIORITY,
         self::STATUS,
-        self::CATEGORY,
-        self::DEPARTMENT,
         self::ASSIGNED_TO,
         self::ASSIGNED_NAME,
         self::RESOLUTION,
@@ -60,8 +58,18 @@ class SupportTicket extends BaseModel
         self::UPDATED_BY,
     ];
 
-    public function assignee(): BelongsTo
+    public function order(): BelongsTo
     {
-        return $this->belongsTo(User::class, self::ASSIGNED_TO);
+        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(SupportDepartment::class, self::DEPARTMENT_ID);
+    }
+
+    public function priority(): BelongsTo
+    {
+        return $this->belongsTo(SupportPriority::class, self::PRIORITY_ID);
     }
 }

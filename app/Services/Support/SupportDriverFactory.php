@@ -3,7 +3,7 @@
 namespace App\Services\Support;
 
 use App\Models\Client;
-use App\Models\ClientSupportConfig;
+use App\Models\SupportConfig;
 use App\Services\Support\Drivers\AbstractSupportDriver;
 use App\Services\Support\Drivers\UvdeskDriver;
 use InvalidArgumentException;
@@ -11,7 +11,7 @@ use RuntimeException;
 
 class SupportDriverFactory
 {
-    public function driver(Client $client, ?ClientSupportConfig $supportConfig = null): AbstractSupportDriver
+    public function driver(Client $client, ?SupportConfig $supportConfig = null): AbstractSupportDriver
     {
         $supportConfig ??= $this->resolveSupportConfig($client);
 
@@ -20,23 +20,39 @@ class SupportDriverFactory
         return new $driverClass($supportConfig);
     }
 
-    protected function resolveSupportConfig(Client $client): ClientSupportConfig
+    protected function resolveSupportConfig(Client $client): SupportConfig
     {
-        $client->loadMissing('defaultSupportConfig.supportPlatform', 'supportConfigs.supportPlatform');
+        $platformId = (int) $client->default_support_config_id;
 
-        $supportConfig = $client->defaultSupportConfig
-            ?? $client->supportConfigs->firstWhere(ClientSupportConfig::IS_DEFAULT, true)
-            ?? $client->supportConfigs->firstWhere(ClientSupportConfig::STATUS, 'active')
-            ?? $client->supportConfigs->first();
-
-        if (!$supportConfig instanceof ClientSupportConfig) {
-            throw new RuntimeException("No support configuration found for client [{$client->id}].");
+        if ($platformId <= 0) {
+            throw new RuntimeException("No default support provider configured for client [{$client->id}].");
         }
+
+        $platform = \App\Models\SupportPlatform::find($platformId);
+
+        if (!$platform) {
+            throw new RuntimeException("Support platform ID [$platformId] not found.");
+        }
+
+        $supportConfig = SupportConfig::where('support_platform_id', $platformId)
+            ->where(function ($query) {
+                $query->where('is_default', true)
+                      ->orWhere('status', 'active');
+            })
+            ->first()
+            ?? SupportConfig::where('support_platform_id', $platformId)
+                ->first();
+
+        if (!$supportConfig instanceof SupportConfig) {
+            throw new RuntimeException("No support configuration found for support platform [{$platformId}].");
+        }
+
+        $supportConfig->setRelation('supportPlatform', $platform);
 
         return $supportConfig;
     }
 
-    protected function resolveDriverClass(ClientSupportConfig $supportConfig): string
+    protected function resolveDriverClass(SupportConfig $supportConfig): string
     {
         $customDriverClass = data_get($supportConfig->additional_config, 'driver_class');
         if (is_string($customDriverClass) && class_exists($customDriverClass)) {

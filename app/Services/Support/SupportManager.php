@@ -3,7 +3,7 @@
 namespace App\Services\Support;
 
 use App\Models\Client;
-use App\Models\ClientSupportConfig;
+use App\Models\SupportConfig;
 use App\Services\Support\Drivers\AbstractSupportDriver;
 
 class SupportManager
@@ -12,17 +12,17 @@ class SupportManager
     {
     }
 
-    public function driver(Client $client, ?ClientSupportConfig $supportConfig = null): AbstractSupportDriver
+    public function driver(Client $client, ?SupportConfig $supportConfig = null): AbstractSupportDriver
     {
         return $this->factory->driver($client, $supportConfig);
     }
 
-    public function createTicket(Client $client, array $payload, ?ClientSupportConfig $supportConfig = null): array
+    public function createTicket(Client $client, array $payload, ?SupportConfig $supportConfig = null): array
     {
         return $this->driver($client, $supportConfig)->createTicket($payload);
     }
 
-    public function getTicket(Client $client, string $externalTicketId, ?ClientSupportConfig $supportConfig = null): array
+    public function getTicket(Client $client, string $externalTicketId, ?SupportConfig $supportConfig = null): array
     {
         return $this->driver($client, $supportConfig)->getTicket($externalTicketId);
     }
@@ -31,7 +31,7 @@ class SupportManager
         Client $client,
         string $externalTicketId,
         array $payload,
-        ?ClientSupportConfig $supportConfig = null
+        ?SupportConfig $supportConfig = null
     ): array {
         return $this->driver($client, $supportConfig)->addReply($externalTicketId, $payload);
     }
@@ -40,7 +40,7 @@ class SupportManager
         Client $client,
         string $externalTicketId,
         array $payload = [],
-        ?ClientSupportConfig $supportConfig = null
+        ?SupportConfig $supportConfig = null
     ): array {
         return $this->driver($client, $supportConfig)->closeTicket($externalTicketId, $payload);
     }
@@ -48,7 +48,7 @@ class SupportManager
     public function syncTicketStatus(
         Client $client,
         string $externalTicketId,
-        ?ClientSupportConfig $supportConfig = null
+        ?SupportConfig $supportConfig = null
     ): array {
         return $this->driver($client, $supportConfig)->syncTicketStatus($externalTicketId);
     }
