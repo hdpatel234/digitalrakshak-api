@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicket extends BaseModel
 {
-    
+
     protected $table = "support_tickets";
-    
+
     const CLIENT_ID = "client_id";
     const SUPPORT_CONFIG_ID = "support_config_id";
-    const ORDER_ITEM_ID = "order_item_id";
-    const SERVICE_ID = "service_id";
+    const ORDER_ID = "order_id";
     const CANDIDATE_ID = "candidate_id";
     const EXTERNAL_TICKET_ID = "external_ticket_id";
     const TICKET_NUMBER = "ticket_number";
@@ -38,8 +37,7 @@ class SupportTicket extends BaseModel
     protected $fillable = [
         self::CLIENT_ID,
         self::SUPPORT_CONFIG_ID,
-        self::ORDER_ITEM_ID,
-        self::SERVICE_ID,
+        self::ORDER_ID,
         self::CANDIDATE_ID,
         self::EXTERNAL_TICKET_ID,
         self::TICKET_NUMBER,

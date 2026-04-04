@@ -6,7 +6,7 @@ use App\Repositories\SupportTicketRepository;
 
 class SupportTicketService extends BaseService
 {
-    
+
     public function __construct(SupportTicketRepository $repository)
     {
         $this->repository = $repository;
@@ -23,14 +23,9 @@ class SupportTicketService extends BaseService
         return $this->repository->supportConfigId();
     }
 
-    public function orderItemId()
+    public function orderId()
     {
-        return $this->repository->orderItemId();
-    }
-
-    public function serviceId()
-    {
-        return $this->repository->serviceId();
+        return $this->repository->orderId();
     }
 
     public function candidateId()

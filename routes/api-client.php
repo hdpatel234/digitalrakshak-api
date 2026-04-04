@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Client\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Client\Order\OrderController;
 use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
+use App\Http\Controllers\Api\Client\Support\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
@@ -110,12 +111,15 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Support Tickets
     Route::prefix('tickets')->group(function () {
-        Route::apiResource('', Controller::class);
-        Route::post('{ticket}/reply', [Controller::class, 'reply']); // Pending
-        Route::post('{ticket}/close', [Controller::class, 'close']); // Pending
-        Route::post('{ticket}/reopen', [Controller::class, 'reopen']); // Pending
-        Route::get('{ticket}/conversations', [Controller::class, 'conversations']); // Pending
-        Route::post('{ticket}/attachments', [Controller::class, 'uploadAttachment']); // Pending
+        Route::apiResource('', SupportTicketController::class)->except(['show']);
+        Route::get('departments', [SupportTicketController::class, 'departments']);
+        Route::get('priorities', [SupportTicketController::class, 'priorities']);
+        Route::get('{ticket}', [SupportTicketController::class, 'show']);
+        Route::post('{ticket}/reply', [SupportTicketController::class, 'reply']); // Pending
+        Route::post('{ticket}/close', [SupportTicketController::class, 'close']); // Pending
+        Route::post('{ticket}/reopen', [SupportTicketController::class, 'reopen']); // Pending
+        Route::get('{ticket}/conversations', [SupportTicketController::class, 'conversations']); // Pending
+        Route::post('{ticket}/attachments', [SupportTicketController::class, 'uploadAttachment']); // Pending
     });
 
     // Reports

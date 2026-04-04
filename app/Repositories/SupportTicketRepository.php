@@ -22,14 +22,9 @@ class SupportTicketRepository extends BaseRepository
         return $this->model::SUPPORT_CONFIG_ID;
     }
 
-    public function orderItemId()
+    public function orderId()
     {
-        return $this->model::ORDER_ITEM_ID;
-    }
-
-    public function serviceId()
-    {
-        return $this->model::SERVICE_ID;
+        return $this->model::ORDER_ID;
     }
 
     public function candidateId()
