@@ -314,6 +314,48 @@ class SupportTicketService extends BaseService
         return $ticket->toArray();
     }
 
+    public function addTicketReply(int $ticketId, string $message, int $clientId, ?object $user): array
+    {
+        $ticket = $this->query()
+            ->where($this->repository->clientId(), $clientId)
+            ->where($this->repository->id(), $ticketId)
+            ->first();
+
+        if (!$ticket) {
+            throw new \Exception("Ticket not found", 404);
+        }
+
+        $externalTicketId = $ticket->{$this->repository->externalTicketId()};
+        $supportConfigId = $ticket->{$this->repository->supportConfigId()};
+
+        if (!$externalTicketId || !$supportConfigId) {
+            throw new \Exception("External ticket reference not found", 422);
+        }
+
+        /** @var \App\Models\Client $client */
+        $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
+
+        if (!$client) {
+            throw new \Exception("Client not found", 404);
+        }
+
+        $supportConfig = \App\Models\SupportConfig::find($supportConfigId);
+        if (!$supportConfig) {
+            throw new \Exception("Support configuration not found", 404);
+        }
+
+        $email = $client->{$this->clientService->email()} ?? ($user->email ?? '');
+
+        $payload = [
+            'message' => $message,
+            'actAsType' => 'customer',
+            'actAsEmail' => $email,
+            'threadType' => 'reply'
+        ];
+
+        return $this->supportManager->addReply($client, $externalTicketId, $payload, $supportConfig);
+    }
+
     public function getDepartments()
     {
         return $this->departmentRepository->getActiveDepartments();

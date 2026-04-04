@@ -60,7 +60,7 @@ class SupportTicketController extends BaseController
 
     public function conversations(Request $request, $id)
     {
-        addInfoLog("Support ticket conversations request, ID: {$id}");
+        // addInfoLog("Support ticket conversations request, ID: {$id}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -95,6 +95,33 @@ class SupportTicketController extends BaseController
             return $this->success('Support ticket created successfully.', $result, 201);
         } catch (\Exception $e) {
             addErrorLog("Client support ticket store failed. Error: " . $e->getMessage());
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function reply(Request $request)
+    {
+        addInfoLog("Support ticket reply request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $ticketId = $request->input('ticket_id');
+        $message = $request->input('message');
+
+        if (blank($ticketId) || blank($message)) {
+            return $this->error('Ticket ID and message are required.', 422);
+        }
+
+        try {
+            $result = $this->service->addTicketReply((int) $ticketId, (string) $message, $clientId, $user);
+            return $this->success('Reply added to ticket successfully.', $result);
+        } catch (\Exception $e) {
+            addErrorLog("Client support ticket reply failed. Ticket ID: {$ticketId}, Error: " . $e->getMessage());
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
     }

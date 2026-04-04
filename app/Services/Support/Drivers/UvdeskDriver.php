@@ -21,7 +21,7 @@ class UvdeskDriver extends AbstractSupportDriver
 
     public function addReply(string $externalTicketId, array $payload): array
     {
-        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('add_reply', '/ticket/{ticket_id}/replies'));
+        $path = str_replace('{ticket_id}', $externalTicketId, $this->endpoint('add_reply', '/ticket/{ticket_id}/thread'));
 
         return $this->request('post', $path, $payload);
     }
