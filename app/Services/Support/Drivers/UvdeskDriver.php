@@ -58,6 +58,21 @@ class UvdeskDriver extends AbstractSupportDriver
             ]);
         }
 
+        $attachments = $payload['attachments'] ?? [];
+        unset($payload['attachments']);
+
+        if (!empty($attachments)) {
+            foreach ($attachments as $file) {
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $client->attach(
+                        'attachments[]',
+                        file_get_contents($file->getRealPath()),
+                        $file->getClientOriginalName()
+                    );
+                }
+            }
+        }
+
         $response = $client->{$method}($baseUrl . $path, $payload);
 
         if ($response->failed()) {

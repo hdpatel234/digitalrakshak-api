@@ -267,6 +267,7 @@ class SupportTicketService extends BaseService
             'name' => $name,
             'subject' => $payload['title'] ?? '',
             'from' => $email,
+            'attachments' => $payload['attachments'] ?? $payload['attachment'] ?? [],
         ];
 
         try {
@@ -314,7 +315,7 @@ class SupportTicketService extends BaseService
         return $ticket->toArray();
     }
 
-    public function addTicketReply(int $ticketId, string $message, int $clientId, ?object $user): array
+    public function addTicketReply(int $ticketId, string $message, int $clientId, ?object $user, array $attachments = []): array
     {
         $ticket = $this->query()
             ->where($this->repository->clientId(), $clientId)
@@ -350,7 +351,8 @@ class SupportTicketService extends BaseService
             'message' => $message,
             'actAsType' => 'customer',
             'actAsEmail' => $email,
-            'threadType' => 'reply'
+            'threadType' => 'reply',
+            'attachments' => $attachments
         ];
 
         return $this->supportManager->addReply($client, $externalTicketId, $payload, $supportConfig);

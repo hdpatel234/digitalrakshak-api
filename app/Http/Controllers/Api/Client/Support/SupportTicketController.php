@@ -113,12 +113,10 @@ class SupportTicketController extends BaseController
         $ticketId = $request->input('ticket_id');
         $message = $request->input('message');
 
-        if (blank($ticketId) || blank($message)) {
-            return $this->error('Ticket ID and message are required.', 422);
-        }
+        $attachments = $request->file('attachments') ?? $request->file('attachment') ?? [];
 
         try {
-            $result = $this->service->addTicketReply((int) $ticketId, (string) $message, $clientId, $user);
+            $result = $this->service->addTicketReply((int) $ticketId, (string) $message, $clientId, $user, $attachments);
             return $this->success('Reply added to ticket successfully.', $result);
         } catch (\Exception $e) {
             addErrorLog("Client support ticket reply failed. Ticket ID: {$ticketId}, Error: " . $e->getMessage());

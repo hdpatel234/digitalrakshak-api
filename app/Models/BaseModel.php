@@ -192,7 +192,7 @@ abstract class BaseModel extends Model
 
     public static function getUserTimezone(): string
     {
-        $defaultTimezone = 'Asia/Kolkata';
+        $defaultTimezone = 'UTC';
         $userId = Auth::id();
 
         if (!$userId) {
@@ -228,6 +228,14 @@ abstract class BaseModel extends Model
 
     public static function formatTimeAgo(Carbon $date): string
     {
+        if ($date->isFuture()) {
+            // If it's less than a minute in the future, just say "just now"
+            if ($date->diffInMinutes() < 1) {
+                return 'just now';
+            }
+            // For other future dates (likely timezone issues), force the "ago" format
+            return $date->diffForHumans(null, true) . ' ago';
+        }
         return $date->diffForHumans();
     }
 
