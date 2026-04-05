@@ -76,6 +76,30 @@ class MemberService extends BaseService
     {
         return $this->userRepository->find($user);
     }
-    public function updateUser() {}
-    public function destroyUser() {}
+    public function updateUser(array $data, int $clientId, $userId)
+    {
+        $userObj = $this->query()->where($this->userRepository->clientID(), $clientId)
+            ->where($this->userRepository->id(), $userId)
+            ->where($this->userRepository->userType(), '=', UserType::CLIENT_USER)
+            ->first();
+
+        if (!$userObj) {
+            throw new \Exception("User not found or you don't have permission to update this user.", 404);
+        }
+
+        return $this->userRepository->update($userId, $data);
+    }
+    public function destroyUser(int $clientId, $userId)
+    {
+        $userObj = $this->query()->where($this->userRepository->clientID(), $clientId)
+            ->where($this->userRepository->id(), $userId)
+            ->where($this->userRepository->userType(), '=', UserType::CLIENT_USER)
+            ->first();
+
+        if (!$userObj) {
+            throw new \Exception("User not found or you don't have permission to delete this user.", 404);
+        }
+
+        return $this->userRepository->delete($userId);
+    }
 }

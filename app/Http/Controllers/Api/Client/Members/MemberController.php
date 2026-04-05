@@ -7,6 +7,7 @@ use App\Services\ApiService\Client\MemberService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\Api\Client\Members\StoreMemberRequest;
+use App\Http\Requests\Api\Client\Members\UpdateMemberRequest;
 
 class MemberController extends Controller
 {
@@ -74,20 +75,20 @@ class MemberController extends Controller
         }
     }
 
-    public function update(Request $request, $user)
+    public function update(UpdateMemberRequest $request, $user)
     {
         addInfoLog("Users update request");
 
-        $user = $request->user('api') ?? $request->user();
-        $clientId = (int) ($user?->client_id ?? 0);
+        $mainUser = $request->user('api') ?? $request->user();
+        $clientId = (int) ($mainUser?->client_id ?? 0);
 
         if ($clientId <= 0) {
             return $this->error('Client context not found for this user.', 422);
         }
 
         try {
-            $users = $this->memberService->updateUser($request->all(), $clientId);
-            return $this->success('Users fetched successfully', $users);
+            $updatedUser = $this->memberService->updateUser($request->validated(), $clientId, $user);
+            return $this->success('User updated successfully', $updatedUser);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
@@ -97,16 +98,16 @@ class MemberController extends Controller
     {
         addInfoLog("Users delete request");
 
-        $user = $request->user('api') ?? $request->user();
-        $clientId = (int) ($user?->client_id ?? 0);
+        $mainUser = $request->user('api') ?? $request->user();
+        $clientId = (int) ($mainUser?->client_id ?? 0);
 
         if ($clientId <= 0) {
             return $this->error('Client context not found for this user.', 422);
         }
 
         try {
-            $users = $this->memberService->destroyUser($request->all(), $clientId);
-            return $this->success('Users fetched successfully', $users);
+            $this->memberService->destroyUser($clientId, $user);
+            return $this->success('User deleted successfully');
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
