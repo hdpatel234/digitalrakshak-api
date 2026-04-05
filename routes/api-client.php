@@ -175,10 +175,11 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::prefix('settings')->group(function () {
         Route::get('company', [Controller::class, 'company']); // Pending
         Route::put('company', [Controller::class, 'updateCompany']); // Pending
-        Route::get('users', [MemberController::class, 'index']); // Pending
-        Route::post('users', [MemberController::class, 'store']); // Pending
-        Route::put('users/{user}', [MemberController::class, 'update']); // Pending
-        Route::delete('users/{user}', [MemberController::class, 'destroy']); // Pending
+        Route::get('users', [MemberController::class, 'index']);
+        Route::post('users', [MemberController::class, 'store']);
+        Route::get('users/{user}', [MemberController::class, 'show']);
+        Route::put('users/{user}', [MemberController::class, 'update']);
+        Route::delete('users/{user}', [MemberController::class, 'destroy']);
         Route::get('notifications/preferences', [Controller::class, 'notificationPreferences']); // Pending
         Route::put('notifications/preferences', [Controller::class, 'updateNotificationPreferences']); // Pending
     });

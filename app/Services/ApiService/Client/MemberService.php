@@ -3,10 +3,13 @@
 namespace App\Services\ApiService\Client;
 
 use App\Enums\UserType;
+use App\Models\User;
 use App\Services\ClientService;
 use App\Repositories\UserRepository;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class MemberService extends BaseService
 {
@@ -57,7 +60,22 @@ class MemberService extends BaseService
         );
     }
 
-    public function createUser() {}
+    public function createUser(array $data, int $clientId)
+    {
+        $data[$this->userRepository->clientID()] = $clientId;
+        $data[$this->userRepository->userType()] = UserType::CLIENT_USER;
+        $data[$this->userRepository->isActive()] = 1;
+
+        if (!isset($data[$this->userRepository->password()])) {
+            $data[$this->userRepository->password()] = Hash::make(Str::random(12));
+        }
+
+        return $this->userRepository->create($data);
+    }
+    public function showUser($user)
+    {
+        return $this->userRepository->find($user);
+    }
     public function updateUser() {}
     public function destroyUser() {}
 }
