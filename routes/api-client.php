@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Client\Billing\BillingController;
 use App\Http\Controllers\Api\Client\Candidate\CandidatesController;
+use App\Http\Controllers\Api\Client\Company\CompanyController;
 use App\Http\Controllers\Api\Client\Invitation\CandidateInvitationController;
 use App\Http\Controllers\Api\Client\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Client\Members\MemberController;
@@ -173,8 +174,8 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Settings
     Route::prefix('settings')->group(function () {
-        Route::get('company', [Controller::class, 'company']); // Pending
-        Route::put('company', [Controller::class, 'updateCompany']); // Pending
+        Route::get('company', [CompanyController::class, 'index']);
+        Route::put('company', [CompanyController::class, 'update']);
         Route::get('users', [MemberController::class, 'index']);
         Route::post('users', [MemberController::class, 'store']);
         Route::get('users/{user}', [MemberController::class, 'show']);
