@@ -38,8 +38,7 @@ class DigilockerService
             'redirect_uri' => $redirectUri,
             'state' => $state,
             'code_challenge' => $codeChallenge,
-            'code_challenge_method' => 'S256',
-            'scope' => 'openid'
+            'code_challenge_method' => 'S256'
         ];
 
         $url = config('services.digilocker.api_base_url') . "/oauth2/1/authorize?" . http_build_query($queryParameters);
