@@ -3,13 +3,14 @@
 use App\Http\Controllers\Api\Auth\ChangePasswordController;
 use App\Http\Controllers\Api\Auth\CityController;
 use App\Http\Controllers\Api\Auth\CountryController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
+use App\Http\Controllers\Api\Auth\SocialLoginController;
 use App\Http\Controllers\Api\Auth\StateController;
 use App\Http\Controllers\Api\Auth\UserConfigController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
@@ -17,7 +18,19 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
     Route::post('reset-password', [LoginController::class, 'resetPassword']);
     Route::post('/verify-email/{token}', [LoginController::class, 'verifyEmail']); // Pending
     Route::post('register', [LoginController::class, 'register']); // Pending
-    Route::post('social-login', [LoginController::class, 'socialLogin']);
+
+    Route::prefix('social-login')->group(function () {
+        Route::prefix('google')->group(function () {
+            Route::post('/', [SocialLoginController::class, 'googleLogin']);
+        });
+        Route::prefix('facebook')->group(function () {
+            Route::post('/', [SocialLoginController::class, 'facebookLogin']);
+        });
+        Route::prefix('digilocker')->group(function () {
+            Route::post('/', [SocialLoginController::class, 'digiLockerLogin']);
+            Route::post('/callback', [SocialLoginController::class, 'digiLockerCallback']);
+        });
+    });
 
     Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']); // Pending
     Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']); // Pending
