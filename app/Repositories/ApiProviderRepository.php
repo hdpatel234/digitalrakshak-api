@@ -24,7 +24,7 @@ class ApiProviderRepository extends BaseRepository
 
     public function class()
     {
-        return $this->model::CLASS;
+        return $this->model::PROVIDER_CLASS;
     }
 
     public function configFields()

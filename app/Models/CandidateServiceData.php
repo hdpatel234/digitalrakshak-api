@@ -38,4 +38,9 @@ class CandidateServiceData extends BaseModel
     {
         return $this->belongsTo(CandidateService::class, self::CANDIDATE_SERVICE_ID);
     }
+
+    public function field(): BelongsTo
+    {
+        return $this->belongsTo(ServicesField::class, self::FIELD_ID);
+    }
 }

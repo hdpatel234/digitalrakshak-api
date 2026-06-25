@@ -11,7 +11,7 @@ class ApiProvider extends BaseModel
     
     const NAME = "name";
     const CODE = "code";
-    const CLASS = "class";
+    const PROVIDER_CLASS = "class";
     const CONFIG_FIELDS = "config_fields";
     const CREDENTIALS = "credentials";
     const SETTINGS = "settings";
@@ -21,7 +21,7 @@ class ApiProvider extends BaseModel
     protected $fillable = [
         self::NAME,
         self::CODE,
-        self::CLASS,
+        self::PROVIDER_CLASS,
         self::CONFIG_FIELDS,
         self::CREDENTIALS,
         self::SETTINGS,

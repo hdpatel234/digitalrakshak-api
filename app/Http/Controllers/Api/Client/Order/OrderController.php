@@ -74,6 +74,33 @@ class OrderController extends BaseController
         try {
             $result = $this->orderService->getOrder((int) $order, $clientId);
 
+            if (!empty($result['candidates'])) {
+                $candidateIds = array_filter(array_map(function ($item) {
+                    return $item['candidate_id'] ?? null;
+                }, $result['candidates']));
+
+                if (!empty($candidateIds)) {
+                    $candidatesMap = \App\Models\Candidate::whereIn('id', $candidateIds)
+                        ->get()
+                        ->keyBy('id');
+
+                    foreach ($result['candidates'] as &$candidateItem) {
+                        $candidateId = $candidateItem['candidate_id'] ?? null;
+                        $candidateDetails = $candidateId && isset($candidatesMap[$candidateId])
+                            ? $candidatesMap[$candidateId]->toArray()
+                            : null;
+
+                        $candidateItem['candaite_details'] = $candidateDetails;
+                        $candidateItem['candidate_details'] = $candidateDetails;
+                    }
+                } else {
+                    foreach ($result['candidates'] as &$candidateItem) {
+                        $candidateItem['candaite_details'] = null;
+                        $candidateItem['candidate_details'] = null;
+                    }
+                }
+            }
+
             return $this->success('Order fetched successfully.', $result);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);

@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'digilocker' => [
+        'client_id' => env('DIGILOCKER_CLIENT_ID'),
+        'client_secret' => env('DIGILOCKER_CLIENT_SECRET'),
+        'redirect_uri' => env('DIGILOCKER_REDIRECT_URI'),
+        'api_base_url' => 'https://digilocker.meripehchaan.gov.in/public'
+    ],
+
 ];

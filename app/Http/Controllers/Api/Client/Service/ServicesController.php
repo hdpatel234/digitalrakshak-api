@@ -17,6 +17,8 @@ class ServicesController extends BaseController
 
     public function index(Request $request)
     {
+        addInfoLog("Services list api request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 

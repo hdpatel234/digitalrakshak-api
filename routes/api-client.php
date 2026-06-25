@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Client\Order\OrderController;
 use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
 use App\Http\Controllers\Api\Client\Support\SupportTicketController;
+use App\Http\Controllers\Api\Client\ProteanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
@@ -183,5 +184,18 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::delete('users/{user}', [MemberController::class, 'destroy']);
         Route::get('notifications/preferences', [Controller::class, 'notificationPreferences']); // Pending
         Route::put('notifications/preferences', [Controller::class, 'updateNotificationPreferences']); // Pending
+    });
+
+    // Protean Verification APIs
+    Route::prefix('protean')->group(function () {
+        Route::post('silent-verify', [ProteanController::class, 'silentVerify']);
+        Route::post('generate-otp', [ProteanController::class, 'generateOtp']);
+        Route::post('geo-fencing', [ProteanController::class, 'geoFencing']);
+        Route::post('reverse-geocode', [ProteanController::class, 'reverseGeocode']);
+        Route::post('kyc-ocr', [ProteanController::class, 'kycOcr']);
+        Route::post('bank-verify', [ProteanController::class, 'bankVerify']);
+        Route::post('bank-verify-amount', [ProteanController::class, 'bankVerifyAmount']);
+        Route::post('shop-estab', [ProteanController::class, 'shopEstablishment']);
+        Route::post('epf-uan', [ProteanController::class, 'epfUan']);
     });
 });

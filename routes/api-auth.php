@@ -17,7 +17,7 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
     Route::post('reset-password', [LoginController::class, 'resetPassword']);
     Route::post('/verify-email/{token}', [LoginController::class, 'verifyEmail']); // Pending
     Route::post('register', [LoginController::class, 'register']); // Pending
-    Route::post('social-login/{provider}', [LoginController::class, 'socialLogin']); // Pending
+    Route::post('social-login', [LoginController::class, 'socialLogin']);
 
     Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']); // Pending
     Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']); // Pending
