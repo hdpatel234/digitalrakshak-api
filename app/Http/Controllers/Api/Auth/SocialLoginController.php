@@ -51,7 +51,15 @@ class SocialLoginController extends BaseController
             return $this->error('Missing code or state parameter');
         }
 
-        $tokenResponse = $this->digilockerService->exchangeToken($code);
+        $codeVerifier = Cache::get('digilocker_state_' . $state);
+
+        if (!$codeVerifier) {
+            return $this->error('Invalid or expired state parameter');
+        }
+
+        Cache::forget('digilocker_state_' . $state);
+
+        $tokenResponse = $this->digilockerService->exchangeToken($code, $codeVerifier);
 
         if (!$tokenResponse['status']) {
             return $this->error('Failed to exchange token: ' . $tokenResponse['message']);
@@ -74,7 +82,7 @@ class SocialLoginController extends BaseController
         $phone = $profile['phone'] ?? null;
 
         if (!$digilockerId) {
-            return $this->error('DigiLocker ID not found in profile');
+            return $this->error('DigiLocker ID not found in profile', 400, []);
         }
 
         $user = User::where('last_login_provider_id', $digilockerId)
@@ -87,7 +95,7 @@ class SocialLoginController extends BaseController
             ->first();
 
         if (!$user) {
-            return $this->error('User not registered in system');
+            return $this->error('User not registered in system', 400, []);
         }
 
         $user->update([
