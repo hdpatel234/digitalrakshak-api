@@ -55,18 +55,16 @@ class DigilockerService
      * Exchange authorization code for access token
      *
      * @param string $code
-     * @param string $codeVerifier
      * @return array
      */
-    public function exchangeToken(string $code, string $codeVerifier)
+    public function exchangeToken(string $code)
     {
         $response = Http::asForm()->post(config('services.digilocker.api_base_url') . '/oauth2/1/token', [
             'grant_type' => 'authorization_code',
             'client_id' => config('services.digilocker.client_id'),
             'client_secret' => config('services.digilocker.client_secret'),
             'redirect_uri' => config('services.digilocker.redirect_uri'),
-            'code' => $code,
-            'code_verifier' => $codeVerifier,
+            'code' => $code
         ]);
 
         if ($response->failed()) {
