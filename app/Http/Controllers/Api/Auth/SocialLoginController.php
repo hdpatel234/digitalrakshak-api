@@ -78,19 +78,19 @@ class SocialLoginController extends BaseController
 
         $profile = $profileResponse['data'];
 
-        addInfoLog("DigiLocker profile: " . json_encode($profile));
+        log("DigiLocker profile: " . json_encode($profile));
 
         $digilockerId = $profile['digilockerid'] ?? null;
 
-        addInfoLog("DigiLocker ID: " . $digilockerId);
+        log("DigiLocker ID: " . $digilockerId);
 
         $email = $profile['email'] ?? null;
 
-        addInfoLog("DigiLocker email: " . $email);
+        log("DigiLocker email: " . $email);
 
         $phone = $profile['phone'] ?? null;
 
-        addInfoLog("DigiLocker phone: " . $phone);
+        log("DigiLocker phone: " . $phone);
 
         if (!$digilockerId) {
             return $this->error('DigiLocker ID not found in profile', 400, []);
