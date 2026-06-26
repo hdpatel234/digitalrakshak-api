@@ -9,6 +9,7 @@ use App\Services\LoginService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class SocialLoginController extends BaseController
 {
@@ -78,19 +79,19 @@ class SocialLoginController extends BaseController
 
         $profile = $profileResponse['data'];
 
-        log("DigiLocker profile: " . json_encode($profile));
+        Log::info("DigiLocker profile", $profile);
 
         $digilockerId = $profile['digilockerid'] ?? null;
 
-        log("DigiLocker ID: " . $digilockerId);
+        Log::info("DigiLocker ID: ", [$digilockerId]);
 
         $email = $profile['email'] ?? null;
 
-        log("DigiLocker email: " . $email);
+        Log::info("DigiLocker email: ", [$email]);
 
         $phone = $profile['phone'] ?? null;
 
-        log("DigiLocker phone: " . $phone);
+        Log::info("DigiLocker phone: ", [$phone]);
 
         if (!$digilockerId) {
             return $this->error('DigiLocker ID not found in profile', 400, []);
