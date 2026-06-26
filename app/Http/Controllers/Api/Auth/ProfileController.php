@@ -17,11 +17,25 @@ class ProfileController extends BaseController
 
     public function me()
     {
-        $response = auth()->user();
+        $user = auth()->user();
+        $response = $user->toArray();
 
         if (!empty($response['avatar'])) {
             $response['avatar'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $response['avatar'], '/');
         }
+
+        $userConfigService = app(\App\Services\UserConfigService::class);
+        $resolvedConfigs = $userConfigService->getResolvedConfigs($user->id);
+        $configKeyValue = [];
+        foreach ($resolvedConfigs as $resolvedConfig) {
+            if (isset($resolvedConfig['key'])) {
+                $configKeyValue[(string) $resolvedConfig['key']] = $resolvedConfig['value'] ?? null;
+            }
+        }
+
+        $response['config'] = $configKeyValue;
+        $response['roles'] = $user->getRoleNames()->values()->all();
+        $response['permissions'] = $user->getAllPermissions()->pluck('name')->values()->all();
 
         return $this->success('auth.get_profile.response_messages.profile_success', $response);
     }
