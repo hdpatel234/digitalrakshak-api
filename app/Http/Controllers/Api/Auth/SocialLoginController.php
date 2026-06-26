@@ -89,7 +89,7 @@ class SocialLoginController extends BaseController
 
         Log::info("DigiLocker email: ", [$email]);
 
-        $phone = $profile['phone'] ?? null;
+        $phone = $profile['mobile'] ?? null;
 
         Log::info("DigiLocker phone: ", [$phone]);
 
