@@ -48,24 +48,24 @@ class SocialLoginController extends BaseController
         $state = $request->input('state');
 
         if (!$code || !$state) {
-            return $this->error('Missing code or state parameter', [], 400);
+            return $this->error('Missing code or state parameter');
         }
 
         $tokenResponse = $this->digilockerService->exchangeToken($code);
 
         if (!$tokenResponse['status']) {
-            return $this->error('Failed to exchange token: ' . $tokenResponse['message'], [], 400);
+            return $this->error('Failed to exchange token: ' . $tokenResponse['message']);
         }
 
         $accessToken = $tokenResponse['data']['access_token'] ?? null;
         if (!$accessToken) {
-            return $this->error('Access token not found in response', [], 400);
+            return $this->error('Access token not found in response');
         }
 
         $profileResponse = $this->digilockerService->getUserProfile($accessToken);
 
         if (!$profileResponse['status']) {
-            return $this->error('Failed to get user profile: ' . $profileResponse['message'], [], 400);
+            return $this->error('Failed to get user profile: ' . $profileResponse['message']);
         }
 
         $profile = $profileResponse['data'];
@@ -74,7 +74,7 @@ class SocialLoginController extends BaseController
         $phone = $profile['phone'] ?? null;
 
         if (!$digilockerId) {
-            return $this->error('DigiLocker ID not found in profile', 400, []);
+            return $this->error('DigiLocker ID not found in profile');
         }
 
         $user = User::where('last_login_provider_id', $digilockerId)
@@ -87,7 +87,7 @@ class SocialLoginController extends BaseController
             ->first();
 
         if (!$user) {
-            return $this->error('User not registered in system', 400, []);
+            return $this->error('User not registered in system');
         }
 
         $user->update([
@@ -98,7 +98,7 @@ class SocialLoginController extends BaseController
         $loginResponse = $this->loginService->socialLogin($user, $request);
 
         if (!$loginResponse['status']) {
-            return $this->error($loginResponse['message'], [], 400);
+            return $this->error($loginResponse['message']);
         }
 
         return $this->success($loginResponse['message'], $loginResponse['data']);
