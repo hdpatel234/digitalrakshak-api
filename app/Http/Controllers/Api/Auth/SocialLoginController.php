@@ -85,23 +85,34 @@ class SocialLoginController extends BaseController
             return $this->error('DigiLocker ID not found in profile', 400, []);
         }
 
-        $user = User::where('last_login_provider_id', $digilockerId)
-            ->when($email, function ($query) use ($email) {
-                $query->orWhere('email', $email);
-            })
-            ->when($phone, function ($query) use ($phone) {
-                $query->orWhere('phone', $phone);
-            })
-            ->first();
+        $user = User::where('last_login_provider_id', $digilockerId)->first();
+
+        if (!$user) {
+            $userQuery = User::query();
+            
+            if ($email || $phone) {
+                $userQuery->where(function ($query) use ($email, $phone) {
+                    if ($email) {
+                        $query->orWhere('email', $email);
+                    }
+                    if ($phone) {
+                        $query->orWhere('phone', $phone);
+                    }
+                });
+                $user = $userQuery->first();
+            }
+
+            if ($user) {
+                $user->update([
+                    'last_login_provider' => 'digilocker',
+                    'last_login_provider_id' => $digilockerId,
+                ]);
+            }
+        }
 
         if (!$user) {
             return $this->error('User not registered in system', 400, []);
         }
-
-        $user->update([
-            'last_login_provider' => 'digilocker',
-            'last_login_provider_id' => $digilockerId,
-        ]);
 
         $loginResponse = $this->loginService->socialLogin($user, $request);
 
