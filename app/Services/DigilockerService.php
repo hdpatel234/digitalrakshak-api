@@ -39,7 +39,6 @@ class DigilockerService
             'state' => $state,
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
-            'scope' => 'avs_parent'
         ];
 
         $url = config('services.digilocker.api_base_url') . "/oauth2/1/authorize?" . http_build_query($queryParameters);
@@ -61,7 +60,7 @@ class DigilockerService
      */
     public function exchangeToken(string $code, string $codeVerifier)
     {
-        $response = Http::asForm()->post(config('services.digilocker.api_base_url') . '/oauth2/1/token', [
+        $response = Http::asForm()->post(config('services.digilocker.api_base_url') . '/oauth2/2/token', [
             'grant_type' => 'authorization_code',
             'client_id' => config('services.digilocker.client_id'),
             'client_secret' => config('services.digilocker.client_secret'),
