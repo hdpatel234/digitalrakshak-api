@@ -16,24 +16,24 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
     Route::post('forgot-password', [LoginController::class, 'forgotPassword']);
     Route::post('reset-password', [LoginController::class, 'resetPassword']);
-    Route::post('/verify-email/{token}', [LoginController::class, 'verifyEmail']); // Pending
-    Route::post('register', [LoginController::class, 'register']); // Pending
+    Route::post('verify-email/{token}', [LoginController::class, 'verifyEmail']);
+    Route::post('register', [LoginController::class, 'register']);
 
     Route::prefix('social-login')->group(function () {
-        Route::prefix('google')->group(function () {
-            Route::post('/', [SocialLoginController::class, 'googleLogin']);
-        });
-        Route::prefix('facebook')->group(function () {
-            Route::post('/', [SocialLoginController::class, 'facebookLogin']);
-        });
+        // Route::prefix('google')->group(function () {
+        //     Route::post('/', [SocialLoginController::class, 'googleLogin']);
+        // });
+        // Route::prefix('facebook')->group(function () {
+        //     Route::post('/', [SocialLoginController::class, 'facebookLogin']);
+        // });
         Route::prefix('digilocker')->group(function () {
             Route::post('/', [SocialLoginController::class, 'digiLockerLogin']);
             Route::post('/callback', [SocialLoginController::class, 'digiLockerCallback']);
         });
     });
 
-    Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']); // Pending
-    Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']); // Pending
+    // Route::post('2fa/enable', [LoginController::class, 'enableTwoFactor']);
+    // Route::post('2fa/verify', [LoginController::class, 'verifyTwoFactor']);
 
     Route::prefix('public')->group(function () {
         Route::get('countries', [CountryController::class, 'index']);
@@ -49,12 +49,12 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
         Route::get('me', [ProfileController::class, 'me']);
         Route::post('profile', [ProfileController::class, 'updateProfile']);
 
-        Route::post('change-password', [ChangePasswordController::class, 'changePassword']); // Pending
+        Route::post('change-password', [ChangePasswordController::class, 'changePassword']);
 
-        Route::get('permissions', [LoginController::class, 'getPermissions']); // Pending
-        Route::get('notifications', [LoginController::class, 'index']); // Pending
-        Route::post('notifications/{id}/read', [LoginController::class, 'markAsRead']); // Pending
-        Route::post('notifications/read-all', [LoginController::class, 'markAllAsRead']); // Pending
+        // Route::get('permissions', [LoginController::class, 'getPermissions']);
+        // Route::get('notifications', [LoginController::class, 'index']);
+        // Route::post('notifications/{id}/read', [LoginController::class, 'markAsRead']);
+        // Route::post('notifications/read-all', [LoginController::class, 'markAllAsRead']);
 
         Route::get('config', [UserConfigController::class, 'index']);
         Route::post('config', [UserConfigController::class, 'store']);
