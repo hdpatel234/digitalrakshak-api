@@ -93,6 +93,7 @@ class PackageService extends BaseService
             ->all();
 
         $availableCandidatesByPackageId = collect();
+        $servicesByPackageId = collect();
         if ($packageIds !== []) {
             $availableCandidatesByPackageId = $this->candidateInvitationService->query()
                 ->selectRaw(
@@ -103,17 +104,70 @@ class PackageService extends BaseService
                 ->groupBy($this->candidateInvitationService->packageId())
                 ->get()
                 ->pluck('total', $this->candidateInvitationService->packageId());
+
+            $packageServiceRows = $this->packageServiceService->query()
+                ->whereIn($this->packageServiceService->packageId(), $packageIds)
+                ->where(function ($builder) {
+                    $builder->where($this->packageServiceService->status(), 'active')
+                        ->orWhere($this->packageServiceService->status(), 1);
+                })
+                ->orderBy($this->packageServiceService->displayOrder(), 'asc')
+                ->get();
+
+            $serviceIds = $packageServiceRows
+                ->pluck($this->packageServiceService->serviceId())
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+
+            $servicesById = $serviceIds === []
+                ? collect()
+                : $this->serviceService->query()
+                    ->whereIn($this->serviceService->id(), $serviceIds)
+                    ->get()
+                    ->keyBy($this->serviceService->id());
+
+            $servicesByPackageId = $packageServiceRows->groupBy($this->packageServiceService->packageId())
+                ->map(function ($rows) use ($servicesById) {
+                    return $rows->map(function ($row) use ($servicesById) {
+                        $serviceId = (int) ($row->{$this->packageServiceService->serviceId()} ?? 0);
+                        $service = $servicesById->get($serviceId);
+                        $basePrice = $service?->{$this->serviceService->basePrice()};
+                        $priceOverride = $row->{$this->packageServiceService->priceOverride()};
+
+                        return [
+                            'package_service_id' => $row->{$this->packageServiceService->id()},
+                            'package_id' => $row->{$this->packageServiceService->packageId()},
+                            'service_id' => $serviceId,
+                            'service_name' => $service?->{$this->serviceService->serviceName()},
+                            'service_code' => $service?->{$this->serviceService->serviceCode()},
+                            'service_category' => $service?->{$this->serviceService->serviceCategory()},
+                            'description' => $service?->{$this->serviceService->description()},
+                            'base_price' => $basePrice,
+                            'price_override' => $priceOverride,
+                            'effective_price' => $priceOverride ?? $basePrice,
+                            'is_mandatory' => $row->{$this->packageServiceService->isMandatory()},
+                            'display_order' => $row->{$this->packageServiceService->displayOrder()},
+                            'status' => $row->{$this->packageServiceService->status()},
+                            'service_status' => $service?->{$this->serviceService->status()},
+                        ];
+                    })->values()->all();
+                });
         }
 
         $result['list'] = collect($result['list'])
-            ->map(function ($item) use ($finalPriceColumn, $totalPriceColumn, $availableCandidatesByPackageId) {
+            ->map(function ($item) use ($finalPriceColumn, $totalPriceColumn, $availableCandidatesByPackageId, $servicesByPackageId) {
                 $package = is_array($item) ? $item : $item->toArray();
                 $finalPrice = $package[$finalPriceColumn] ?? null;
                 $totalPrice = $package[$totalPriceColumn] ?? null;
+                $packageId = (int) ($package[$this->packageService->id()] ?? 0);
 
                 $package['price'] = $finalPrice ?? $totalPrice;
                 $package['is_discounted'] = $finalPrice !== null && $totalPrice !== null && (float) $finalPrice < (float) $totalPrice;
-                $package['available_candidates'] = (int) $availableCandidatesByPackageId->get((int) ($package[$this->packageService->id()] ?? 0), 0);
+                $package['available_candidates'] = (int) $availableCandidatesByPackageId->get($packageId, 0);
+                $package['services'] = $servicesByPackageId->get($packageId, []);
 
                 return $package;
             })
