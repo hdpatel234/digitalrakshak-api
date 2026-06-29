@@ -14,37 +14,37 @@ class UserSavedSearchRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserSavedSearch::USER_ID;
     }
 
     public function searchName()
     {
-        return $this->model::SEARCH_NAME;
+        return UserSavedSearch::SEARCH_NAME;
     }
 
     public function entityType()
     {
-        return $this->model::ENTITY_TYPE;
+        return UserSavedSearch::ENTITY_TYPE;
     }
 
     public function filters()
     {
-        return $this->model::FILTERS;
+        return UserSavedSearch::FILTERS;
     }
 
     public function columns()
     {
-        return $this->model::COLUMNS;
+        return UserSavedSearch::COLUMNS;
     }
 
     public function sort()
     {
-        return $this->model::SORT;
+        return UserSavedSearch::SORT;
     }
 
     public function isShared()
     {
-        return $this->model::IS_SHARED;
+        return UserSavedSearch::IS_SHARED;
     }
     // functions
 }

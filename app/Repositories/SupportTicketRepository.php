@@ -14,112 +14,112 @@ class SupportTicketRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return SupportTicket::CLIENT_ID;
     }
 
     public function supportConfigId()
     {
-        return $this->model::SUPPORT_CONFIG_ID;
+        return SupportTicket::SUPPORT_CONFIG_ID;
     }
 
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return SupportTicket::ORDER_ID;
     }
 
     public function externalTicketId()
     {
-        return $this->model::EXTERNAL_TICKET_ID;
+        return SupportTicket::EXTERNAL_TICKET_ID;
     }
 
     public function ticketNumber()
     {
-        return $this->model::TICKET_NUMBER;
+        return SupportTicket::TICKET_NUMBER;
     }
 
     public function subject()
     {
-        return $this->model::SUBJECT;
+        return SupportTicket::SUBJECT;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return SupportTicket::DESCRIPTION;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return SupportTicket::STATUS;
     }
 
     public function departmentId()
     {
-        return $this->model::DEPARTMENT_ID;
+        return SupportTicket::DEPARTMENT_ID;
     }
 
     public function priorityId()
     {
-        return $this->model::PRIORITY_ID;
+        return SupportTicket::PRIORITY_ID;
     }
 
     public function assignedTo()
     {
-        return $this->model::ASSIGNED_TO;
+        return SupportTicket::ASSIGNED_TO;
     }
 
     public function assignedName()
     {
-        return $this->model::ASSIGNED_NAME;
+        return SupportTicket::ASSIGNED_NAME;
     }
 
     public function resolution()
     {
-        return $this->model::RESOLUTION;
+        return SupportTicket::RESOLUTION;
     }
 
     public function resolvedAt()
     {
-        return $this->model::RESOLVED_AT;
+        return SupportTicket::RESOLVED_AT;
     }
 
     public function closedAt()
     {
-        return $this->model::CLOSED_AT;
+        return SupportTicket::CLOSED_AT;
     }
 
     public function ticketData()
     {
-        return $this->model::TICKET_DATA;
+        return SupportTicket::TICKET_DATA;
     }
 
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return SupportTicket::DOCUMENT_ID;
     }
 
     public function syncStatus()
     {
-        return $this->model::SYNC_STATUS;
+        return SupportTicket::SYNC_STATUS;
     }
 
     public function syncMessage()
     {
-        return $this->model::SYNC_MESSAGE;
+        return SupportTicket::SYNC_MESSAGE;
     }
 
     public function lastSyncAt()
     {
-        return $this->model::LAST_SYNC_AT;
+        return SupportTicket::LAST_SYNC_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return SupportTicket::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return SupportTicket::UPDATED_BY;
     }
     // functions
 }

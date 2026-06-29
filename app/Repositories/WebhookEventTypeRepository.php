@@ -14,32 +14,32 @@ class WebhookEventTypeRepository extends BaseRepository
     // column constants
     public function eventName()
     {
-        return $this->model::EVENT_NAME;
+        return WebhookEventType::EVENT_NAME;
     }
 
     public function eventCode()
     {
-        return $this->model::EVENT_CODE;
+        return WebhookEventType::EVENT_CODE;
     }
 
     public function category()
     {
-        return $this->model::CATEGORY;
+        return WebhookEventType::CATEGORY;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return WebhookEventType::DESCRIPTION;
     }
 
     public function samplePayload()
     {
-        return $this->model::SAMPLE_PAYLOAD;
+        return WebhookEventType::SAMPLE_PAYLOAD;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return WebhookEventType::IS_ACTIVE;
     }
     // functions
 }

@@ -14,37 +14,37 @@ class CandidatesLogRepository extends BaseRepository
     // column constants
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return CandidatesLog::CANDIDATE_ID;
     }
 
     public function action()
     {
-        return $this->model::ACTION;
+        return CandidatesLog::ACTION;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return CandidatesLog::IP_ADDRESS;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidatesLog::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidatesLog::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidatesLog::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidatesLog::DELETED_BY;
     }
     // functions
 }

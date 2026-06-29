@@ -14,127 +14,127 @@ class ClientRepository extends BaseRepository
     // column constants
     public function companyName()
     {
-        return $this->model::COMPANY_NAME;
+        return Client::COMPANY_NAME;
     }
 
     public function contactPerson()
     {
-        return $this->model::CONTACT_PERSON;
+        return Client::CONTACT_PERSON;
     }
 
     public function email()
     {
-        return $this->model::EMAIL;
+        return Client::EMAIL;
     }
 
     public function phone()
     {
-        return $this->model::PHONE;
+        return Client::PHONE;
     }
 
     public function gstNumber()
     {
-        return $this->model::GST_NUMBER;
+        return Client::GST_NUMBER;
     }
 
     public function panNumber()
     {
-        return $this->model::PAN_NUMBER;
+        return Client::PAN_NUMBER;
     }
 
     public function address()
     {
-        return $this->model::ADDRESS;
+        return Client::ADDRESS;
     }
 
     public function countryID()
     {
-        return $this->model::COUNTRY_ID;
+        return Client::COUNTRY_ID;
     }
 
     public function stateID()
     {
-        return $this->model::STATE_ID;
+        return Client::STATE_ID;
     }
 
     public function cityId()
     {
-        return $this->model::CITY_ID;
+        return Client::CITY_ID;
     }
 
     public function city()
     {
-        return $this->model::CITY;
+        return Client::CITY;
     }
 
     public function state()
     {
-        return $this->model::STATE;
+        return Client::STATE;
     }
 
     public function pincode()
     {
-        return $this->model::PINCODE;
+        return Client::PINCODE;
     }
 
     public function country()
     {
-        return $this->model::COUNTRY;
+        return Client::COUNTRY;
     }
 
     public function currency()
     {
-        return $this->model::CURRENCY;
+        return Client::CURRENCY;
     }
 
     public function creditLimit()
     {
-        return $this->model::CREDIT_LIMIT;
+        return Client::CREDIT_LIMIT;
     }
 
     public function creditBalance()
     {
-        return $this->model::CREDIT_BALANCE;
+        return Client::CREDIT_BALANCE;
     }
 
     public function paymentTerms()
     {
-        return $this->model::PAYMENT_TERMS;
+        return Client::PAYMENT_TERMS;
     }
 
     public function defaultBillingConfigId()
     {
-        return $this->model::DEFAULT_BILLING_CONFIG_ID;
+        return Client::DEFAULT_BILLING_CONFIG_ID;
     }
 
     public function defaultSupportConfigId()
     {
-        return $this->model::DEFAULT_SUPPORT_CONFIG_ID;
+        return Client::DEFAULT_SUPPORT_CONFIG_ID;
     }
 
     public function defualtDocumentConfigId()
     {
-        return $this->model::DEFAULT_DOCUMENT_CONFIG_ID;
+        return Client::DEFAULT_DOCUMENT_CONFIG_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Client::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Client::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Client::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return Client::DELETED_BY;
     }
     // functions
 }

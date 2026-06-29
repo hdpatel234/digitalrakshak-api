@@ -14,62 +14,62 @@ class UserAccessibilitySettingRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserAccessibilitySetting::USER_ID;
     }
 
     public function highContrast()
     {
-        return $this->model::HIGH_CONTRAST;
+        return UserAccessibilitySetting::HIGH_CONTRAST;
     }
 
     public function largeText()
     {
-        return $this->model::LARGE_TEXT;
+        return UserAccessibilitySetting::LARGE_TEXT;
     }
 
     public function reduceMotion()
     {
-        return $this->model::REDUCE_MOTION;
+        return UserAccessibilitySetting::REDUCE_MOTION;
     }
 
     public function screenReaderOptimized()
     {
-        return $this->model::SCREEN_READER_OPTIMIZED;
+        return UserAccessibilitySetting::SCREEN_READER_OPTIMIZED;
     }
 
     public function keyboardNavigation()
     {
-        return $this->model::KEYBOARD_NAVIGATION;
+        return UserAccessibilitySetting::KEYBOARD_NAVIGATION;
     }
 
     public function focusIndicators()
     {
-        return $this->model::FOCUS_INDICATORS;
+        return UserAccessibilitySetting::FOCUS_INDICATORS;
     }
 
     public function colorBlindMode()
     {
-        return $this->model::COLOR_BLIND_MODE;
+        return UserAccessibilitySetting::COLOR_BLIND_MODE;
     }
 
     public function fontFamily()
     {
-        return $this->model::FONT_FAMILY;
+        return UserAccessibilitySetting::FONT_FAMILY;
     }
 
     public function fontSizeMultiplier()
     {
-        return $this->model::FONT_SIZE_MULTIPLIER;
+        return UserAccessibilitySetting::FONT_SIZE_MULTIPLIER;
     }
 
     public function lineHeightMultiplier()
     {
-        return $this->model::LINE_HEIGHT_MULTIPLIER;
+        return UserAccessibilitySetting::LINE_HEIGHT_MULTIPLIER;
     }
 
     public function letterSpacing()
     {
-        return $this->model::LETTER_SPACING;
+        return UserAccessibilitySetting::LETTER_SPACING;
     }
     // functions
 }

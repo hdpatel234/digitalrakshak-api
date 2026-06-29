@@ -14,32 +14,32 @@ class SocialLoginAttemptRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return SocialLoginAttempt::PROVIDER_ID;
     }
 
     public function email()
     {
-        return $this->model::EMAIL;
+        return SocialLoginAttempt::EMAIL;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return SocialLoginAttempt::IP_ADDRESS;
     }
 
     public function userAgent()
     {
-        return $this->model::USER_AGENT;
+        return SocialLoginAttempt::USER_AGENT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return SocialLoginAttempt::STATUS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return SocialLoginAttempt::ERROR_MESSAGE;
     }
     // functions
 }

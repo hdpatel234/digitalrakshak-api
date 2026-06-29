@@ -14,32 +14,32 @@ class CandidateManagerRepository extends BaseRepository
     // column constants
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return CandidateManager::CANDIDATE_ID;
     }
 
     public function email()
     {
-        return $this->model::EMAIL;
+        return CandidateManager::EMAIL;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateManager::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateManager::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateManager::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateManager::DELETED_BY;
     }
     // functions
 }

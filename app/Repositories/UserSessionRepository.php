@@ -14,46 +14,46 @@ class UserSessionRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserSession::USER_ID;
     }
 
     public function accessTokenId()
     {
-        return $this->model::ACCESS_TOKEN_ID;
+        return UserSession::ACCESS_TOKEN_ID;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return UserSession::IP_ADDRESS;
     }
 
     public function userAgent()
     {
-        return $this->model::USER_AGENT;
+        return UserSession::USER_AGENT;
     }
 
     public function browser()
     {
-        return $this->model::BROWSER;
+        return UserSession::BROWSER;
     }
 
     public function os()
     {
-        return $this->model::OS;
+        return UserSession::OS;
     }
 
     public function device()
     {
-        return $this->model::DEVICE;
+        return UserSession::DEVICE;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return UserSession::IS_ACTIVE;
     }
     // functions
     public function markInactive($tokenId)
     {
-        return $this->model::where($this->model::ACCESS_TOKEN_ID, $tokenId)->update([$this->model::IS_ACTIVE => false]);
+        return UserSession::where(UserSession::ACCESS_TOKEN_ID, $tokenId)->update([UserSession::IS_ACTIVE => false]);
     }
 }

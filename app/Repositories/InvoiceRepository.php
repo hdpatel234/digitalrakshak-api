@@ -14,132 +14,132 @@ class InvoiceRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return Invoice::CLIENT_ID;
     }
 
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return Invoice::ORDER_ID;
     }
 
     public function billingConfigId()
     {
-        return $this->model::BILLING_CONFIG_ID;
+        return Invoice::BILLING_CONFIG_ID;
     }
 
     public function externalInvoiceId()
     {
-        return $this->model::EXTERNAL_INVOICE_ID;
+        return Invoice::EXTERNAL_INVOICE_ID;
     }
 
     public function externalInvoiceNumber()
     {
-        return $this->model::EXTERNAL_INVOICE_NUMBER;
+        return Invoice::EXTERNAL_INVOICE_NUMBER;
     }
 
     public function invoiceNumber()
     {
-        return $this->model::INVOICE_NUMBER;
+        return Invoice::INVOICE_NUMBER;
     }
 
     public function invoiceDate()
     {
-        return $this->model::INVOICE_DATE;
+        return Invoice::INVOICE_DATE;
     }
 
     public function dueDate()
     {
-        return $this->model::DUE_DATE;
+        return Invoice::DUE_DATE;
     }
 
     public function subtotal()
     {
-        return $this->model::SUBTOTAL;
+        return Invoice::SUBTOTAL;
     }
 
     public function discountAmount()
     {
-        return $this->model::DISCOUNT_AMOUNT;
+        return Invoice::DISCOUNT_AMOUNT;
     }
 
     public function taxAmount()
     {
-        return $this->model::TAX_AMOUNT;
+        return Invoice::TAX_AMOUNT;
     }
 
     public function taxPercentage()
     {
-        return $this->model::TAX_PERCENTAGE;
+        return Invoice::TAX_PERCENTAGE;
     }
 
     public function totalAmount()
     {
-        return $this->model::TOTAL_AMOUNT;
+        return Invoice::TOTAL_AMOUNT;
     }
 
     public function amountPaid()
     {
-        return $this->model::AMOUNT_PAID;
+        return Invoice::AMOUNT_PAID;
     }
 
     public function amountDue()
     {
-        return $this->model::AMOUNT_DUE;
+        return Invoice::AMOUNT_DUE;
     }
 
     public function currency()
     {
-        return $this->model::CURRENCY;
+        return Invoice::CURRENCY;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Invoice::STATUS;
     }
 
     public function paymentStatus()
     {
-        return $this->model::PAYMENT_STATUS;
+        return Invoice::PAYMENT_STATUS;
     }
 
     public function pdfUrl()
     {
-        return $this->model::PDF_URL;
+        return Invoice::PDF_URL;
     }
 
     public function syncStatus()
     {
-        return $this->model::SYNC_STATUS;
+        return Invoice::SYNC_STATUS;
     }
 
     public function syncMessage()
     {
-        return $this->model::SYNC_MESSAGE;
+        return Invoice::SYNC_MESSAGE;
     }
 
     public function lastSyncAt()
     {
-        return $this->model::LAST_SYNC_AT;
+        return Invoice::LAST_SYNC_AT;
     }
 
     public function invoiceData()
     {
-        return $this->model::INVOICE_DATA;
+        return Invoice::INVOICE_DATA;
     }
 
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return Invoice::DOCUMENT_ID;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Invoice::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Invoice::UPDATED_BY;
     }
     // functions
 }

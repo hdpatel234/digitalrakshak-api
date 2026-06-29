@@ -14,47 +14,47 @@ class PackageServiceRepository extends BaseRepository
     // column constants
     public function packageId()
     {
-        return $this->model::PACKAGE_ID;
+        return PackageService::PACKAGE_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return PackageService::SERVICE_ID;
     }
 
     public function priceOverride()
     {
-        return $this->model::PRICE_OVERRIDE;
+        return PackageService::PRICE_OVERRIDE;
     }
 
     public function isMandatory()
     {
-        return $this->model::IS_MANDATORY;
+        return PackageService::IS_MANDATORY;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return PackageService::DISPLAY_ORDER;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return PackageService::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return PackageService::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return PackageService::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return PackageService::DELETED_BY;
     }
     // functions
 }

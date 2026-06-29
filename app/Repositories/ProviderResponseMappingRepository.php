@@ -14,42 +14,42 @@ class ProviderResponseMappingRepository extends BaseRepository
     // column constants
     public function serviceProviderAssignmentId()
     {
-        return $this->model::SERVICE_PROVIDER_ASSIGNMENT_ID;
+        return ProviderResponseMapping::SERVICE_PROVIDER_ASSIGNMENT_ID;
     }
 
     public function responseField()
     {
-        return $this->model::RESPONSE_FIELD;
+        return ProviderResponseMapping::RESPONSE_FIELD;
     }
 
     public function targetField()
     {
-        return $this->model::TARGET_FIELD;
+        return ProviderResponseMapping::TARGET_FIELD;
     }
 
     public function dataType()
     {
-        return $this->model::DATA_TYPE;
+        return ProviderResponseMapping::DATA_TYPE;
     }
 
     public function path()
     {
-        return $this->model::PATH;
+        return ProviderResponseMapping::PATH;
     }
 
     public function transformFunction()
     {
-        return $this->model::TRANSFORM_FUNCTION;
+        return ProviderResponseMapping::TRANSFORM_FUNCTION;
     }
 
     public function isVerificationResult()
     {
-        return $this->model::IS_VERIFICATION_RESULT;
+        return ProviderResponseMapping::IS_VERIFICATION_RESULT;
     }
 
     public function isRequired()
     {
-        return $this->model::IS_REQUIRED;
+        return ProviderResponseMapping::IS_REQUIRED;
     }
     // functions
 }

@@ -14,22 +14,22 @@ class BillingPlatformRepository extends BaseRepository
     // column constants
     public function platformName()
     {
-        return $this->model::PLATFORM_NAME;
+        return BillingPlatform::PLATFORM_NAME;
     }
 
     public function platformCode()
     {
-        return $this->model::PLATFORM_CODE;
+        return BillingPlatform::PLATFORM_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return BillingPlatform::DESCRIPTION;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return BillingPlatform::IS_ACTIVE;
     }
     // functions
 }

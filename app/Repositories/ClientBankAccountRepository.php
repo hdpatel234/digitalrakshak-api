@@ -14,82 +14,82 @@ class ClientBankAccountRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientBankAccount::CLIENT_ID;
     }
 
     public function accountName()
     {
-        return $this->model::ACCOUNT_NAME;
+        return ClientBankAccount::ACCOUNT_NAME;
     }
 
     public function bankName()
     {
-        return $this->model::BANK_NAME;
+        return ClientBankAccount::BANK_NAME;
     }
 
     public function accountNumber()
     {
-        return $this->model::ACCOUNT_NUMBER;
+        return ClientBankAccount::ACCOUNT_NUMBER;
     }
 
     public function accountType()
     {
-        return $this->model::ACCOUNT_TYPE;
+        return ClientBankAccount::ACCOUNT_TYPE;
     }
 
     public function ifscCode()
     {
-        return $this->model::IFSC_CODE;
+        return ClientBankAccount::IFSC_CODE;
     }
 
     public function swiftCode()
     {
-        return $this->model::SWIFT_CODE;
+        return ClientBankAccount::SWIFT_CODE;
     }
 
     public function branchName()
     {
-        return $this->model::BRANCH_NAME;
+        return ClientBankAccount::BRANCH_NAME;
     }
 
     public function branchAddress()
     {
-        return $this->model::BRANCH_ADDRESS;
+        return ClientBankAccount::BRANCH_ADDRESS;
     }
 
     public function upiId()
     {
-        return $this->model::UPI_ID;
+        return ClientBankAccount::UPI_ID;
     }
 
     public function qrCode()
     {
-        return $this->model::QR_CODE;
+        return ClientBankAccount::QR_CODE;
     }
 
     public function isPrimary()
     {
-        return $this->model::IS_PRIMARY;
+        return ClientBankAccount::IS_PRIMARY;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ClientBankAccount::IS_ACTIVE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return ClientBankAccount::DISPLAY_ORDER;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientBankAccount::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientBankAccount::UPDATED_BY;
     }
     // functions
 }

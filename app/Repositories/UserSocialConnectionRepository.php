@@ -14,67 +14,67 @@ class UserSocialConnectionRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserSocialConnection::USER_ID;
     }
 
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return UserSocialConnection::PROVIDER_ID;
     }
 
     public function providerUserId()
     {
-        return $this->model::PROVIDER_USER_ID;
+        return UserSocialConnection::PROVIDER_USER_ID;
     }
 
     public function providerEmail()
     {
-        return $this->model::PROVIDER_EMAIL;
+        return UserSocialConnection::PROVIDER_EMAIL;
     }
 
     public function providerName()
     {
-        return $this->model::PROVIDER_NAME;
+        return UserSocialConnection::PROVIDER_NAME;
     }
 
     public function providerAvatar()
     {
-        return $this->model::PROVIDER_AVATAR;
+        return UserSocialConnection::PROVIDER_AVATAR;
     }
 
     public function accessToken()
     {
-        return $this->model::ACCESS_TOKEN;
+        return UserSocialConnection::ACCESS_TOKEN;
     }
 
     public function refreshToken()
     {
-        return $this->model::REFRESH_TOKEN;
+        return UserSocialConnection::REFRESH_TOKEN;
     }
 
     public function tokenExpiresAt()
     {
-        return $this->model::TOKEN_EXPIRES_AT;
+        return UserSocialConnection::TOKEN_EXPIRES_AT;
     }
 
     public function scopes()
     {
-        return $this->model::SCOPES;
+        return UserSocialConnection::SCOPES;
     }
 
     public function rawData()
     {
-        return $this->model::RAW_DATA;
+        return UserSocialConnection::RAW_DATA;
     }
 
     public function lastLoginAt()
     {
-        return $this->model::LAST_LOGIN_AT;
+        return UserSocialConnection::LAST_LOGIN_AT;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return UserSocialConnection::IS_ACTIVE;
     }
     // functions
 }

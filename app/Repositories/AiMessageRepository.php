@@ -14,97 +14,97 @@ class AiMessageRepository extends BaseRepository
     // column constants
     public function conversationId()
     {
-        return $this->model::CONVERSATION_ID;
+        return AiMessage::CONVERSATION_ID;
     }
 
     public function messageUuid()
     {
-        return $this->model::MESSAGE_UUID;
+        return AiMessage::MESSAGE_UUID;
     }
 
     public function role()
     {
-        return $this->model::ROLE;
+        return AiMessage::ROLE;
     }
 
     public function content()
     {
-        return $this->model::CONTENT;
+        return AiMessage::CONTENT;
     }
 
     public function functionName()
     {
-        return $this->model::FUNCTION_NAME;
+        return AiMessage::FUNCTION_NAME;
     }
 
     public function functionArguments()
     {
-        return $this->model::FUNCTION_ARGUMENTS;
+        return AiMessage::FUNCTION_ARGUMENTS;
     }
 
     public function functionResponse()
     {
-        return $this->model::FUNCTION_RESPONSE;
+        return AiMessage::FUNCTION_RESPONSE;
     }
 
     public function modelId()
     {
-        return $this->model::MODEL_ID;
+        return AiMessage::MODEL_ID;
     }
 
     public function inputTokens()
     {
-        return $this->model::INPUT_TOKENS;
+        return AiMessage::INPUT_TOKENS;
     }
 
     public function outputTokens()
     {
-        return $this->model::OUTPUT_TOKENS;
+        return AiMessage::OUTPUT_TOKENS;
     }
 
     public function totalTokens()
     {
-        return $this->model::TOTAL_TOKENS;
+        return AiMessage::TOTAL_TOKENS;
     }
 
     public function cost()
     {
-        return $this->model::COST;
+        return AiMessage::COST;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return AiMessage::RESPONSE_TIME_MS;
     }
 
     public function finishReason()
     {
-        return $this->model::FINISH_REASON;
+        return AiMessage::FINISH_REASON;
     }
 
     public function metadata()
     {
-        return $this->model::METADATA;
+        return AiMessage::METADATA;
     }
 
     public function rawRequest()
     {
-        return $this->model::RAW_REQUEST;
+        return AiMessage::RAW_REQUEST;
     }
 
     public function rawResponse()
     {
-        return $this->model::RAW_RESPONSE;
+        return AiMessage::RAW_RESPONSE;
     }
 
     public function userRating()
     {
-        return $this->model::USER_RATING;
+        return AiMessage::USER_RATING;
     }
 
     public function userFeedback()
     {
-        return $this->model::USER_FEEDBACK;
+        return AiMessage::USER_FEEDBACK;
     }
     // functions
 }

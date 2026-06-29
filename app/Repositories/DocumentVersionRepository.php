@@ -14,47 +14,47 @@ class DocumentVersionRepository extends BaseRepository
     // column constants
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return DocumentVersion::DOCUMENT_ID;
     }
 
     public function versionNumber()
     {
-        return $this->model::VERSION_NUMBER;
+        return DocumentVersion::VERSION_NUMBER;
     }
 
     public function storedFilename()
     {
-        return $this->model::STORED_FILENAME;
+        return DocumentVersion::STORED_FILENAME;
     }
 
     public function filePath()
     {
-        return $this->model::FILE_PATH;
+        return DocumentVersion::FILE_PATH;
     }
 
     public function fileSize()
     {
-        return $this->model::FILE_SIZE;
+        return DocumentVersion::FILE_SIZE;
     }
 
     public function fileHash()
     {
-        return $this->model::FILE_HASH;
+        return DocumentVersion::FILE_HASH;
     }
 
     public function externalFileId()
     {
-        return $this->model::EXTERNAL_FILE_ID;
+        return DocumentVersion::EXTERNAL_FILE_ID;
     }
 
     public function changeReason()
     {
-        return $this->model::CHANGE_REASON;
+        return DocumentVersion::CHANGE_REASON;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return DocumentVersion::CREATED_BY;
     }
     // functions
 }

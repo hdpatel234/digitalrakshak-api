@@ -14,187 +14,187 @@ class ProviderApiConfigRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return ProviderApiConfig::PROVIDER_ID;
     }
 
     public function configName()
     {
-        return $this->model::CONFIG_NAME;
+        return ProviderApiConfig::CONFIG_NAME;
     }
 
     public function environment()
     {
-        return $this->model::ENVIRONMENT;
+        return ProviderApiConfig::ENVIRONMENT;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ProviderApiConfig::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return ProviderApiConfig::IS_DEFAULT;
     }
 
     public function baseUrl()
     {
-        return $this->model::BASE_URL;
+        return ProviderApiConfig::BASE_URL;
     }
 
     public function apiVersion()
     {
-        return $this->model::API_VERSION;
+        return ProviderApiConfig::API_VERSION;
     }
 
     public function timeoutSeconds()
     {
-        return $this->model::TIMEOUT_SECONDS;
+        return ProviderApiConfig::TIMEOUT_SECONDS;
     }
 
     public function maxRetries()
     {
-        return $this->model::MAX_RETRIES;
+        return ProviderApiConfig::MAX_RETRIES;
     }
 
     public function retryDelaySeconds()
     {
-        return $this->model::RETRY_DELAY_SECONDS;
+        return ProviderApiConfig::RETRY_DELAY_SECONDS;
     }
 
     public function authType()
     {
-        return $this->model::AUTH_TYPE;
+        return ProviderApiConfig::AUTH_TYPE;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return ProviderApiConfig::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return ProviderApiConfig::API_SECRET;
     }
 
     public function apiToken()
     {
-        return $this->model::API_TOKEN;
+        return ProviderApiConfig::API_TOKEN;
     }
 
     public function tokenExpiry()
     {
-        return $this->model::TOKEN_EXPIRY;
+        return ProviderApiConfig::TOKEN_EXPIRY;
     }
 
     public function username()
     {
-        return $this->model::USERNAME;
+        return ProviderApiConfig::USERNAME;
     }
 
     public function password()
     {
-        return $this->model::PASSWORD;
+        return ProviderApiConfig::PASSWORD;
     }
 
     public function defaultHeaders()
     {
-        return $this->model::DEFAULT_HEADERS;
+        return ProviderApiConfig::DEFAULT_HEADERS;
     }
 
     public function dynamicHeaders()
     {
-        return $this->model::DYNAMIC_HEADERS;
+        return ProviderApiConfig::DYNAMIC_HEADERS;
     }
 
     public function rateLimitPerMinute()
     {
-        return $this->model::RATE_LIMIT_PER_MINUTE;
+        return ProviderApiConfig::RATE_LIMIT_PER_MINUTE;
     }
 
     public function rateLimitPerHour()
     {
-        return $this->model::RATE_LIMIT_PER_HOUR;
+        return ProviderApiConfig::RATE_LIMIT_PER_HOUR;
     }
 
     public function rateLimitPerDay()
     {
-        return $this->model::RATE_LIMIT_PER_DAY;
+        return ProviderApiConfig::RATE_LIMIT_PER_DAY;
     }
 
     public function verifySsl()
     {
-        return $this->model::VERIFY_SSL;
+        return ProviderApiConfig::VERIFY_SSL;
     }
 
     public function sslCertPath()
     {
-        return $this->model::SSL_CERT_PATH;
+        return ProviderApiConfig::SSL_CERT_PATH;
     }
 
     public function sslKeyPath()
     {
-        return $this->model::SSL_KEY_PATH;
+        return ProviderApiConfig::SSL_KEY_PATH;
     }
 
     public function healthCheckUrl()
     {
-        return $this->model::HEALTH_CHECK_URL;
+        return ProviderApiConfig::HEALTH_CHECK_URL;
     }
 
     public function healthCheckInterval()
     {
-        return $this->model::HEALTH_CHECK_INTERVAL;
+        return ProviderApiConfig::HEALTH_CHECK_INTERVAL;
     }
 
     public function lastHealthCheck()
     {
-        return $this->model::LAST_HEALTH_CHECK;
+        return ProviderApiConfig::LAST_HEALTH_CHECK;
     }
 
     public function healthStatus()
     {
-        return $this->model::HEALTH_STATUS;
+        return ProviderApiConfig::HEALTH_STATUS;
     }
 
     public function healthMessage()
     {
-        return $this->model::HEALTH_MESSAGE;
+        return ProviderApiConfig::HEALTH_MESSAGE;
     }
 
     public function avgResponseTime()
     {
-        return $this->model::AVG_RESPONSE_TIME;
+        return ProviderApiConfig::AVG_RESPONSE_TIME;
     }
 
     public function successRate()
     {
-        return $this->model::SUCCESS_RATE;
+        return ProviderApiConfig::SUCCESS_RATE;
     }
 
     public function totalCalls()
     {
-        return $this->model::TOTAL_CALLS;
+        return ProviderApiConfig::TOTAL_CALLS;
     }
 
     public function successfulCalls()
     {
-        return $this->model::SUCCESSFUL_CALLS;
+        return ProviderApiConfig::SUCCESSFUL_CALLS;
     }
 
     public function failedCalls()
     {
-        return $this->model::FAILED_CALLS;
+        return ProviderApiConfig::FAILED_CALLS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ProviderApiConfig::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ProviderApiConfig::UPDATED_BY;
     }
     // functions
 }

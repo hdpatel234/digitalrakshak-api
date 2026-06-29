@@ -14,72 +14,72 @@ class GeneratedDocumentRepository extends BaseRepository
     // column constants
     public function templateId()
     {
-        return $this->model::TEMPLATE_ID;
+        return GeneratedDocument::TEMPLATE_ID;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return GeneratedDocument::CLIENT_ID;
     }
 
     public function documentConfigId()
     {
-        return $this->model::DOCUMENT_CONFIG_ID;
+        return GeneratedDocument::DOCUMENT_CONFIG_ID;
     }
 
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return GeneratedDocument::DOCUMENT_ID;
     }
 
     public function referenceType()
     {
-        return $this->model::REFERENCE_TYPE;
+        return GeneratedDocument::REFERENCE_TYPE;
     }
 
     public function referenceId()
     {
-        return $this->model::REFERENCE_ID;
+        return GeneratedDocument::REFERENCE_ID;
     }
 
     public function documentNumber()
     {
-        return $this->model::DOCUMENT_NUMBER;
+        return GeneratedDocument::DOCUMENT_NUMBER;
     }
 
     public function title()
     {
-        return $this->model::TITLE;
+        return GeneratedDocument::TITLE;
     }
 
     public function generatedData()
     {
-        return $this->model::GENERATED_DATA;
+        return GeneratedDocument::GENERATED_DATA;
     }
 
     public function filePath()
     {
-        return $this->model::FILE_PATH;
+        return GeneratedDocument::FILE_PATH;
     }
 
     public function fileSize()
     {
-        return $this->model::FILE_SIZE;
+        return GeneratedDocument::FILE_SIZE;
     }
 
     public function generatedAt()
     {
-        return $this->model::GENERATED_AT;
+        return GeneratedDocument::GENERATED_AT;
     }
 
     public function generatedBy()
     {
-        return $this->model::GENERATED_BY;
+        return GeneratedDocument::GENERATED_BY;
     }
 
     public function downloadCount()
     {
-        return $this->model::DOWNLOAD_COUNT;
+        return GeneratedDocument::DOWNLOAD_COUNT;
     }
     // functions
 }

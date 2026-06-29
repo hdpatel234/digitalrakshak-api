@@ -14,77 +14,77 @@ class CityRepository extends BaseRepository
     // column constants
     public function stateId()
     {
-        return $this->model::STATE_ID;
+        return City::STATE_ID;
     }
 
     public function countryId()
     {
-        return $this->model::COUNTRY_ID;
+        return City::COUNTRY_ID;
     }
 
     public function name()
     {
-        return $this->model::NAME;
+        return City::NAME;
     }
 
     public function localName()
     {
-        return $this->model::LOCAL_NAME;
+        return City::LOCAL_NAME;
     }
 
     public function district()
     {
-        return $this->model::DISTRICT;
+        return City::DISTRICT;
     }
 
     public function latitude()
     {
-        return $this->model::LATITUDE;
+        return City::LATITUDE;
     }
 
     public function longitude()
     {
-        return $this->model::LONGITUDE;
+        return City::LONGITUDE;
     }
 
     public function postalCode()
     {
-        return $this->model::POSTAL_CODE;
+        return City::POSTAL_CODE;
     }
 
     public function postalCodes()
     {
-        return $this->model::POSTAL_CODES;
+        return City::POSTAL_CODES;
     }
 
     public function timezone()
     {
-        return $this->model::TIMEZONE;
+        return City::TIMEZONE;
     }
 
     public function isCapital()
     {
-        return $this->model::IS_CAPITAL;
+        return City::IS_CAPITAL;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return City::IS_ACTIVE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return City::DISPLAY_ORDER;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return City::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return City::UPDATED_BY;
     }
 
     // functions

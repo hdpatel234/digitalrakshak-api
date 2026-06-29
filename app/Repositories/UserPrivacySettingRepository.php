@@ -14,52 +14,52 @@ class UserPrivacySettingRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserPrivacySetting::USER_ID;
     }
 
     public function profileVisibility()
     {
-        return $this->model::PROFILE_VISIBILITY;
+        return UserPrivacySetting::PROFILE_VISIBILITY;
     }
 
     public function showEmail()
     {
-        return $this->model::SHOW_EMAIL;
+        return UserPrivacySetting::SHOW_EMAIL;
     }
 
     public function showPhone()
     {
-        return $this->model::SHOW_PHONE;
+        return UserPrivacySetting::SHOW_PHONE;
     }
 
     public function showActivity()
     {
-        return $this->model::SHOW_ACTIVITY;
+        return UserPrivacySetting::SHOW_ACTIVITY;
     }
 
     public function allowDataCollection()
     {
-        return $this->model::ALLOW_DATA_COLLECTION;
+        return UserPrivacySetting::ALLOW_DATA_COLLECTION;
     }
 
     public function allowMarketingEmails()
     {
-        return $this->model::ALLOW_MARKETING_EMAILS;
+        return UserPrivacySetting::ALLOW_MARKETING_EMAILS;
     }
 
     public function allowAnalytics()
     {
-        return $this->model::ALLOW_ANALYTICS;
+        return UserPrivacySetting::ALLOW_ANALYTICS;
     }
 
     public function cookieConsent()
     {
-        return $this->model::COOKIE_CONSENT;
+        return UserPrivacySetting::COOKIE_CONSENT;
     }
 
     public function dataRetentionPreference()
     {
-        return $this->model::DATA_RETENTION_PREFERENCE;
+        return UserPrivacySetting::DATA_RETENTION_PREFERENCE;
     }
     // functions
 }

@@ -14,167 +14,167 @@ class EmailServerRepository extends BaseRepository
     // column constants
     public function serverName()
     {
-        return $this->model::SERVER_NAME;
+        return EmailServer::SERVER_NAME;
     }
 
     public function serverTypeId()
     {
-        return $this->model::SERVER_TYPE_ID;
+        return EmailServer::SERVER_TYPE_ID;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return EmailServer::IS_DEFAULT;
     }
 
     public function priority()
     {
-        return $this->model::PRIORITY;
+        return EmailServer::PRIORITY;
     }
 
     public function host()
     {
-        return $this->model::HOST;
+        return EmailServer::HOST;
     }
 
     public function port()
     {
-        return $this->model::PORT;
+        return EmailServer::PORT;
     }
 
     public function encryption()
     {
-        return $this->model::ENCRYPTION;
+        return EmailServer::ENCRYPTION;
     }
 
     public function username()
     {
-        return $this->model::USERNAME;
+        return EmailServer::USERNAME;
     }
 
     public function password()
     {
-        return $this->model::PASSWORD;
+        return EmailServer::PASSWORD;
     }
 
     public function timeout()
     {
-        return $this->model::TIMEOUT;
+        return EmailServer::TIMEOUT;
     }
 
     public function verifySsl()
     {
-        return $this->model::VERIFY_SSL;
+        return EmailServer::VERIFY_SSL;
     }
 
     public function authType()
     {
-        return $this->model::AUTH_TYPE;
+        return EmailServer::AUTH_TYPE;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return EmailServer::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return EmailServer::API_SECRET;
     }
 
     public function apiEndpoint()
     {
-        return $this->model::API_ENDPOINT;
+        return EmailServer::API_ENDPOINT;
     }
 
     public function domain()
     {
-        return $this->model::DOMAIN;
+        return EmailServer::DOMAIN;
     }
 
     public function rateLimitPerMinute()
     {
-        return $this->model::RATE_LIMIT_PER_MINUTE;
+        return EmailServer::RATE_LIMIT_PER_MINUTE;
     }
 
     public function rateLimitPerHour()
     {
-        return $this->model::RATE_LIMIT_PER_HOUR;
+        return EmailServer::RATE_LIMIT_PER_HOUR;
     }
 
     public function rateLimitPerDay()
     {
-        return $this->model::RATE_LIMIT_PER_DAY;
+        return EmailServer::RATE_LIMIT_PER_DAY;
     }
 
     public function defaultFromEmail()
     {
-        return $this->model::DEFAULT_FROM_EMAIL;
+        return EmailServer::DEFAULT_FROM_EMAIL;
     }
 
     public function defaultFromName()
     {
-        return $this->model::DEFAULT_FROM_NAME;
+        return EmailServer::DEFAULT_FROM_NAME;
     }
 
     public function defaultReplyTo()
     {
-        return $this->model::DEFAULT_REPLY_TO;
+        return EmailServer::DEFAULT_REPLY_TO;
     }
 
     public function serverGroup()
     {
-        return $this->model::SERVER_GROUP;
+        return EmailServer::SERVER_GROUP;
     }
 
     public function weight()
     {
-        return $this->model::WEIGHT;
+        return EmailServer::WEIGHT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return EmailServer::STATUS;
     }
 
     public function healthCheckAt()
     {
-        return $this->model::HEALTH_CHECK_AT;
+        return EmailServer::HEALTH_CHECK_AT;
     }
 
     public function healthCheckStatus()
     {
-        return $this->model::HEALTH_CHECK_STATUS;
+        return EmailServer::HEALTH_CHECK_STATUS;
     }
 
     public function lastError()
     {
-        return $this->model::LAST_ERROR;
+        return EmailServer::LAST_ERROR;
     }
 
     public function successCount()
     {
-        return $this->model::SUCCESS_COUNT;
+        return EmailServer::SUCCESS_COUNT;
     }
 
     public function failureCount()
     {
-        return $this->model::FAILURE_COUNT;
+        return EmailServer::FAILURE_COUNT;
     }
 
     public function lastUsedAt()
     {
-        return $this->model::LAST_USED_AT;
+        return EmailServer::LAST_USED_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return EmailServer::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return EmailServer::UPDATED_BY;
     }
     // functions
 }

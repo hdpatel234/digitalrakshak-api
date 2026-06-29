@@ -14,107 +14,107 @@ class CountryRepository extends BaseRepository
     // column constants
     public function name()
     {
-        return $this->model::NAME;
+        return Country::NAME;
     }
 
     public function isoCode2()
     {
-        return $this->model::ISO_CODE_2;
+        return Country::ISO_CODE_2;
     }
 
     public function isoCode3()
     {
-        return $this->model::ISO_CODE_3;
+        return Country::ISO_CODE_3;
     }
 
     public function numericCode()
     {
-        return $this->model::NUMERIC_CODE;
+        return Country::NUMERIC_CODE;
     }
 
     public function phoneCode()
     {
-        return $this->model::PHONE_CODE;
+        return Country::PHONE_CODE;
     }
 
     public function currencyCode()
     {
-        return $this->model::CURRENCY_CODE;
+        return Country::CURRENCY_CODE;
     }
 
     public function currencySymbol()
     {
-        return $this->model::CURRENCY_SYMBOL;
+        return Country::CURRENCY_SYMBOL;
     }
 
     public function capital()
     {
-        return $this->model::CAPITAL;
+        return Country::CAPITAL;
     }
 
     public function continent()
     {
-        return $this->model::CONTINENT;
+        return Country::CONTINENT;
     }
 
     public function flagIcon()
     {
-        return $this->model::FLAG_ICON;
+        return Country::FLAG_ICON;
     }
 
     public function flagImage()
     {
-        return $this->model::FLAG_IMAGE;
+        return Country::FLAG_IMAGE;
     }
 
     public function latitude()
     {
-        return $this->model::LATITUDE;
+        return Country::LATITUDE;
     }
 
     public function longitude()
     {
-        return $this->model::LONGITUDE;
+        return Country::LONGITUDE;
     }
 
     public function timezones()
     {
-        return $this->model::TIMEZONES;
+        return Country::TIMEZONES;
     }
 
     public function postalCodeFormat()
     {
-        return $this->model::POSTAL_CODE_FORMAT;
+        return Country::POSTAL_CODE_FORMAT;
     }
 
     public function postalCodeRegex()
     {
-        return $this->model::POSTAL_CODE_REGEX;
+        return Country::POSTAL_CODE_REGEX;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return Country::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return Country::IS_DEFAULT;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return Country::DISPLAY_ORDER;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Country::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Country::UPDATED_BY;
     }
     // functions
 }

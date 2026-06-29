@@ -14,42 +14,42 @@ class ServiceCategoryRepository extends BaseRepository
     // column constants
     public function categoryName()
     {
-        return $this->model::CATEGORY_NAME;
+        return ServiceCategory::CATEGORY_NAME;
     }
 
     public function categoryCode()
     {
-        return $this->model::CATEGORY_CODE;
+        return ServiceCategory::CATEGORY_CODE;
     }
 
     public function categorySlug()
     {
-        return $this->model::CATEGORY_SLUG;
+        return ServiceCategory::CATEGORY_SLUG;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return ServiceCategory::DESCRIPTION;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ServiceCategory::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ServiceCategory::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ServiceCategory::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return ServiceCategory::DELETED_BY;
     }
     // functions
 }

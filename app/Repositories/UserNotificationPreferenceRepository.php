@@ -14,42 +14,42 @@ class UserNotificationPreferenceRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserNotificationPreference::USER_ID;
     }
 
     public function notificationType()
     {
-        return $this->model::NOTIFICATION_TYPE;
+        return UserNotificationPreference::NOTIFICATION_TYPE;
     }
 
     public function eventType()
     {
-        return $this->model::EVENT_TYPE;
+        return UserNotificationPreference::EVENT_TYPE;
     }
 
     public function enabled()
     {
-        return $this->model::ENABLED;
+        return UserNotificationPreference::ENABLED;
     }
 
     public function channels()
     {
-        return $this->model::CHANNELS;
+        return UserNotificationPreference::CHANNELS;
     }
 
     public function quietHoursStart()
     {
-        return $this->model::QUIET_HOURS_START;
+        return UserNotificationPreference::QUIET_HOURS_START;
     }
 
     public function quietHoursEnd()
     {
-        return $this->model::QUIET_HOURS_END;
+        return UserNotificationPreference::QUIET_HOURS_END;
     }
 
     public function digestFrequency()
     {
-        return $this->model::DIGEST_FREQUENCY;
+        return UserNotificationPreference::DIGEST_FREQUENCY;
     }
     // functions
 }

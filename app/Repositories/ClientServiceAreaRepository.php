@@ -14,37 +14,37 @@ class ClientServiceAreaRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientServiceArea::CLIENT_ID;
     }
 
     public function countryId()
     {
-        return $this->model::COUNTRY_ID;
+        return ClientServiceArea::COUNTRY_ID;
     }
 
     public function stateId()
     {
-        return $this->model::STATE_ID;
+        return ClientServiceArea::STATE_ID;
     }
 
     public function cityId()
     {
-        return $this->model::CITY_ID;
+        return ClientServiceArea::CITY_ID;
     }
 
     public function serviceType()
     {
-        return $this->model::SERVICE_TYPE;
+        return ClientServiceArea::SERVICE_TYPE;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ClientServiceArea::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientServiceArea::CREATED_BY;
     }
     // functions
 }

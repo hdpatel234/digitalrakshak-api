@@ -14,37 +14,37 @@ class ProviderFieldMappingRepository extends BaseRepository
     // column constants
     public function serviceProviderAssignmentId()
     {
-        return $this->model::SERVICE_PROVIDER_ASSIGNMENT_ID;
+        return ProviderFieldMapping::SERVICE_PROVIDER_ASSIGNMENT_ID;
     }
 
     public function serviceFieldId()
     {
-        return $this->model::SERVICE_FIELD_ID;
+        return ProviderFieldMapping::SERVICE_FIELD_ID;
     }
 
     public function providerFieldName()
     {
-        return $this->model::PROVIDER_FIELD_NAME;
+        return ProviderFieldMapping::PROVIDER_FIELD_NAME;
     }
 
     public function fieldPath()
     {
-        return $this->model::FIELD_PATH;
+        return ProviderFieldMapping::FIELD_PATH;
     }
 
     public function transformFunction()
     {
-        return $this->model::TRANSFORM_FUNCTION;
+        return ProviderFieldMapping::TRANSFORM_FUNCTION;
     }
 
     public function isRequired()
     {
-        return $this->model::IS_REQUIRED;
+        return ProviderFieldMapping::IS_REQUIRED;
     }
 
     public function defaultValue()
     {
-        return $this->model::DEFAULT_VALUE;
+        return ProviderFieldMapping::DEFAULT_VALUE;
     }
     // functions
 }

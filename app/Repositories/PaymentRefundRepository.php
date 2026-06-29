@@ -14,62 +14,62 @@ class PaymentRefundRepository extends BaseRepository
     // column constants
     public function transactionId()
     {
-        return $this->model::TRANSACTION_ID;
+        return PaymentRefund::TRANSACTION_ID;
     }
 
     public function refundUuid()
     {
-        return $this->model::REFUND_UUID;
+        return PaymentRefund::REFUND_UUID;
     }
 
     public function gatewayRefundId()
     {
-        return $this->model::GATEWAY_REFUND_ID;
+        return PaymentRefund::GATEWAY_REFUND_ID;
     }
 
     public function amount()
     {
-        return $this->model::AMOUNT;
+        return PaymentRefund::AMOUNT;
     }
 
     public function reason()
     {
-        return $this->model::REASON;
+        return PaymentRefund::REASON;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return PaymentRefund::STATUS;
     }
 
     public function gatewayRequest()
     {
-        return $this->model::GATEWAY_REQUEST;
+        return PaymentRefund::GATEWAY_REQUEST;
     }
 
     public function gatewayResponse()
     {
-        return $this->model::GATEWAY_RESPONSE;
+        return PaymentRefund::GATEWAY_RESPONSE;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return PaymentRefund::ERROR_MESSAGE;
     }
 
     public function initiatedBy()
     {
-        return $this->model::INITIATED_BY;
+        return PaymentRefund::INITIATED_BY;
     }
 
     public function approvedBy()
     {
-        return $this->model::APPROVED_BY;
+        return PaymentRefund::APPROVED_BY;
     }
 
     public function approvedAt()
     {
-        return $this->model::APPROVED_AT;
+        return PaymentRefund::APPROVED_AT;
     }
     // functions
 }

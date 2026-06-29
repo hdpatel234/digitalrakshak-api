@@ -14,67 +14,67 @@ class ClientApiLogRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientApiLog::CLIENT_ID;
     }
 
     public function apiKeyId()
     {
-        return $this->model::API_KEY_ID;
+        return ClientApiLog::API_KEY_ID;
     }
 
     public function endpoint()
     {
-        return $this->model::ENDPOINT;
+        return ClientApiLog::ENDPOINT;
     }
 
     public function method()
     {
-        return $this->model::METHOD;
+        return ClientApiLog::METHOD;
     }
 
     public function requestHeaders()
     {
-        return $this->model::REQUEST_HEADERS;
+        return ClientApiLog::REQUEST_HEADERS;
     }
 
     public function requestBody()
     {
-        return $this->model::REQUEST_BODY;
+        return ClientApiLog::REQUEST_BODY;
     }
 
     public function responseCode()
     {
-        return $this->model::RESPONSE_CODE;
+        return ClientApiLog::RESPONSE_CODE;
     }
 
     public function responseBody()
     {
-        return $this->model::RESPONSE_BODY;
+        return ClientApiLog::RESPONSE_BODY;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return ClientApiLog::RESPONSE_TIME_MS;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return ClientApiLog::IP_ADDRESS;
     }
 
     public function userAgent()
     {
-        return $this->model::USER_AGENT;
+        return ClientApiLog::USER_AGENT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ClientApiLog::STATUS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return ClientApiLog::ERROR_MESSAGE;
     }
     // functions
 }

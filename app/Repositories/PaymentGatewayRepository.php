@@ -14,57 +14,57 @@ class PaymentGatewayRepository extends BaseRepository
     // column constants
     public function gatewayName()
     {
-        return $this->model::GATEWAY_NAME;
+        return PaymentGateway::GATEWAY_NAME;
     }
 
     public function gatewayCode()
     {
-        return $this->model::GATEWAY_CODE;
+        return PaymentGateway::GATEWAY_CODE;
     }
 
     public function providerCompany()
     {
-        return $this->model::PROVIDER_COMPANY;
+        return PaymentGateway::PROVIDER_COMPANY;
     }
 
     public function website()
     {
-        return $this->model::WEBSITE;
+        return PaymentGateway::WEBSITE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return PaymentGateway::DESCRIPTION;
     }
 
     public function logo()
     {
-        return $this->model::LOGO;
+        return PaymentGateway::LOGO;
     }
 
     public function supportedMethods()
     {
-        return $this->model::SUPPORTED_METHODS;
+        return PaymentGateway::SUPPORTED_METHODS;
     }
 
     public function configurationSchema()
     {
-        return $this->model::CONFIGURATION_SCHEMA;
+        return PaymentGateway::CONFIGURATION_SCHEMA;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return PaymentGateway::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return PaymentGateway::IS_DEFAULT;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return PaymentGateway::DISPLAY_ORDER;
     }
     // functions
 }

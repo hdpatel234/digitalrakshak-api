@@ -14,72 +14,72 @@ class AiUsageLogRepository extends BaseRepository
     // column constants
     public function configId()
     {
-        return $this->model::CONFIG_ID;
+        return AiUsageLog::CONFIG_ID;
     }
 
     public function modelId()
     {
-        return $this->model::MODEL_ID;
+        return AiUsageLog::MODEL_ID;
     }
 
     public function userId()
     {
-        return $this->model::USER_ID;
+        return AiUsageLog::USER_ID;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return AiUsageLog::CLIENT_ID;
     }
 
     public function conversationId()
     {
-        return $this->model::CONVERSATION_ID;
+        return AiUsageLog::CONVERSATION_ID;
     }
 
     public function messageId()
     {
-        return $this->model::MESSAGE_ID;
+        return AiUsageLog::MESSAGE_ID;
     }
 
     public function inputTokens()
     {
-        return $this->model::INPUT_TOKENS;
+        return AiUsageLog::INPUT_TOKENS;
     }
 
     public function outputTokens()
     {
-        return $this->model::OUTPUT_TOKENS;
+        return AiUsageLog::OUTPUT_TOKENS;
     }
 
     public function totalTokens()
     {
-        return $this->model::TOTAL_TOKENS;
+        return AiUsageLog::TOTAL_TOKENS;
     }
 
     public function cost()
     {
-        return $this->model::COST;
+        return AiUsageLog::COST;
     }
 
     public function requestType()
     {
-        return $this->model::REQUEST_TYPE;
+        return AiUsageLog::REQUEST_TYPE;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return AiUsageLog::RESPONSE_TIME_MS;
     }
 
     public function success()
     {
-        return $this->model::SUCCESS;
+        return AiUsageLog::SUCCESS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return AiUsageLog::ERROR_MESSAGE;
     }
     // functions
 }

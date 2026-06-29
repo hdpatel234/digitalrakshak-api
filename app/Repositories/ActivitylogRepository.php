@@ -14,22 +14,22 @@ class ActivitylogRepository extends BaseRepository
     // column constants
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return Activitylog::DESCRIPTION;
     }
 
     public function userId()
     {
-        return $this->model::USER_ID;
+        return Activitylog::USER_ID;
     }
 
     public function date()
     {
-        return $this->model::DATE;
+        return Activitylog::DATE;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return Activitylog::IP_ADDRESS;
     }
     // functions
 }

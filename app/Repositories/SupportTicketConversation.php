@@ -14,52 +14,52 @@ class SupportTicketConversationRepository extends BaseRepository
     // column constants
     public function ticketId()
     {
-        return $this->model::TICKET_ID;
+        return SupportTicketConversation::TICKET_ID;
     }
 
     public function externalConversationId()
     {
-        return $this->model::EXTERNAL_CONVERSATION_ID;
+        return SupportTicketConversation::EXTERNAL_CONVERSATION_ID;
     }
 
     public function message()
     {
-        return $this->model::MESSAGE;
+        return SupportTicketConversation::MESSAGE;
     }
 
     public function senderType()
     {
-        return $this->model::SENDER_TYPE;
+        return SupportTicketConversation::SENDER_TYPE;
     }
 
     public function senderName()
     {
-        return $this->model::SENDER_NAME;
+        return SupportTicketConversation::SENDER_NAME;
     }
 
     public function senderEmail()
     {
-        return $this->model::SENDER_EMAIL;
+        return SupportTicketConversation::SENDER_EMAIL;
     }
 
     public function isInternal()
     {
-        return $this->model::IS_INTERNAL;
+        return SupportTicketConversation::IS_INTERNAL;
     }
 
     public function attachments()
     {
-        return $this->model::ATTACHMENTS;
+        return SupportTicketConversation::ATTACHMENTS;
     }
 
     public function conversationData()
     {
-        return $this->model::CONVERSATION_DATA;
+        return SupportTicketConversation::CONVERSATION_DATA;
     }
 
     public function syncStatus()
     {
-        return $this->model::SYNC_STATUS;
+        return SupportTicketConversation::SYNC_STATUS;
     }
     // functions
 }

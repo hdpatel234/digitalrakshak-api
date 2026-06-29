@@ -14,62 +14,62 @@ class ClientWebhookLogRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientWebhookLog::CLIENT_ID;
     }
 
     public function webhookId()
     {
-        return $this->model::WEBHOOK_ID;
+        return ClientWebhookLog::WEBHOOK_ID;
     }
 
     public function eventType()
     {
-        return $this->model::EVENT_TYPE;
+        return ClientWebhookLog::EVENT_TYPE;
     }
 
     public function payload()
     {
-        return $this->model::PAYLOAD;
+        return ClientWebhookLog::PAYLOAD;
     }
 
     public function headers()
     {
-        return $this->model::HEADERS;
+        return ClientWebhookLog::HEADERS;
     }
 
     public function responseCode()
     {
-        return $this->model::RESPONSE_CODE;
+        return ClientWebhookLog::RESPONSE_CODE;
     }
 
     public function responseBody()
     {
-        return $this->model::RESPONSE_BODY;
+        return ClientWebhookLog::RESPONSE_BODY;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return ClientWebhookLog::RESPONSE_TIME_MS;
     }
 
     public function attempt()
     {
-        return $this->model::ATTEMPT;
+        return ClientWebhookLog::ATTEMPT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ClientWebhookLog::STATUS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return ClientWebhookLog::ERROR_MESSAGE;
     }
 
     public function nextRetryAt()
     {
-        return $this->model::NEXT_RETRY_AT;
+        return ClientWebhookLog::NEXT_RETRY_AT;
     }
     // functions
 }

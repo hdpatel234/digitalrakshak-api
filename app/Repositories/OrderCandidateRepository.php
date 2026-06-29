@@ -14,57 +14,57 @@ class OrderCandidateRepository extends BaseRepository
     // column constants
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return OrderCandidate::ORDER_ID;
     }
 
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return OrderCandidate::CANDIDATE_ID;
     }
 
     public function candidateData()
     {
-        return $this->model::CANDIDATE_DATA;
+        return OrderCandidate::CANDIDATE_DATA;
     }
 
     public function subtotal()
     {
-        return $this->model::SUBTOTAL;
+        return OrderCandidate::SUBTOTAL;
     }
 
     public function discountAmount()
     {
-        return $this->model::DISCOUNT_AMOUNT;
+        return OrderCandidate::DISCOUNT_AMOUNT;
     }
 
     public function taxAmount()
     {
-        return $this->model::TAX_AMOUNT;
+        return OrderCandidate::TAX_AMOUNT;
     }
 
     public function totalAmount()
     {
-        return $this->model::TOTAL_AMOUNT;
+        return OrderCandidate::TOTAL_AMOUNT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return OrderCandidate::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return OrderCandidate::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return OrderCandidate::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return OrderCandidate::DELETED_BY;
     }
     // functions
 }

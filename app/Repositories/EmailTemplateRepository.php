@@ -14,67 +14,67 @@ class EmailTemplateRepository extends BaseRepository
     // column constants
     public function serverId()
     {
-        return $this->model::SERVER_ID;
+        return EmailTemplate::SERVER_ID;
     }
     
     public function templateName()
     {
-        return $this->model::TEMPLATE_NAME;
+        return EmailTemplate::TEMPLATE_NAME;
     }
 
     public function templateCode()
     {
-        return $this->model::TEMPLATE_CODE;
+        return EmailTemplate::TEMPLATE_CODE;
     }
 
     public function emailType()
     {
-        return $this->model::EMAIL_TYPE;
+        return EmailTemplate::EMAIL_TYPE;
     }
 
     public function subject()
     {
-        return $this->model::SUBJECT;
+        return EmailTemplate::SUBJECT;
     }
 
     public function bodyHtml()
     {
-        return $this->model::BODY_HTML;
+        return EmailTemplate::BODY_HTML;
     }
 
     public function bodyText()
     {
-        return $this->model::BODY_TEXT;
+        return EmailTemplate::BODY_TEXT;
     }
 
     public function variables()
     {
-        return $this->model::VARIABLES;
+        return EmailTemplate::VARIABLES;
     }
 
     public function defaultPriority()
     {
-        return $this->model::DEFAULT_PRIORITY;
+        return EmailTemplate::DEFAULT_PRIORITY;
     }
 
     public function allowedAttachments()
     {
-        return $this->model::ALLOWED_ATTACHMENTS;
+        return EmailTemplate::ALLOWED_ATTACHMENTS;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return EmailTemplate::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return EmailTemplate::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return EmailTemplate::UPDATED_BY;
     }
     // functions
 }

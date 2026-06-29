@@ -14,97 +14,97 @@ class AiModelRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return AiModel::PROVIDER_ID;
     }
 
     public function modelName()
     {
-        return $this->model::MODEL_NAME;
+        return AiModel::MODEL_NAME;
     }
 
     public function modelCode()
     {
-        return $this->model::MODEL_CODE;
+        return AiModel::MODEL_CODE;
     }
 
     public function modelType()
     {
-        return $this->model::MODEL_TYPE;
+        return AiModel::MODEL_TYPE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return AiModel::DESCRIPTION;
     }
 
     public function maxTokens()
     {
-        return $this->model::MAX_TOKENS;
+        return AiModel::MAX_TOKENS;
     }
 
     public function maxInputTokens()
     {
-        return $this->model::MAX_INPUT_TOKENS;
+        return AiModel::MAX_INPUT_TOKENS;
     }
 
     public function maxOutputTokens()
     {
-        return $this->model::MAX_OUTPUT_TOKENS;
+        return AiModel::MAX_OUTPUT_TOKENS;
     }
 
     public function supportsFunctions()
     {
-        return $this->model::SUPPORTS_FUNCTIONS;
+        return AiModel::SUPPORTS_FUNCTIONS;
     }
 
     public function supportsVision()
     {
-        return $this->model::SUPPORTS_VISION;
+        return AiModel::SUPPORTS_VISION;
     }
 
     public function supportsStreaming()
     {
-        return $this->model::SUPPORTS_STREAMING;
+        return AiModel::SUPPORTS_STREAMING;
     }
 
     public function supportsJsonMode()
     {
-        return $this->model::SUPPORTS_JSON_MODE;
+        return AiModel::SUPPORTS_JSON_MODE;
     }
 
     public function inputCostPer1k()
     {
-        return $this->model::INPUT_COST_PER_1K;
+        return AiModel::INPUT_COST_PER_1K;
     }
 
     public function outputCostPer1k()
     {
-        return $this->model::OUTPUT_COST_PER_1K;
+        return AiModel::OUTPUT_COST_PER_1K;
     }
 
     public function currency()
     {
-        return $this->model::CURRENCY;
+        return AiModel::CURRENCY;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return AiModel::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return AiModel::IS_DEFAULT;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return AiModel::DISPLAY_ORDER;
     }
 
     public function capabilities()
     {
-        return $this->model::CAPABILITIES;
+        return AiModel::CAPABILITIES;
     }
     // functions
 }

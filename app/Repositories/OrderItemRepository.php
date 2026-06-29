@@ -14,122 +14,122 @@ class OrderItemRepository extends BaseRepository
     // column constants
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return OrderItem::ORDER_ID;
     }
 
     public function orderCandidateId()
     {
-        return $this->model::ORDER_CANDIDATE_ID;
+        return OrderItem::ORDER_CANDIDATE_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return OrderItem::SERVICE_ID;
     }
 
     public function supportConfigId()
     {
-        return $this->model::SUPPORT_CONFIG_ID;
+        return OrderItem::SUPPORT_CONFIG_ID;
     }
 
     public function ticketId()
     {
-        return $this->model::TICKET_ID;
+        return OrderItem::TICKET_ID;
     }
     
     public function reportDocumentId()
     {
-        return $this->model::REPORT_DOCUMENT_ID;
+        return OrderItem::REPORT_DOCUMENT_ID;
     }
 
     public function supportSyncStatus()
     {
-        return $this->model::SUPPORT_SYNC_STATUS;
+        return OrderItem::SUPPORT_SYNC_STATUS;
     }
 
     public function processingRuleId()
     {
-        return $this->model::PROCESSING_RULE_ID;
+        return OrderItem::PROCESSING_RULE_ID;
     }
 
     public function processingStatus()
     {
-        return $this->model::PROCESSING_STATUS;
+        return OrderItem::PROCESSING_STATUS;
     }
 
     public function processingAttempts()
     {
-        return $this->model::PROCESSING_ATTEMPTS;
+        return OrderItem::PROCESSING_ATTEMPTS;
     }
 
     public function processedAt()
     {
-        return $this->model::PROCESSED_AT;
+        return OrderItem::PROCESSED_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return OrderItem::COMPLETED_AT;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return OrderItem::ERROR_MESSAGE;
     }
 
     public function unitPrice()
     {
-        return $this->model::UNIT_PRICE;
+        return OrderItem::UNIT_PRICE;
     }
 
     public function quantity()
     {
-        return $this->model::QUANTITY;
+        return OrderItem::QUANTITY;
     }
 
     public function discountAmount()
     {
-        return $this->model::DISCOUNT_AMOUNT;
+        return OrderItem::DISCOUNT_AMOUNT;
     }
 
     public function taxAmount()
     {
-        return $this->model::TAX_AMOUNT;
+        return OrderItem::TAX_AMOUNT;
     }
 
     public function taxPercentage()
     {
-        return $this->model::TAX_PERCENTAGE;
+        return OrderItem::TAX_PERCENTAGE;
     }
 
     public function totalPrice()
     {
-        return $this->model::TOTAL_PRICE;
+        return OrderItem::TOTAL_PRICE;
     }
 
     public function serviceData()
     {
-        return $this->model::SERVICE_DATA;
+        return OrderItem::SERVICE_DATA;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return OrderItem::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return OrderItem::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return OrderItem::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return OrderItem::DELETED_BY;
     }
     // functions
 }

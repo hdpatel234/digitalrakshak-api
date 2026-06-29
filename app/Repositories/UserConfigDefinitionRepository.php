@@ -15,87 +15,87 @@ class UserConfigDefinitionRepository extends BaseRepository
     // column constants
     public function categoryId()
     {
-        return $this->model::CATEGORY_ID;
+        return UserConfigDefinition::CATEGORY_ID;
     }
 
     public function configKey()
     {
-        return $this->model::CONFIG_KEY;
+        return UserConfigDefinition::CONFIG_KEY;
     }
 
     public function configName()
     {
-        return $this->model::CONFIG_NAME;
+        return UserConfigDefinition::CONFIG_NAME;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return UserConfigDefinition::DESCRIPTION;
     }
 
     public function valueType()
     {
-        return $this->model::VALUE_TYPE;
+        return UserConfigDefinition::VALUE_TYPE;
     }
 
     public function defaultValue()
     {
-        return $this->model::DEFAULT_VALUE;
+        return UserConfigDefinition::DEFAULT_VALUE;
     }
 
     public function possibleValues()
     {
-        return $this->model::POSSIBLE_VALUES;
+        return UserConfigDefinition::POSSIBLE_VALUES;
     }
 
     public function validationRules()
     {
-        return $this->model::VALIDATION_RULES;
+        return UserConfigDefinition::VALIDATION_RULES;
     }
 
     public function isRequired()
     {
-        return $this->model::IS_REQUIRED;
+        return UserConfigDefinition::IS_REQUIRED;
     }
 
     public function isEditable()
     {
-        return $this->model::IS_EDITABLE;
+        return UserConfigDefinition::IS_EDITABLE;
     }
 
     public function isPrivate()
     {
-        return $this->model::IS_PRIVATE;
+        return UserConfigDefinition::IS_PRIVATE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return UserConfigDefinition::DISPLAY_ORDER;
     }
 
     public function uiComponent()
     {
-        return $this->model::UI_COMPONENT;
+        return UserConfigDefinition::UI_COMPONENT;
     }
 
     public function uiProps()
     {
-        return $this->model::UI_PROPS;
+        return UserConfigDefinition::UI_PROPS;
     }
 
     public function dependsOn()
     {
-        return $this->model::DEPENDS_ON;
+        return UserConfigDefinition::DEPENDS_ON;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return UserConfigDefinition::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return UserConfigDefinition::CREATED_BY;
     }
 
     public function getResolvedConfigsForUser(int|string $userId): array

@@ -14,57 +14,57 @@ class ServicesFieldRepository extends BaseRepository
     // column constants
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ServicesField::SERVICE_ID;
     }
 
     public function fieldName()
     {
-        return $this->model::FIELD_NAME;
+        return ServicesField::FIELD_NAME;
     }
 
     public function fieldLabel()
     {
-        return $this->model::FIELD_LABEL;
+        return ServicesField::FIELD_LABEL;
     }
 
     public function fieldType()
     {
-        return $this->model::FIELD_TYPE;
+        return ServicesField::FIELD_TYPE;
     }
 
     public function isRequired()
     {
-        return $this->model::IS_REQUIRED;
+        return ServicesField::IS_REQUIRED;
     }
 
     public function validationRegex()
     {
-        return $this->model::VALIDATION_REGEX;
+        return ServicesField::VALIDATION_REGEX;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return ServicesField::DISPLAY_ORDER;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ServicesField::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ServicesField::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ServicesField::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return ServicesField::DELETED_BY;
     }
     // functions
 }

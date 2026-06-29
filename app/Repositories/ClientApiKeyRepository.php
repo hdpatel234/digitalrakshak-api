@@ -14,82 +14,82 @@ class ClientApiKeyRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientApiKey::CLIENT_ID;
     }
 
     public function keyName()
     {
-        return $this->model::KEY_NAME;
+        return ClientApiKey::KEY_NAME;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return ClientApiKey::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return ClientApiKey::API_SECRET;
     }
 
     public function keyType()
     {
-        return $this->model::KEY_TYPE;
+        return ClientApiKey::KEY_TYPE;
     }
 
     public function permissions()
     {
-        return $this->model::PERMISSIONS;
+        return ClientApiKey::PERMISSIONS;
     }
 
     public function ipWhitelist()
     {
-        return $this->model::IP_WHITELIST;
+        return ClientApiKey::IP_WHITELIST;
     }
 
     public function rateLimit()
     {
-        return $this->model::RATE_LIMIT;
+        return ClientApiKey::RATE_LIMIT;
     }
 
     public function rateLimitPerDay()
     {
-        return $this->model::RATE_LIMIT_PER_DAY;
+        return ClientApiKey::RATE_LIMIT_PER_DAY;
     }
 
     public function expiresAt()
     {
-        return $this->model::EXPIRES_AT;
+        return ClientApiKey::EXPIRES_AT;
     }
 
     public function lastUsedAt()
     {
-        return $this->model::LAST_USED_AT;
+        return ClientApiKey::LAST_USED_AT;
     }
 
     public function lastUsedIp()
     {
-        return $this->model::LAST_USED_IP;
+        return ClientApiKey::LAST_USED_IP;
     }
 
     public function totalRequests()
     {
-        return $this->model::TOTAL_REQUESTS;
+        return ClientApiKey::TOTAL_REQUESTS;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ClientApiKey::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientApiKey::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientApiKey::UPDATED_BY;
     }
     // functions
 }

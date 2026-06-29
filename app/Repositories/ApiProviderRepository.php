@@ -14,47 +14,47 @@ class ApiProviderRepository extends BaseRepository
     // column constants
     public function name()
     {
-        return $this->model::NAME;
+        return ApiProvider::NAME;
     }
 
     public function code()
     {
-        return $this->model::CODE;
+        return ApiProvider::CODE;
     }
 
     public function class()
     {
-        return $this->model::PROVIDER_CLASS;
+        return ApiProvider::PROVIDER_CLASS;
     }
 
     public function configFields()
     {
-        return $this->model::CONFIG_FIELDS;
+        return ApiProvider::CONFIG_FIELDS;
     }
 
     public function credentials()
     {
-        return $this->model::CREDENTIALS;
+        return ApiProvider::CREDENTIALS;
     }
 
     public function settings()
     {
-        return $this->model::SETTINGS;
+        return ApiProvider::SETTINGS;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ApiProvider::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return ApiProvider::IS_DEFAULT;
     }
 
     public function priority()
     {
-        return $this->model::PRIORITY;
+        return ApiProvider::PRIORITY;
     }
     // functions
 }

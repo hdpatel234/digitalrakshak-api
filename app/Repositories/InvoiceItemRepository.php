@@ -14,62 +14,62 @@ class InvoiceItemRepository extends BaseRepository
     // column constants
     public function invoiceId()
     {
-        return $this->model::INVOICE_ID;
+        return InvoiceItem::INVOICE_ID;
     }
 
     public function orderItemId()
     {
-        return $this->model::ORDER_ITEM_ID;
+        return InvoiceItem::ORDER_ITEM_ID;
     }
 
     public function itemType()
     {
-        return $this->model::ITEM_TYPE;
+        return InvoiceItem::ITEM_TYPE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return InvoiceItem::DESCRIPTION;
     }
 
     public function quantity()
     {
-        return $this->model::QUANTITY;
+        return InvoiceItem::QUANTITY;
     }
 
     public function unitPrice()
     {
-        return $this->model::UNIT_PRICE;
+        return InvoiceItem::UNIT_PRICE;
     }
 
     public function discountAmount()
     {
-        return $this->model::DISCOUNT_AMOUNT;
+        return InvoiceItem::DISCOUNT_AMOUNT;
     }
 
     public function taxAmount()
     {
-        return $this->model::TAX_AMOUNT;
+        return InvoiceItem::TAX_AMOUNT;
     }
 
     public function taxPercentage()
     {
-        return $this->model::TAX_PERCENTAGE;
+        return InvoiceItem::TAX_PERCENTAGE;
     }
 
     public function totalPrice()
     {
-        return $this->model::TOTAL_PRICE;
+        return InvoiceItem::TOTAL_PRICE;
     }
 
     public function externalItemId()
     {
-        return $this->model::EXTERNAL_ITEM_ID;
+        return InvoiceItem::EXTERNAL_ITEM_ID;
     }
 
     public function itemData()
     {
-        return $this->model::ITEM_DATA;
+        return InvoiceItem::ITEM_DATA;
     }
     // functions
 }

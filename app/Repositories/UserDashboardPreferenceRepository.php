@@ -14,42 +14,42 @@ class UserDashboardPreferenceRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserDashboardPreference::USER_ID;
     }
 
     public function defaultDashboard()
     {
-        return $this->model::DEFAULT_DASHBOARD;
+        return UserDashboardPreference::DEFAULT_DASHBOARD;
     }
 
     public function widgetLayout()
     {
-        return $this->model::WIDGET_LAYOUT;
+        return UserDashboardPreference::WIDGET_LAYOUT;
     }
 
     public function hiddenWidgets()
     {
-        return $this->model::HIDDEN_WIDGETS;
+        return UserDashboardPreference::HIDDEN_WIDGETS;
     }
 
     public function widgetSettings()
     {
-        return $this->model::WIDGET_SETTINGS;
+        return UserDashboardPreference::WIDGET_SETTINGS;
     }
 
     public function refreshInterval()
     {
-        return $this->model::REFRESH_INTERVAL;
+        return UserDashboardPreference::REFRESH_INTERVAL;
     }
 
     public function defaultView()
     {
-        return $this->model::DEFAULT_VIEW;
+        return UserDashboardPreference::DEFAULT_VIEW;
     }
 
     public function itemsPerPage()
     {
-        return $this->model::ITEMS_PER_PAGE;
+        return UserDashboardPreference::ITEMS_PER_PAGE;
     }
     // functions
 }

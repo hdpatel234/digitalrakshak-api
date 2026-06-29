@@ -14,37 +14,37 @@ class UserConfigCategoryRepository extends BaseRepository
     // column constants
     public function categoryName()
     {
-        return $this->model::CATEGORY_NAME;
+        return UserConfigCategory::CATEGORY_NAME;
     }
 
     public function categoryCode()
     {
-        return $this->model::CATEGORY_CODE;
+        return UserConfigCategory::CATEGORY_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return UserConfigCategory::DESCRIPTION;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return UserConfigCategory::DISPLAY_ORDER;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return UserConfigCategory::ICON;
     }
 
     public function isSystem()
     {
-        return $this->model::IS_SYSTEM;
+        return UserConfigCategory::IS_SYSTEM;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return UserConfigCategory::IS_ACTIVE;
     }
     // functions
 }

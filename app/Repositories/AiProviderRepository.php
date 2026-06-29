@@ -14,47 +14,47 @@ class AiProviderRepository extends BaseRepository
     // column constants
     public function providerName()
     {
-        return $this->model::PROVIDER_NAME;
+        return AiProvider::PROVIDER_NAME;
     }
 
     public function providerCode()
     {
-        return $this->model::PROVIDER_CODE;
+        return AiProvider::PROVIDER_CODE;
     }
 
     public function providerType()
     {
-        return $this->model::PROVIDER_TYPE;
+        return AiProvider::PROVIDER_TYPE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return AiProvider::DESCRIPTION;
     }
 
     public function website()
     {
-        return $this->model::WEBSITE;
+        return AiProvider::WEBSITE;
     }
 
     public function documentationUrl()
     {
-        return $this->model::DOCUMENTATION_URL;
+        return AiProvider::DOCUMENTATION_URL;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return AiProvider::ICON;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return AiProvider::IS_ACTIVE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return AiProvider::DISPLAY_ORDER;
     }
     // functions
 }

@@ -14,42 +14,42 @@ class AiPromptVersionRepository extends BaseRepository
     // column constants
     public function promptId()
     {
-        return $this->model::PROMPT_ID;
+        return AiPromptVersion::PROMPT_ID;
     }
 
     public function version()
     {
-        return $this->model::VERSION;
+        return AiPromptVersion::VERSION;
     }
 
     public function systemPrompt()
     {
-        return $this->model::SYSTEM_PROMPT;
+        return AiPromptVersion::SYSTEM_PROMPT;
     }
 
     public function userPromptTemplate()
     {
-        return $this->model::USER_PROMPT_TEMPLATE;
+        return AiPromptVersion::USER_PROMPT_TEMPLATE;
     }
 
     public function examples()
     {
-        return $this->model::EXAMPLES;
+        return AiPromptVersion::EXAMPLES;
     }
 
     public function temperature()
     {
-        return $this->model::TEMPERATURE;
+        return AiPromptVersion::TEMPERATURE;
     }
 
     public function maxTokens()
     {
-        return $this->model::MAX_TOKENS;
+        return AiPromptVersion::MAX_TOKENS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return AiPromptVersion::CREATED_BY;
     }
     // functions
 }

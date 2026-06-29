@@ -14,52 +14,52 @@ class SyncJobRepository extends BaseRepository
     // column constants
     public function jobType()
     {
-        return $this->model::JOB_TYPE;
+        return SyncJob::JOB_TYPE;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return SyncJob::CLIENT_ID;
     }
 
     public function configId()
     {
-        return $this->model::CONFIG_ID;
+        return SyncJob::CONFIG_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return SyncJob::STATUS;
     }
 
     public function itemsProcessed()
     {
-        return $this->model::ITEMS_PROCESSED;
+        return SyncJob::ITEMS_PROCESSED;
     }
 
     public function itemsFailed()
     {
-        return $this->model::ITEMS_FAILED;
+        return SyncJob::ITEMS_FAILED;
     }
 
     public function startedAt()
     {
-        return $this->model::STARTED_AT;
+        return SyncJob::STARTED_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return SyncJob::COMPLETED_AT;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return SyncJob::ERROR_MESSAGE;
     }
 
     public function syncLog()
     {
-        return $this->model::SYNC_LOG;
+        return SyncJob::SYNC_LOG;
     }
     // functions
 }

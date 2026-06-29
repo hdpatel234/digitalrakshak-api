@@ -14,42 +14,42 @@ class UserRecentItemRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserRecentItem::USER_ID;
     }
 
     public function itemType()
     {
-        return $this->model::ITEM_TYPE;
+        return UserRecentItem::ITEM_TYPE;
     }
 
     public function itemId()
     {
-        return $this->model::ITEM_ID;
+        return UserRecentItem::ITEM_ID;
     }
 
     public function url()
     {
-        return $this->model::URL;
+        return UserRecentItem::URL;
     }
 
     public function title()
     {
-        return $this->model::TITLE;
+        return UserRecentItem::TITLE;
     }
 
     public function metadata()
     {
-        return $this->model::METADATA;
+        return UserRecentItem::METADATA;
     }
 
     public function lastAccessedAt()
     {
-        return $this->model::LAST_ACCESSED_AT;
+        return UserRecentItem::LAST_ACCESSED_AT;
     }
 
     public function accessCount()
     {
-        return $this->model::ACCESS_COUNT;
+        return UserRecentItem::ACCESS_COUNT;
     }
     // functions
 }

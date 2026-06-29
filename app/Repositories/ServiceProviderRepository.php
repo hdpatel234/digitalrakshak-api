@@ -14,67 +14,67 @@ class ServiceProviderRepository extends BaseRepository
     // column constants
     public function providerName()
     {
-        return $this->model::PROVIDER_NAME;
+        return ServiceProvider::PROVIDER_NAME;
     }
 
     public function providerCode()
     {
-        return $this->model::PROVIDER_CODE;
+        return ServiceProvider::PROVIDER_CODE;
     }
 
     public function providerType()
     {
-        return $this->model::PROVIDER_TYPE;
+        return ServiceProvider::PROVIDER_TYPE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return ServiceProvider::DESCRIPTION;
     }
 
     public function website()
     {
-        return $this->model::WEBSITE;
+        return ServiceProvider::WEBSITE;
     }
 
     public function supportEmail()
     {
-        return $this->model::SUPPORT_EMAIL;
+        return ServiceProvider::SUPPORT_EMAIL;
     }
 
     public function supportPhone()
     {
-        return $this->model::SUPPORT_PHONE;
+        return ServiceProvider::SUPPORT_PHONE;
     }
 
     public function documentationUrl()
     {
-        return $this->model::DOCUMENTATION_URL;
+        return ServiceProvider::DOCUMENTATION_URL;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ServiceProvider::STATUS;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return ServiceProvider::IS_DEFAULT;
     }
 
     public function priority()
     {
-        return $this->model::PRIORITY;
+        return ServiceProvider::PRIORITY;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ServiceProvider::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ServiceProvider::UPDATED_BY;
     }
     // functions
 }

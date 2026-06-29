@@ -14,107 +14,107 @@ class EmailRoutingRuleRepository extends BaseRepository
     // column constants
     public function ruleName()
     {
-        return $this->model::RULE_NAME;
+        return EmailRoutingRule::RULE_NAME;
     }
 
     public function rulePriority()
     {
-        return $this->model::RULE_PRIORITY;
+        return EmailRoutingRule::RULE_PRIORITY;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return EmailRoutingRule::IS_ACTIVE;
     }
 
     public function matchType()
     {
-        return $this->model::MATCH_TYPE;
+        return EmailRoutingRule::MATCH_TYPE;
     }
 
     public function matchValue()
     {
-        return $this->model::MATCH_VALUE;
+        return EmailRoutingRule::MATCH_VALUE;
     }
 
     public function matchPattern()
     {
-        return $this->model::MATCH_PATTERN;
+        return EmailRoutingRule::MATCH_PATTERN;
     }
 
     public function emailType()
     {
-        return $this->model::EMAIL_TYPE;
+        return EmailRoutingRule::EMAIL_TYPE;
     }
 
     public function actionType()
     {
-        return $this->model::ACTION_TYPE;
+        return EmailRoutingRule::ACTION_TYPE;
     }
 
     public function serverId()
     {
-        return $this->model::SERVER_ID;
+        return EmailRoutingRule::SERVER_ID;
     }
 
     public function serverGroup()
     {
-        return $this->model::SERVER_GROUP;
+        return EmailRoutingRule::SERVER_GROUP;
     }
 
     public function failoverServerId()
     {
-        return $this->model::FAILOVER_SERVER_ID;
+        return EmailRoutingRule::FAILOVER_SERVER_ID;
     }
 
     public function maxRetries()
     {
-        return $this->model::MAX_RETRIES;
+        return EmailRoutingRule::MAX_RETRIES;
     }
 
     public function retryDelaySeconds()
     {
-        return $this->model::RETRY_DELAY_SECONDS;
+        return EmailRoutingRule::RETRY_DELAY_SECONDS;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return EmailRoutingRule::CLIENT_ID;
     }
 
     public function timeStart()
     {
-        return $this->model::TIME_START;
+        return EmailRoutingRule::TIME_START;
     }
 
     public function timeEnd()
     {
-        return $this->model::TIME_END;
+        return EmailRoutingRule::TIME_END;
     }
 
     public function daysOfWeek()
     {
-        return $this->model::DAYS_OF_WEEK;
+        return EmailRoutingRule::DAYS_OF_WEEK;
     }
 
     public function timesUsed()
     {
-        return $this->model::TIMES_USED;
+        return EmailRoutingRule::TIMES_USED;
     }
 
     public function lastUsedAt()
     {
-        return $this->model::LAST_USED_AT;
+        return EmailRoutingRule::LAST_USED_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return EmailRoutingRule::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return EmailRoutingRule::UPDATED_BY;
     }
     // functions
 }

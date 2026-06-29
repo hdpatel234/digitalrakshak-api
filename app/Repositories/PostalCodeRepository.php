@@ -14,42 +14,42 @@ class PostalCodeRepository extends BaseRepository
     // column constants
     public function countryId()
     {
-        return $this->model::COUNTRY_ID;
+        return PostalCode::COUNTRY_ID;
     }
 
     public function stateId()
     {
-        return $this->model::STATE_ID;
+        return PostalCode::STATE_ID;
     }
 
     public function cityId()
     {
-        return $this->model::CITY_ID;
+        return PostalCode::CITY_ID;
     }
 
     public function postalCode()
     {
-        return $this->model::POSTAL_CODE;
+        return PostalCode::POSTAL_CODE;
     }
 
     public function latitude()
     {
-        return $this->model::LATITUDE;
+        return PostalCode::LATITUDE;
     }
 
     public function longitude()
     {
-        return $this->model::LONGITUDE;
+        return PostalCode::LONGITUDE;
     }
 
     public function accuracy()
     {
-        return $this->model::ACCURACY;
+        return PostalCode::ACCURACY;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return PostalCode::IS_ACTIVE;
     }
     // functions
 }

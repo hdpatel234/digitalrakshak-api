@@ -14,77 +14,77 @@ class CandidateServiceRepository extends BaseRepository
     // column constants
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return CandidateService::CANDIDATE_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return CandidateService::SERVICE_ID;
     }
 
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return CandidateService::ORDER_ID;
     }
 
     public function orderItemId()
     {
-        return $this->model::ORDER_ITEM_ID;
+        return CandidateService::ORDER_ITEM_ID;
     }
 
     public function pricePaid()
     {
-        return $this->model::PRICE_PAID;
+        return CandidateService::PRICE_PAID;
     }
 
     public function processingRuleId()
     {
-        return $this->model::PROCESSING_RULE_ID;
+        return CandidateService::PROCESSING_RULE_ID;
     }
 
     public function processingStatus()
     {
-        return $this->model::PROCESSING_STATUS;
+        return CandidateService::PROCESSING_STATUS;
     }
 
     public function processingAttempts()
     {
-        return $this->model::PROCESSING_ATTEMPTS;
+        return CandidateService::PROCESSING_ATTEMPTS;
     }
 
     public function processedAt()
     {
-        return $this->model::PROCESSED_AT;
+        return CandidateService::PROCESSED_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return CandidateService::COMPLETED_AT;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return CandidateService::ERROR_MESSAGE;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateService::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateService::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateService::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateService::DELETED_BY;
     }
     // functions
 }

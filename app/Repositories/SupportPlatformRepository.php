@@ -14,22 +14,22 @@ class SupportPlatformRepository extends BaseRepository
     // column constants
     public function platformName()
     {
-        return $this->model::PLATFORM_NAME;
+        return SupportPlatform::PLATFORM_NAME;
     }
 
     public function platformCode()
     {
-        return $this->model::PLATFORM_CODE;
+        return SupportPlatform::PLATFORM_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return SupportPlatform::DESCRIPTION;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return SupportPlatform::IS_ACTIVE;
     }
     // functions
 }

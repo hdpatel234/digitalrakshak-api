@@ -14,67 +14,67 @@ class StateRepository extends BaseRepository
     // column constants
     public function countryId()
     {
-        return $this->model::COUNTRY_ID;
+        return State::COUNTRY_ID;
     }
 
     public function name()
     {
-        return $this->model::NAME;
+        return State::NAME;
     }
 
     public function code()
     {
-        return $this->model::CODE;
+        return State::CODE;
     }
 
     public function type()
     {
-        return $this->model::TYPE;
+        return State::TYPE;
     }
 
     public function capital()
     {
-        return $this->model::CAPITAL;
+        return State::CAPITAL;
     }
 
     public function latitude()
     {
-        return $this->model::LATITUDE;
+        return State::LATITUDE;
     }
 
     public function longitude()
     {
-        return $this->model::LONGITUDE;
+        return State::LONGITUDE;
     }
 
     public function areaKm2()
     {
-        return $this->model::AREA_KM2;
+        return State::AREA_KM2;
     }
 
     public function population()
     {
-        return $this->model::POPULATION;
+        return State::POPULATION;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return State::IS_ACTIVE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return State::DISPLAY_ORDER;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return State::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return State::UPDATED_BY;
     }
 
     // functions

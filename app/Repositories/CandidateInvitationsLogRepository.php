@@ -14,42 +14,42 @@ class CandidateInvitationsLogRepository extends BaseRepository
     // column constants
     public function invitationId()
     {
-        return $this->model::INVITATION_ID;
+        return CandidateInvitationsLog::INVITATION_ID;
     }
 
     public function action()
     {
-        return $this->model::ACTION;
+        return CandidateInvitationsLog::ACTION;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return CandidateInvitationsLog::IP_ADDRESS;
     }
 
     public function userAgent()
     {
-        return $this->model::USER_AGENT;
+        return CandidateInvitationsLog::USER_AGENT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateInvitationsLog::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateInvitationsLog::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateInvitationsLog::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateInvitationsLog::DELETED_BY;
     }
     // functions
 }

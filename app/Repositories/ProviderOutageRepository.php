@@ -14,47 +14,47 @@ class ProviderOutageRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return ProviderOutage::PROVIDER_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ProviderOutage::SERVICE_ID;
     }
 
     public function outageType()
     {
-        return $this->model::OUTAGE_TYPE;
+        return ProviderOutage::OUTAGE_TYPE;
     }
 
     public function startedAt()
     {
-        return $this->model::STARTED_AT;
+        return ProviderOutage::STARTED_AT;
     }
 
     public function endedAt()
     {
-        return $this->model::ENDED_AT;
+        return ProviderOutage::ENDED_AT;
     }
 
     public function durationMinutes()
     {
-        return $this->model::DURATION_MINUTES;
+        return ProviderOutage::DURATION_MINUTES;
     }
 
     public function affectedServices()
     {
-        return $this->model::AFFECTED_SERVICES;
+        return ProviderOutage::AFFECTED_SERVICES;
     }
 
     public function rootCause()
     {
-        return $this->model::ROOT_CAUSE;
+        return ProviderOutage::ROOT_CAUSE;
     }
 
     public function resolution()
     {
-        return $this->model::RESOLUTION;
+        return ProviderOutage::RESOLUTION;
     }
     // functions
 }

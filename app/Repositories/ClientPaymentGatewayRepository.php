@@ -14,107 +14,107 @@ class ClientPaymentGatewayRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientPaymentGateway::CLIENT_ID;
     }
 
     public function gatewayConfigId()
     {
-        return $this->model::GATEWAY_CONFIG_ID;
+        return ClientPaymentGateway::GATEWAY_CONFIG_ID;
     }
 
     public function displayName()
     {
-        return $this->model::DISPLAY_NAME;
+        return ClientPaymentGateway::DISPLAY_NAME;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return ClientPaymentGateway::DISPLAY_ORDER;
     }
 
     public function enabledMethods()
     {
-        return $this->model::ENABLED_METHODS;
+        return ClientPaymentGateway::ENABLED_METHODS;
     }
 
     public function currencies()
     {
-        return $this->model::CURRENCIES;
+        return ClientPaymentGateway::CURRENCIES;
     }
 
     public function feeType()
     {
-        return $this->model::FEE_TYPE;
+        return ClientPaymentGateway::FEE_TYPE;
     }
 
     public function feeFixed()
     {
-        return $this->model::FEE_FIXED;
+        return ClientPaymentGateway::FEE_FIXED;
     }
 
     public function feePercentage()
     {
-        return $this->model::FEE_PERCENTAGE;
+        return ClientPaymentGateway::FEE_PERCENTAGE;
     }
 
     public function minAmount()
     {
-        return $this->model::MIN_AMOUNT;
+        return ClientPaymentGateway::MIN_AMOUNT;
     }
 
     public function maxAmount()
     {
-        return $this->model::MAX_AMOUNT;
+        return ClientPaymentGateway::MAX_AMOUNT;
     }
 
     public function dailyLimit()
     {
-        return $this->model::DAILY_LIMIT;
+        return ClientPaymentGateway::DAILY_LIMIT;
     }
 
     public function monthlyLimit()
     {
-        return $this->model::MONTHLY_LIMIT;
+        return ClientPaymentGateway::MONTHLY_LIMIT;
     }
 
     public function isEnabled()
     {
-        return $this->model::IS_ENABLED;
+        return ClientPaymentGateway::IS_ENABLED;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return ClientPaymentGateway::IS_DEFAULT;
     }
 
     public function isMandatory()
     {
-        return $this->model::IS_MANDATORY;
+        return ClientPaymentGateway::IS_MANDATORY;
     }
 
     public function totalTransactions()
     {
-        return $this->model::TOTAL_TRANSACTIONS;
+        return ClientPaymentGateway::TOTAL_TRANSACTIONS;
     }
 
     public function totalAmount()
     {
-        return $this->model::TOTAL_AMOUNT;
+        return ClientPaymentGateway::TOTAL_AMOUNT;
     }
 
     public function lastTransactionAt()
     {
-        return $this->model::LAST_TRANSACTION_AT;
+        return ClientPaymentGateway::LAST_TRANSACTION_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientPaymentGateway::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientPaymentGateway::UPDATED_BY;
     }
     // functions
 }

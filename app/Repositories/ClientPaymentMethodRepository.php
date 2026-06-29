@@ -14,62 +14,62 @@ class ClientPaymentMethodRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientPaymentMethod::CLIENT_ID;
     }
 
     public function methodTypeId()
     {
-        return $this->model::METHOD_TYPE_ID;
+        return ClientPaymentMethod::METHOD_TYPE_ID;
     }
 
     public function gatewayConfigId()
     {
-        return $this->model::GATEWAY_CONFIG_ID;
+        return ClientPaymentMethod::GATEWAY_CONFIG_ID;
     }
 
     public function displayName()
     {
-        return $this->model::DISPLAY_NAME;
+        return ClientPaymentMethod::DISPLAY_NAME;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return ClientPaymentMethod::DESCRIPTION;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return ClientPaymentMethod::ICON;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return ClientPaymentMethod::DISPLAY_ORDER;
     }
 
     public function isEnabled()
     {
-        return $this->model::IS_ENABLED;
+        return ClientPaymentMethod::IS_ENABLED;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return ClientPaymentMethod::IS_DEFAULT;
     }
 
     public function minAmount()
     {
-        return $this->model::MIN_AMOUNT;
+        return ClientPaymentMethod::MIN_AMOUNT;
     }
 
     public function maxAmount()
     {
-        return $this->model::MAX_AMOUNT;
+        return ClientPaymentMethod::MAX_AMOUNT;
     }
 
     public function instructions()
     {
-        return $this->model::INSTRUCTIONS;
+        return ClientPaymentMethod::INSTRUCTIONS;
     }
     // functions
 }

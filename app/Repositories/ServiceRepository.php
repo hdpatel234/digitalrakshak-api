@@ -14,47 +14,47 @@ class ServiceRepository extends BaseRepository
     // column constants
     public function serviceCategory()
     {
-        return $this->model::SERVICE_CATEGORY;
+        return Service::SERVICE_CATEGORY;
     }
 
     public function serviceName()
     {
-        return $this->model::SERVICE_NAME;
+        return Service::SERVICE_NAME;
     }
 
     public function serviceCode()
     {
-        return $this->model::SERVICE_CODE;
+        return Service::SERVICE_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return Service::DESCRIPTION;
     }
 
     public function basePrice()
     {
-        return $this->model::BASE_PRICE;
+        return Service::BASE_PRICE;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Service::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Service::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Service::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return Service::DELETED_BY;
     }
     // functions
 }

@@ -13,26 +13,26 @@ class ConfigurationRepository extends BaseRepository
 
     public function configKey()
     {
-        return $this->model::CONFIG_KEY;
+        return Configuration::CONFIG_KEY;
     }
 
     public function configValue()
     {
-        return $this->model::CONFIG_VALUE;
+        return Configuration::CONFIG_VALUE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return Configuration::DESCRIPTION;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Configuration::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Configuration::UPDATED_BY;
     }
 }

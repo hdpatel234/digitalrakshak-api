@@ -14,62 +14,62 @@ class AiConversationRepository extends BaseRepository
     // column constants
     public function conversationUuid()
     {
-        return $this->model::CONVERSATION_UUID;
+        return AiConversation::CONVERSATION_UUID;
     }
 
     public function userId()
     {
-        return $this->model::USER_ID;
+        return AiConversation::USER_ID;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return AiConversation::CLIENT_ID;
     }
 
     public function configId()
     {
-        return $this->model::CONFIG_ID;
+        return AiConversation::CONFIG_ID;
     }
 
     public function modelId()
     {
-        return $this->model::MODEL_ID;
+        return AiConversation::MODEL_ID;
     }
 
     public function promptId()
     {
-        return $this->model::PROMPT_ID;
+        return AiConversation::PROMPT_ID;
     }
 
     public function title()
     {
-        return $this->model::TITLE;
+        return AiConversation::TITLE;
     }
 
     public function context()
     {
-        return $this->model::CONTEXT;
+        return AiConversation::CONTEXT;
     }
 
     public function totalTokens()
     {
-        return $this->model::TOTAL_TOKENS;
+        return AiConversation::TOTAL_TOKENS;
     }
 
     public function totalCost()
     {
-        return $this->model::TOTAL_COST;
+        return AiConversation::TOTAL_COST;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return AiConversation::STATUS;
     }
 
     public function lastMessageAt()
     {
-        return $this->model::LAST_MESSAGE_AT;
+        return AiConversation::LAST_MESSAGE_AT;
     }
     // functions
 }

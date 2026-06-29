@@ -14,27 +14,27 @@ class UserShortcutRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserShortcut::USER_ID;
     }
 
     public function action()
     {
-        return $this->model::ACTION;
+        return UserShortcut::ACTION;
     }
 
     public function shortcut()
     {
-        return $this->model::SHORTCUT;
+        return UserShortcut::SHORTCUT;
     }
 
     public function scope()
     {
-        return $this->model::SCOPE;
+        return UserShortcut::SCOPE;
     }
 
     public function isEnabled()
     {
-        return $this->model::IS_ENABLED;
+        return UserShortcut::IS_ENABLED;
     }
     // functions
 }

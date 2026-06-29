@@ -14,77 +14,77 @@ class EmailLogRepository extends BaseRepository
     // column constants
     public function emailQueueId()
     {
-        return $this->model::EMAIL_QUEUE_ID;
+        return EmailLog::EMAIL_QUEUE_ID;
     }
 
     public function emailUid()
     {
-        return $this->model::EMAIL_UID;
+        return EmailLog::EMAIL_UID;
     }
 
     public function toEmail()
     {
-        return $this->model::TO_EMAIL;
+        return EmailLog::TO_EMAIL;
     }
 
     public function subject()
     {
-        return $this->model::SUBJECT;
+        return EmailLog::SUBJECT;
     }
 
     public function serverId()
     {
-        return $this->model::SERVER_ID;
+        return EmailLog::SERVER_ID;
     }
 
     public function messageId()
     {
-        return $this->model::MESSAGE_ID;
+        return EmailLog::MESSAGE_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return EmailLog::STATUS;
     }
 
     public function providerResponse()
     {
-        return $this->model::PROVIDER_RESPONSE;
+        return EmailLog::PROVIDER_RESPONSE;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return EmailLog::ERROR_MESSAGE;
     }
 
     public function opens()
     {
-        return $this->model::OPENS;
+        return EmailLog::OPENS;
     }
 
     public function clicks()
     {
-        return $this->model::CLICKS;
+        return EmailLog::CLICKS;
     }
 
     public function sentAt()
     {
-        return $this->model::SENT_AT;
+        return EmailLog::SENT_AT;
     }
 
     public function openedAt()
     {
-        return $this->model::OPENED_AT;
+        return EmailLog::OPENED_AT;
     }
 
     public function clickedAt()
     {
-        return $this->model::CLICKED_AT;
+        return EmailLog::CLICKED_AT;
     }
 
     public function metadata()
     {
-        return $this->model::METADATA;
+        return EmailLog::METADATA;
     }
     // functions
 }

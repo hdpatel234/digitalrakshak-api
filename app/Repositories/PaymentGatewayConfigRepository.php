@@ -14,172 +14,172 @@ class PaymentGatewayConfigRepository extends BaseRepository
     // column constants
     public function gatewayId()
     {
-        return $this->model::GATEWAY_ID;
+        return PaymentGatewayConfig::GATEWAY_ID;
     }
 
     public function configName()
     {
-        return $this->model::CONFIG_NAME;
+        return PaymentGatewayConfig::CONFIG_NAME;
     }
 
     public function environment()
     {
-        return $this->model::ENVIRONMENT;
+        return PaymentGatewayConfig::ENVIRONMENT;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return PaymentGatewayConfig::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return PaymentGatewayConfig::API_SECRET;
     }
 
     public function apiToken()
     {
-        return $this->model::API_TOKEN;
+        return PaymentGatewayConfig::API_TOKEN;
     }
 
     public function merchantId()
     {
-        return $this->model::MERCHANT_ID;
+        return PaymentGatewayConfig::MERCHANT_ID;
     }
 
     public function merchantKey()
     {
-        return $this->model::MERCHANT_KEY;
+        return PaymentGatewayConfig::MERCHANT_KEY;
     }
 
     public function salt()
     {
-        return $this->model::SALT;
+        return PaymentGatewayConfig::SALT;
     }
 
     public function baseUrl()
     {
-        return $this->model::BASE_URL;
+        return PaymentGatewayConfig::BASE_URL;
     }
 
     public function webhookUrl()
     {
-        return $this->model::WEBHOOK_URL;
+        return PaymentGatewayConfig::WEBHOOK_URL;
     }
 
     public function callbackUrl()
     {
-        return $this->model::CALLBACK_URL;
+        return PaymentGatewayConfig::CALLBACK_URL;
     }
 
     public function redirectUrl()
     {
-        return $this->model::REDIRECT_URL;
+        return PaymentGatewayConfig::REDIRECT_URL;
     }
 
     public function enabledMethods()
     {
-        return $this->model::ENABLED_METHODS;
+        return PaymentGatewayConfig::ENABLED_METHODS;
     }
 
     public function currencies()
     {
-        return $this->model::CURRENCIES;
+        return PaymentGatewayConfig::CURRENCIES;
     }
 
     public function minAmount()
     {
-        return $this->model::MIN_AMOUNT;
+        return PaymentGatewayConfig::MIN_AMOUNT;
     }
 
     public function maxAmount()
     {
-        return $this->model::MAX_AMOUNT;
+        return PaymentGatewayConfig::MAX_AMOUNT;
     }
 
     public function transactionFeeType()
     {
-        return $this->model::TRANSACTION_FEE_TYPE;
+        return PaymentGatewayConfig::TRANSACTION_FEE_TYPE;
     }
 
     public function transactionFeeFixed()
     {
-        return $this->model::TRANSACTION_FEE_FIXED;
+        return PaymentGatewayConfig::TRANSACTION_FEE_FIXED;
     }
 
     public function transactionFeePercentage()
     {
-        return $this->model::TRANSACTION_FEE_PERCENTAGE;
+        return PaymentGatewayConfig::TRANSACTION_FEE_PERCENTAGE;
     }
 
     public function setupFee()
     {
-        return $this->model::SETUP_FEE;
+        return PaymentGatewayConfig::SETUP_FEE;
     }
 
     public function annualFee()
     {
-        return $this->model::ANNUAL_FEE;
+        return PaymentGatewayConfig::ANNUAL_FEE;
     }
 
     public function settlementCycle()
     {
-        return $this->model::SETTLEMENT_CYCLE;
+        return PaymentGatewayConfig::SETTLEMENT_CYCLE;
     }
 
     public function settlementBank()
     {
-        return $this->model::SETTLEMENT_BANK;
+        return PaymentGatewayConfig::SETTLEMENT_BANK;
     }
 
     public function settlementAccount()
     {
-        return $this->model::SETTLEMENT_ACCOUNT;
+        return PaymentGatewayConfig::SETTLEMENT_ACCOUNT;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return PaymentGatewayConfig::IS_ACTIVE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return PaymentGatewayConfig::IS_DEFAULT;
     }
 
     public function isSandbox()
     {
-        return $this->model::IS_SANDBOX;
+        return PaymentGatewayConfig::IS_SANDBOX;
     }
 
     public function lastUsedAt()
     {
-        return $this->model::LAST_USED_AT;
+        return PaymentGatewayConfig::LAST_USED_AT;
     }
 
     public function lastCheckedAt()
     {
-        return $this->model::LAST_CHECKED_AT;
+        return PaymentGatewayConfig::LAST_CHECKED_AT;
     }
 
     public function healthStatus()
     {
-        return $this->model::HEALTH_STATUS;
+        return PaymentGatewayConfig::HEALTH_STATUS;
     }
 
     public function errorCount()
     {
-        return $this->model::ERROR_COUNT;
+        return PaymentGatewayConfig::ERROR_COUNT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return PaymentGatewayConfig::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return PaymentGatewayConfig::UPDATED_BY;
     }
     // functions
 }

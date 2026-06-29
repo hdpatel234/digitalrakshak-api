@@ -14,122 +14,122 @@ class DocumentConfigRepository extends BaseRepository
     // column constants
     public function documentPlatformId()
     {
-        return $this->model::DOCUMENT_PLATFORM_ID;
+        return DocumentConfig::DOCUMENT_PLATFORM_ID;
     }
 
     public function configName()
     {
-        return $this->model::CONFIG_NAME;
+        return DocumentConfig::CONFIG_NAME;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return DocumentConfig::IS_DEFAULT;
     }
 
     public function apiUrl()
     {
-        return $this->model::API_URL;
+        return DocumentConfig::API_URL;
     }
 
     public function username()
     {
-        return $this->model::USERNAME;
+        return DocumentConfig::USERNAME;
     }
 
     public function password()
     {
-        return $this->model::PASSWORD;
+        return DocumentConfig::PASSWORD;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return DocumentConfig::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return DocumentConfig::API_SECRET;
     }
 
     public function accessToken()
     {
-        return $this->model::ACCESS_TOKEN;
+        return DocumentConfig::ACCESS_TOKEN;
     }
 
     public function refreshToken()
     {
-        return $this->model::REFRESH_TOKEN;
+        return DocumentConfig::REFRESH_TOKEN;
     }
 
     public function tokenExpiresAt()
     {
-        return $this->model::TOKEN_EXPIRES_AT;
+        return DocumentConfig::TOKEN_EXPIRES_AT;
     }
 
     public function rootFolder()
     {
-        return $this->model::ROOT_FOLDER;
+        return DocumentConfig::ROOT_FOLDER;
     }
 
     public function clientFolder()
     {
-        return $this->model::CLIENT_FOLDER;
+        return DocumentConfig::CLIENT_FOLDER;
     }
 
     public function folderStructure()
     {
-        return $this->model::FOLDER_STRUCTURE;
+        return DocumentConfig::FOLDER_STRUCTURE;
     }
 
     public function fileNamingConvention()
     {
-        return $this->model::FILE_NAMING_CONVENTION;
+        return DocumentConfig::FILE_NAMING_CONVENTION;
     }
 
     public function maxFileSize()
     {
-        return $this->model::MAX_FILE_SIZE;
+        return DocumentConfig::MAX_FILE_SIZE;
     }
 
     public function allowedFileTypes()
     {
-        return $this->model::ALLOWED_FILE_TYPES;
+        return DocumentConfig::ALLOWED_FILE_TYPES;
     }
 
     public function isPublicReadable()
     {
-        return $this->model::IS_PUBLIC_READABLE;
+        return DocumentConfig::IS_PUBLIC_READABLE;
     }
 
     public function shareExpiryDays()
     {
-        return $this->model::SHARE_EXPIRY_DAYS;
+        return DocumentConfig::SHARE_EXPIRY_DAYS;
     }
 
     public function webhookSecret()
     {
-        return $this->model::WEBHOOK_SECRET;
+        return DocumentConfig::WEBHOOK_SECRET;
     }
 
     public function additionalConfig()
     {
-        return $this->model::ADDITIONAL_CONFIG;
+        return DocumentConfig::ADDITIONAL_CONFIG;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return DocumentConfig::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return DocumentConfig::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return DocumentConfig::UPDATED_BY;
     }
     // functions
 }

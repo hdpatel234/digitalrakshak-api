@@ -15,17 +15,17 @@ class UserConfigValueRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserConfigValue::USER_ID;
     }
 
     public function configId()
     {
-        return $this->model::CONFIG_ID;
+        return UserConfigValue::CONFIG_ID;
     }
 
     public function value()
     {
-        return $this->model::VALUE;
+        return UserConfigValue::VALUE;
     }
 
     public function upsertForUserByConfigIds(int|string $userId, array $configIdValueMap): void

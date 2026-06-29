@@ -14,47 +14,47 @@ class ClientServicePricingRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientServicePricing::CLIENT_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ClientServicePricing::SERVICE_ID;
     }
 
     public function customPrice()
     {
-        return $this->model::CUSTOM_PRICE;
+        return ClientServicePricing::CUSTOM_PRICE;
     }
 
     public function effectiveFrom()
     {
-        return $this->model::EFFECTIVE_FROM;
+        return ClientServicePricing::EFFECTIVE_FROM;
     }
 
     public function effectiveTo()
     {
-        return $this->model::EFFECTIVE_TO;
+        return ClientServicePricing::EFFECTIVE_TO;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ClientServicePricing::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientServicePricing::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientServicePricing::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return ClientServicePricing::DELETED_BY;
     }
     // functions
 }

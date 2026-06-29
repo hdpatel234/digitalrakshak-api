@@ -14,77 +14,77 @@ class ServiceProcessingQueueRepository extends BaseRepository
     // column constants
     public function orderItemId()
     {
-        return $this->model::ORDER_ITEM_ID;
+        return ServiceProcessingQueue::ORDER_ITEM_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ServiceProcessingQueue::SERVICE_ID;
     }
 
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return ServiceProcessingQueue::CANDIDATE_ID;
     }
 
     public function processingRuleId()
     {
-        return $this->model::PROCESSING_RULE_ID;
+        return ServiceProcessingQueue::PROCESSING_RULE_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ServiceProcessingQueue::STATUS;
     }
 
     public function attempts()
     {
-        return $this->model::ATTEMPTS;
+        return ServiceProcessingQueue::ATTEMPTS;
     }
 
     public function maxAttempts()
     {
-        return $this->model::MAX_ATTEMPTS;
+        return ServiceProcessingQueue::MAX_ATTEMPTS;
     }
 
     public function requestData()
     {
-        return $this->model::REQUEST_DATA;
+        return ServiceProcessingQueue::REQUEST_DATA;
     }
 
     public function responseData()
     {
-        return $this->model::RESPONSE_DATA;
+        return ServiceProcessingQueue::RESPONSE_DATA;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return ServiceProcessingQueue::ERROR_MESSAGE;
     }
 
     public function processedAt()
     {
-        return $this->model::PROCESSED_AT;
+        return ServiceProcessingQueue::PROCESSED_AT;
     }
 
     public function nextRetryAt()
     {
-        return $this->model::NEXT_RETRY_AT;
+        return ServiceProcessingQueue::NEXT_RETRY_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return ServiceProcessingQueue::COMPLETED_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ServiceProcessingQueue::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ServiceProcessingQueue::UPDATED_BY;
     }
     // functions
 }

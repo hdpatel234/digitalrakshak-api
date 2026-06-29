@@ -14,42 +14,42 @@ class ProviderPerformanceLogRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return ProviderPerformanceLog::PROVIDER_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ProviderPerformanceLog::SERVICE_ID;
     }
 
     public function assignmentId()
     {
-        return $this->model::ASSIGNMENT_ID;
+        return ProviderPerformanceLog::ASSIGNMENT_ID;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return ProviderPerformanceLog::RESPONSE_TIME_MS;
     }
 
     public function statusCode()
     {
-        return $this->model::STATUS_CODE;
+        return ProviderPerformanceLog::STATUS_CODE;
     }
 
     public function success()
     {
-        return $this->model::SUCCESS;
+        return ProviderPerformanceLog::SUCCESS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return ProviderPerformanceLog::ERROR_MESSAGE;
     }
 
     public function loggedAt()
     {
-        return $this->model::LOGGED_AT;
+        return ProviderPerformanceLog::LOGGED_AT;
     }
     // functions
 }

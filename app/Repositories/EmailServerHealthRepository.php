@@ -14,32 +14,32 @@ class EmailServerHealthRepository extends BaseRepository
     // column constants
     public function serverId()
     {
-        return $this->model::SERVER_ID;
+        return EmailServerHealth::SERVER_ID;
     }
 
     public function checkType()
     {
-        return $this->model::CHECK_TYPE;
+        return EmailServerHealth::CHECK_TYPE;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return EmailServerHealth::STATUS;
     }
 
     public function responseTimeMs()
     {
-        return $this->model::RESPONSE_TIME_MS;
+        return EmailServerHealth::RESPONSE_TIME_MS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return EmailServerHealth::ERROR_MESSAGE;
     }
 
     public function checkedAt()
     {
-        return $this->model::CHECKED_AT;
+        return EmailServerHealth::CHECKED_AT;
     }
     // functions
 }

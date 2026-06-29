@@ -14,107 +14,107 @@ class ServiceProcessingRuleRepository extends BaseRepository
     // column constants
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ServiceProcessingRule::SERVICE_ID;
     }
 
     public function processingType()
     {
-        return $this->model::PROCESSING_TYPE;
+        return ServiceProcessingRule::PROCESSING_TYPE;
     }
 
     public function apiEndpoint()
     {
-        return $this->model::API_ENDPOINT;
+        return ServiceProcessingRule::API_ENDPOINT;
     }
 
     public function apiMethod()
     {
-        return $this->model::API_METHOD;
+        return ServiceProcessingRule::API_METHOD;
     }
 
     public function apiHeaders()
     {
-        return $this->model::API_HEADERS;
+        return ServiceProcessingRule::API_HEADERS;
     }
 
     public function apiMapping()
     {
-        return $this->model::API_MAPPING;
+        return ServiceProcessingRule::API_MAPPING;
     }
 
     public function emailTemplateId()
     {
-        return $this->model::EMAIL_TEMPLATE_ID;
+        return ServiceProcessingRule::EMAIL_TEMPLATE_ID;
     }
 
     public function emailTo()
     {
-        return $this->model::EMAIL_TO;
+        return ServiceProcessingRule::EMAIL_TO;
     }
 
     public function ticketPriority()
     {
-        return $this->model::TICKET_PRIORITY;
+        return ServiceProcessingRule::TICKET_PRIORITY;
     }
 
     public function ticketDepartment()
     {
-        return $this->model::TICKET_DEPARTMENT;
+        return ServiceProcessingRule::TICKET_DEPARTMENT;
     }
 
     public function cronExpression()
     {
-        return $this->model::CRON_EXPRESSION;
+        return ServiceProcessingRule::CRON_EXPRESSION;
     }
 
     public function webhookUrl()
     {
-        return $this->model::WEBHOOK_URL;
+        return ServiceProcessingRule::WEBHOOK_URL;
     }
 
     public function webhookSecret()
     {
-        return $this->model::WEBHOOK_SECRET;
+        return ServiceProcessingRule::WEBHOOK_SECRET;
     }
 
     public function timeoutSeconds()
     {
-        return $this->model::TIMEOUT_SECONDS;
+        return ServiceProcessingRule::TIMEOUT_SECONDS;
     }
 
     public function retryCount()
     {
-        return $this->model::RETRY_COUNT;
+        return ServiceProcessingRule::RETRY_COUNT;
     }
 
     public function retryDelayMinutes()
     {
-        return $this->model::RETRY_DELAY_MINUTES;
+        return ServiceProcessingRule::RETRY_DELAY_MINUTES;
     }
 
     public function successStatus()
     {
-        return $this->model::SUCCESS_STATUS;
+        return ServiceProcessingRule::SUCCESS_STATUS;
     }
 
     public function failureStatus()
     {
-        return $this->model::FAILURE_STATUS;
+        return ServiceProcessingRule::FAILURE_STATUS;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ServiceProcessingRule::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ServiceProcessingRule::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ServiceProcessingRule::UPDATED_BY;
     }
     // functions
 }

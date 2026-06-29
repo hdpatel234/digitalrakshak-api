@@ -14,22 +14,22 @@ class DocumentPlatformRepository extends BaseRepository
     // column constants
     public function platformName()
     {
-        return $this->model::PLATFORM_NAME;
+        return DocumentPlatform::PLATFORM_NAME;
     }
 
     public function platformCode()
     {
-        return $this->model::PLATFORM_CODE;
+        return DocumentPlatform::PLATFORM_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return DocumentPlatform::DESCRIPTION;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return DocumentPlatform::IS_ACTIVE;
     }
     // functions
 }

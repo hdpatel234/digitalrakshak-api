@@ -14,97 +14,97 @@ class AiPromptRepository extends BaseRepository
     // column constants
     public function promptName()
     {
-        return $this->model::PROMPT_NAME;
+        return AiPrompt::PROMPT_NAME;
     }
 
     public function promptCode()
     {
-        return $this->model::PROMPT_CODE;
+        return AiPrompt::PROMPT_CODE;
     }
 
     public function category()
     {
-        return $this->model::CATEGORY;
+        return AiPrompt::CATEGORY;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return AiPrompt::DESCRIPTION;
     }
 
     public function systemPrompt()
     {
-        return $this->model::SYSTEM_PROMPT;
+        return AiPrompt::SYSTEM_PROMPT;
     }
 
     public function userPromptTemplate()
     {
-        return $this->model::USER_PROMPT_TEMPLATE;
+        return AiPrompt::USER_PROMPT_TEMPLATE;
     }
 
     public function examples()
     {
-        return $this->model::EXAMPLES;
+        return AiPrompt::EXAMPLES;
     }
 
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return AiPrompt::PROVIDER_ID;
     }
 
     public function modelId()
     {
-        return $this->model::MODEL_ID;
+        return AiPrompt::MODEL_ID;
     }
 
     public function temperature()
     {
-        return $this->model::TEMPERATURE;
+        return AiPrompt::TEMPERATURE;
     }
 
     public function maxTokens()
     {
-        return $this->model::MAX_TOKENS;
+        return AiPrompt::MAX_TOKENS;
     }
 
     public function responseFormat()
     {
-        return $this->model::RESPONSE_FORMAT;
+        return AiPrompt::RESPONSE_FORMAT;
     }
 
     public function responseSchema()
     {
-        return $this->model::RESPONSE_SCHEMA;
+        return AiPrompt::RESPONSE_SCHEMA;
     }
 
     public function parseResponse()
     {
-        return $this->model::PARSE_RESPONSE;
+        return AiPrompt::PARSE_RESPONSE;
     }
 
     public function functions()
     {
-        return $this->model::FUNCTIONS;
+        return AiPrompt::FUNCTIONS;
     }
 
     public function version()
     {
-        return $this->model::VERSION;
+        return AiPrompt::VERSION;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return AiPrompt::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return AiPrompt::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return AiPrompt::UPDATED_BY;
     }
     // functions
 }

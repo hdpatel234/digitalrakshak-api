@@ -14,72 +14,72 @@ class PackageRepository extends BaseRepository
     // column constants
     public function packageName()
     {
-        return $this->model::PACKAGE_NAME;
+        return Package::PACKAGE_NAME;
     }
 
     public function packageCode()
     {
-        return $this->model::PACKAGE_CODE;
+        return Package::PACKAGE_CODE;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return Package::DESCRIPTION;
     }
 
     public function type()
     {
-        return $this->model::TYPE;
+        return Package::TYPE;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return Package::CLIENT_ID;
     }
 
     public function totalPrice()
     {
-        return $this->model::TOTAL_PRICE;
+        return Package::TOTAL_PRICE;
     }
 
     public function discountType()
     {
-        return $this->model::DISCOUNT_TYPE;
+        return Package::DISCOUNT_TYPE;
     }
 
     public function discountValue()
     {
-        return $this->model::DISCOUNT_VALUE;
+        return Package::DISCOUNT_VALUE;
     }
 
     public function finalPrice()
     {
-        return $this->model::FINAL_PRICE;
+        return Package::FINAL_PRICE;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return Package::IS_ACTIVE;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Package::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Package::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Package::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return Package::DELETED_BY;
     }
     // functions
 }

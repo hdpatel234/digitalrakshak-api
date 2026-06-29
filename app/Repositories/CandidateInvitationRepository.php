@@ -14,97 +14,97 @@ class CandidateInvitationRepository extends BaseRepository
     // column constants
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return CandidateInvitation::CANDIDATE_ID;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return CandidateInvitation::CLIENT_ID;
     }
 
     public function packageId()
     {
-        return $this->model::PACKAGE_ID;
+        return CandidateInvitation::PACKAGE_ID;
     }
 
     public function invitationType()
     {
-        return $this->model::INVITATION_TYPE;
+        return CandidateInvitation::INVITATION_TYPE;
     }
 
     public function invitationToken()
     {
-        return $this->model::INVITATION_TOKEN;
+        return CandidateInvitation::INVITATION_TOKEN;
     }
 
     public function formLink()
     {
-        return $this->model::FORM_LINK;
+        return CandidateInvitation::FORM_LINK;
     }
 
     public function formData()
     {
-        return $this->model::FORM_DATA;
+        return CandidateInvitation::FORM_DATA;
     }
 
     public function invitedBy()
     {
-        return $this->model::INVITED_BY;
+        return CandidateInvitation::INVITED_BY;
     }
 
     public function invitedAt()
     {
-        return $this->model::INVITED_AT;
+        return CandidateInvitation::INVITED_AT;
     }
 
     public function viewedAt()
     {
-        return $this->model::VIEWED_AT;
+        return CandidateInvitation::VIEWED_AT;
     }
 
     public function reminderSentAt()
     {
-        return $this->model::REMINDER_SENT_AT;
+        return CandidateInvitation::REMINDER_SENT_AT;
     }
 
     public function expiresAt()
     {
-        return $this->model::EXPIRES_AT;
+        return CandidateInvitation::EXPIRES_AT;
     }
 
     public function reminderCount()
     {
-        return $this->model::REMINDER_COUNT;
+        return CandidateInvitation::REMINDER_COUNT;
     }
 
     public function lastReminderSentAt()
     {
-        return $this->model::LAST_REMINDER_SENT_AT;
+        return CandidateInvitation::LAST_REMINDER_SENT_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return CandidateInvitation::COMPLETED_AT;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateInvitation::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateInvitation::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateInvitation::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateInvitation::DELETED_BY;
     }
     // functions
 }

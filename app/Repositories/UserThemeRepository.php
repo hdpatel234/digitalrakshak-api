@@ -14,62 +14,62 @@ class UserThemeRepository extends BaseRepository
     // column constants
     public function themeName()
     {
-        return $this->model::THEME_NAME;
+        return UserTheme::THEME_NAME;
     }
 
     public function themeCode()
     {
-        return $this->model::THEME_CODE;
+        return UserTheme::THEME_CODE;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return UserTheme::IS_DEFAULT;
     }
 
     public function isSystem()
     {
-        return $this->model::IS_SYSTEM;
+        return UserTheme::IS_SYSTEM;
     }
 
     public function colors()
     {
-        return $this->model::COLORS;
+        return UserTheme::COLORS;
     }
 
     public function fonts()
     {
-        return $this->model::FONTS;
+        return UserTheme::FONTS;
     }
 
     public function borderRadius()
     {
-        return $this->model::BORDER_RADIUS;
+        return UserTheme::BORDER_RADIUS;
     }
 
     public function spacing()
     {
-        return $this->model::SPACING;
+        return UserTheme::SPACING;
     }
 
     public function animations()
     {
-        return $this->model::ANIMATIONS;
+        return UserTheme::ANIMATIONS;
     }
 
     public function backgroundImage()
     {
-        return $this->model::BACKGROUND_IMAGE;
+        return UserTheme::BACKGROUND_IMAGE;
     }
 
     public function customCss()
     {
-        return $this->model::CUSTOM_CSS;
+        return UserTheme::CUSTOM_CSS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return UserTheme::CREATED_BY;
     }
     // functions
 }

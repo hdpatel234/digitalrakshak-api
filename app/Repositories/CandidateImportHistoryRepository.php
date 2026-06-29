@@ -14,57 +14,57 @@ class CandidateImportHistoryRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return CandidateImportHistory::CLIENT_ID;
     }
 
     public function filename()
     {
-        return $this->model::FILENAME;
+        return CandidateImportHistory::FILENAME;
     }
 
     public function totalRecords()
     {
-        return $this->model::TOTAL_RECORDS;
+        return CandidateImportHistory::TOTAL_RECORDS;
     }
 
     public function successfulImports()
     {
-        return $this->model::SUCCESSFUL_IMPORTS;
+        return CandidateImportHistory::SUCCESSFUL_IMPORTS;
     }
 
     public function failedImports()
     {
-        return $this->model::FAILED_IMPORTS;
+        return CandidateImportHistory::FAILED_IMPORTS;
     }
 
     public function importedBy()
     {
-        return $this->model::IMPORTED_BY;
+        return CandidateImportHistory::IMPORTED_BY;
     }
 
     public function errorLog()
     {
-        return $this->model::ERROR_LOG;
+        return CandidateImportHistory::ERROR_LOG;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateImportHistory::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateImportHistory::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateImportHistory::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateImportHistory::DELETED_BY;
     }
     // functions
 }

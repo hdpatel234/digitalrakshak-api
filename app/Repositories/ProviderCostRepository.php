@@ -14,52 +14,52 @@ class ProviderCostRepository extends BaseRepository
     // column constants
     public function providerId()
     {
-        return $this->model::PROVIDER_ID;
+        return ProviderCost::PROVIDER_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ProviderCost::SERVICE_ID;
     }
 
     public function costPerCall()
     {
-        return $this->model::COST_PER_CALL;
+        return ProviderCost::COST_PER_CALL;
     }
 
     public function currency()
     {
-        return $this->model::CURRENCY;
+        return ProviderCost::CURRENCY;
     }
 
     public function billingModel()
     {
-        return $this->model::BILLING_MODEL;
+        return ProviderCost::BILLING_MODEL;
     }
 
     public function minimumCommitment()
     {
-        return $this->model::MINIMUM_COMMITMENT;
+        return ProviderCost::MINIMUM_COMMITMENT;
     }
 
     public function commitmentPeriod()
     {
-        return $this->model::COMMITMENT_PERIOD;
+        return ProviderCost::COMMITMENT_PERIOD;
     }
 
     public function effectiveFrom()
     {
-        return $this->model::EFFECTIVE_FROM;
+        return ProviderCost::EFFECTIVE_FROM;
     }
 
     public function effectiveTo()
     {
-        return $this->model::EFFECTIVE_TO;
+        return ProviderCost::EFFECTIVE_TO;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ProviderCost::IS_ACTIVE;
     }
     // functions
 }

@@ -14,47 +14,47 @@ class DocumentTemplateRepository extends BaseRepository
     // column constants
     public function templateName()
     {
-        return $this->model::TEMPLATE_NAME;
+        return DocumentTemplate::TEMPLATE_NAME;
     }
 
     public function templateCode()
     {
-        return $this->model::TEMPLATE_CODE;
+        return DocumentTemplate::TEMPLATE_CODE;
     }
 
     public function documentType()
     {
-        return $this->model::DOCUMENT_TYPE;
+        return DocumentTemplate::DOCUMENT_TYPE;
     }
 
     public function templateFile()
     {
-        return $this->model::TEMPLATE_FILE;
+        return DocumentTemplate::TEMPLATE_FILE;
     }
 
     public function templateData()
     {
-        return $this->model::TEMPLATE_DATA;
+        return DocumentTemplate::TEMPLATE_DATA;
     }
 
     public function outputFormat()
     {
-        return $this->model::OUTPUT_FORMAT;
+        return DocumentTemplate::OUTPUT_FORMAT;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return DocumentTemplate::IS_ACTIVE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return DocumentTemplate::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return DocumentTemplate::UPDATED_BY;
     }
     // functions
 }

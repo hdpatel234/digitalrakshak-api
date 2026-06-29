@@ -14,32 +14,32 @@ class ClientServiceRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientService::CLIENT_ID;
     }
 
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ClientService::SERVICE_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ClientService::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientService::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientService::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return ClientService::DELETED_BY;
     }
     // functions
 }

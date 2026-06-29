@@ -14,37 +14,37 @@ class UserSearchPreferenceRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserSearchPreference::USER_ID;
     }
 
     public function defaultSearchOperator()
     {
-        return $this->model::DEFAULT_SEARCH_OPERATOR;
+        return UserSearchPreference::DEFAULT_SEARCH_OPERATOR;
     }
 
     public function itemsPerPage()
     {
-        return $this->model::ITEMS_PER_PAGE;
+        return UserSearchPreference::ITEMS_PER_PAGE;
     }
 
     public function saveRecentSearches()
     {
-        return $this->model::SAVE_RECENT_SEARCHES;
+        return UserSearchPreference::SAVE_RECENT_SEARCHES;
     }
 
     public function maxRecentSearches()
     {
-        return $this->model::MAX_RECENT_SEARCHES;
+        return UserSearchPreference::MAX_RECENT_SEARCHES;
     }
 
     public function saveFilters()
     {
-        return $this->model::SAVE_FILTERS;
+        return UserSearchPreference::SAVE_FILTERS;
     }
 
     public function defaultDateRange()
     {
-        return $this->model::DEFAULT_DATE_RANGE;
+        return UserSearchPreference::DEFAULT_DATE_RANGE;
     }
     // functions
 }

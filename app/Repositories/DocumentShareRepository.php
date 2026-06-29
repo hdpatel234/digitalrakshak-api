@@ -14,62 +14,62 @@ class DocumentShareRepository extends BaseRepository
     // column constants
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return DocumentShare::DOCUMENT_ID;
     }
 
     public function shareToken()
     {
-        return $this->model::SHARE_TOKEN;
+        return DocumentShare::SHARE_TOKEN;
     }
 
     public function shareType()
     {
-        return $this->model::SHARE_TYPE;
+        return DocumentShare::SHARE_TYPE;
     }
 
     public function password()
     {
-        return $this->model::PASSWORD;
+        return DocumentShare::PASSWORD;
     }
 
     public function expiresAt()
     {
-        return $this->model::EXPIRES_AT;
+        return DocumentShare::EXPIRES_AT;
     }
 
     public function maxDownloads()
     {
-        return $this->model::MAX_DOWNLOADS;
+        return DocumentShare::MAX_DOWNLOADS;
     }
 
     public function downloadCount()
     {
-        return $this->model::DOWNLOAD_COUNT;
+        return DocumentShare::DOWNLOAD_COUNT;
     }
 
     public function sharedWithEmail()
     {
-        return $this->model::SHARED_WITH_EMAIL;
+        return DocumentShare::SHARED_WITH_EMAIL;
     }
 
     public function sharedWithName()
     {
-        return $this->model::SHARED_WITH_NAME;
+        return DocumentShare::SHARED_WITH_NAME;
     }
 
     public function accessPermission()
     {
-        return $this->model::ACCESS_PERMISSION;
+        return DocumentShare::ACCESS_PERMISSION;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return DocumentShare::CREATED_BY;
     }
 
     public function lastAccessedAt()
     {
-        return $this->model::LAST_ACCESSED_AT;
+        return DocumentShare::LAST_ACCESSED_AT;
     }
     // functions
 }

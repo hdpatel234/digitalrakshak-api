@@ -14,17 +14,17 @@ class ServiceDependencyRepository extends BaseRepository
     // column constants
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ServiceDependency::SERVICE_ID;
     }
 
     public function dependsOnServiceId()
     {
-        return $this->model::DEPENDS_ON_SERVICE_ID;
+        return ServiceDependency::DEPENDS_ON_SERVICE_ID;
     }
 
     public function dependencyType()
     {
-        return $this->model::DEPENDENCY_TYPE;
+        return ServiceDependency::DEPENDENCY_TYPE;
     }
     // functions
 }

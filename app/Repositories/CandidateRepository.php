@@ -14,138 +14,138 @@ class CandidateRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return Candidate::CLIENT_ID;
     }
 
     public function firstName()
     {
-        return $this->model::FIRST_NAME;
+        return Candidate::FIRST_NAME;
     }
 
     public function lastName()
     {
-        return $this->model::LAST_NAME;
+        return Candidate::LAST_NAME;
     }
 
     public function email()
     {
-        return $this->model::EMAIL;
+        return Candidate::EMAIL;
     }
 
     public function phone()
     {
-        return $this->model::PHONE;
+        return Candidate::PHONE;
     }
 
     public function alternatePhone()
     {
-        return $this->model::ALTERNATE_PHONE;
+        return Candidate::ALTERNATE_PHONE;
     }
 
     public function address()
     {
-        return $this->model::ADDRESS;
+        return Candidate::ADDRESS;
     }
     public function countryId()
     {
-        return $this->model::COUNTRY_ID;
+        return Candidate::COUNTRY_ID;
     }
     public function stateId()
     {
-        return $this->model::STATE_ID;
+        return Candidate::STATE_ID;
     }
     public function cityId()
     {
-        return $this->model::CITY_ID;
+        return Candidate::CITY_ID;
     }
     public function locationVerifed()
     {
-        return $this->model::LOCATION_VERIFIED;
+        return Candidate::LOCATION_VERIFIED;
     }
 
     public function locationVerifiedAt()
     {
-        return $this->model::LOCATION_VERIFIED_AT;
+        return Candidate::LOCATION_VERIFIED_AT;
     }
 
     public function city()
     {
-        return $this->model::CITY;
+        return Candidate::CITY;
     }
 
     public function state()
     {
-        return $this->model::STATE;
+        return Candidate::STATE;
     }
 
     public function pincode()
     {
-        return $this->model::PINCODE;
+        return Candidate::PINCODE;
     }
 
     public function country()
     {
-        return $this->model::COUNTRY;
+        return Candidate::COUNTRY;
     }
 
     public function dateOfBirth()
     {
-        return $this->model::DATE_OF_BIRTH;
+        return Candidate::DATE_OF_BIRTH;
     }
 
     public function gender()
     {
-        return $this->model::GENDER;
+        return Candidate::GENDER;
     }
 
     public function source()
     {
-        return $this->model::SOURCE;
+        return Candidate::SOURCE;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Candidate::STATUS;
     }
 
     public function invitationSentAt()
     {
-        return $this->model::INVITATION_SENT_AT;
+        return Candidate::INVITATION_SENT_AT;
     }
 
     public function invitationAcceptedAt()
     {
-        return $this->model::INVITATION_ACCEPTED_AT;
+        return Candidate::INVITATION_ACCEPTED_AT;
     }
 
     public function lastOrderId()
     {
-        return $this->model::LAST_ORDER_ID;
+        return Candidate::LAST_ORDER_ID;
     }
 
     public function totalOrders()
     {
-        return $this->model::TOTAL_ORDERS;
+        return Candidate::TOTAL_ORDERS;
     }
 
     public function totalOrderValue()
     {
-        return $this->model::TOTAL_ORDER_VALUE;
+        return Candidate::TOTAL_ORDER_VALUE;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Candidate::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Candidate::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return Candidate::DELETED_BY;
     }
     // functions
 }

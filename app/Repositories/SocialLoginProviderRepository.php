@@ -14,107 +14,107 @@ class SocialLoginProviderRepository extends BaseRepository
     // column constants
     public function providerName()
     {
-        return $this->model::PROVIDER_NAME;
+        return SocialLoginProvider::PROVIDER_NAME;
     }
 
     public function providerCode()
     {
-        return $this->model::PROVIDER_CODE;
+        return SocialLoginProvider::PROVIDER_CODE;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return SocialLoginProvider::ICON;
     }
 
     public function color()
     {
-        return $this->model::COLOR;
+        return SocialLoginProvider::COLOR;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return SocialLoginProvider::DESCRIPTION;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return SocialLoginProvider::CLIENT_ID;
     }
 
     public function clientSecret()
     {
-        return $this->model::CLIENT_SECRET;
+        return SocialLoginProvider::CLIENT_SECRET;
     }
 
     public function redirectUrl()
     {
-        return $this->model::REDIRECT_URL;
+        return SocialLoginProvider::REDIRECT_URL;
     }
 
     public function scopes()
     {
-        return $this->model::SCOPES;
+        return SocialLoginProvider::SCOPES;
     }
 
     public function authParameters()
     {
-        return $this->model::AUTH_PARAMETERS;
+        return SocialLoginProvider::AUTH_PARAMETERS;
     }
 
     public function buttonText()
     {
-        return $this->model::BUTTON_TEXT;
+        return SocialLoginProvider::BUTTON_TEXT;
     }
 
     public function buttonIcon()
     {
-        return $this->model::BUTTON_ICON;
+        return SocialLoginProvider::BUTTON_ICON;
     }
 
     public function buttonColor()
     {
-        return $this->model::BUTTON_COLOR;
+        return SocialLoginProvider::BUTTON_COLOR;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return SocialLoginProvider::DISPLAY_ORDER;
     }
 
     public function isEnabled()
     {
-        return $this->model::IS_ENABLED;
+        return SocialLoginProvider::IS_ENABLED;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return SocialLoginProvider::IS_DEFAULT;
     }
 
     public function totalUsers()
     {
-        return $this->model::TOTAL_USERS;
+        return SocialLoginProvider::TOTAL_USERS;
     }
 
     public function totalConnections()
     {
-        return $this->model::TOTAL_CONNECTIONS;
+        return SocialLoginProvider::TOTAL_CONNECTIONS;
     }
 
     public function lastUsedAt()
     {
-        return $this->model::LAST_USED_AT;
+        return SocialLoginProvider::LAST_USED_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return SocialLoginProvider::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return SocialLoginProvider::UPDATED_BY;
     }
     // functions
 }

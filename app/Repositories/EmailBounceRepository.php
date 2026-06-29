@@ -14,37 +14,37 @@ class EmailBounceRepository extends BaseRepository
     // column constants
     public function email()
     {
-        return $this->model::EMAIL;
+        return EmailBounce::EMAIL;
     }
 
     public function bounceType()
     {
-        return $this->model::BOUNCE_TYPE;
+        return EmailBounce::BOUNCE_TYPE;
     }
 
     public function reason()
     {
-        return $this->model::REASON;
+        return EmailBounce::REASON;
     }
 
     public function bouncedAt()
     {
-        return $this->model::BOUNCED_AT;
+        return EmailBounce::BOUNCED_AT;
     }
 
     public function unsubscribedAt()
     {
-        return $this->model::UNSUBSCRIBED_AT;
+        return EmailBounce::UNSUBSCRIBED_AT;
     }
 
     public function blockedUntil()
     {
-        return $this->model::BLOCKED_UNTIL;
+        return EmailBounce::BLOCKED_UNTIL;
     }
 
     public function bounceCount()
     {
-        return $this->model::BOUNCE_COUNT;
+        return EmailBounce::BOUNCE_COUNT;
     }
     // functions
 }

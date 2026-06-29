@@ -14,57 +14,57 @@ class UserDatetimePreferenceRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserDatetimePreference::USER_ID;
     }
 
     public function timezone()
     {
-        return $this->model::TIMEZONE;
+        return UserDatetimePreference::TIMEZONE;
     }
 
     public function dateFormat()
     {
-        return $this->model::DATE_FORMAT;
+        return UserDatetimePreference::DATE_FORMAT;
     }
 
     public function timeFormat()
     {
-        return $this->model::TIME_FORMAT;
+        return UserDatetimePreference::TIME_FORMAT;
     }
 
     public function firstDayOfWeek()
     {
-        return $this->model::FIRST_DAY_OF_WEEK;
+        return UserDatetimePreference::FIRST_DAY_OF_WEEK;
     }
 
     public function weekStartsOn()
     {
-        return $this->model::WEEK_STARTS_ON;
+        return UserDatetimePreference::WEEK_STARTS_ON;
     }
 
     public function showWeekNumbers()
     {
-        return $this->model::SHOW_WEEK_NUMBERS;
+        return UserDatetimePreference::SHOW_WEEK_NUMBERS;
     }
 
     public function calendarView()
     {
-        return $this->model::CALENDAR_VIEW;
+        return UserDatetimePreference::CALENDAR_VIEW;
     }
 
     public function workingHoursStart()
     {
-        return $this->model::WORKING_HOURS_START;
+        return UserDatetimePreference::WORKING_HOURS_START;
     }
 
     public function workingHoursEnd()
     {
-        return $this->model::WORKING_HOURS_END;
+        return UserDatetimePreference::WORKING_HOURS_END;
     }
 
     public function workingDays()
     {
-        return $this->model::WORKING_DAYS;
+        return UserDatetimePreference::WORKING_DAYS;
     }
     // functions
 }

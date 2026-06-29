@@ -14,47 +14,47 @@ class WebhookLogRepository extends BaseRepository
     // column constants
     public function source()
     {
-        return $this->model::SOURCE;
+        return WebhookLog::SOURCE;
     }
 
     public function platform()
     {
-        return $this->model::PLATFORM;
+        return WebhookLog::PLATFORM;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return WebhookLog::CLIENT_ID;
     }
 
     public function eventType()
     {
-        return $this->model::EVENT_TYPE;
+        return WebhookLog::EVENT_TYPE;
     }
 
     public function payload()
     {
-        return $this->model::PAYLOAD;
+        return WebhookLog::PAYLOAD;
     }
 
     public function headers()
     {
-        return $this->model::HEADERS;
+        return WebhookLog::HEADERS;
     }
 
     public function processed()
     {
-        return $this->model::PROCESSED;
+        return WebhookLog::PROCESSED;
     }
 
     public function processedAt()
     {
-        return $this->model::PROCESSED_AT;
+        return WebhookLog::PROCESSED_AT;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return WebhookLog::ERROR_MESSAGE;
     }
     // functions
 }

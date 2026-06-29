@@ -14,42 +14,42 @@ class PaymentMethodTypeRepository extends BaseRepository
     // column constants
     public function methodName()
     {
-        return $this->model::METHOD_NAME;
+        return PaymentMethodType::METHOD_NAME;
     }
 
     public function methodCode()
     {
-        return $this->model::METHOD_CODE;
+        return PaymentMethodType::METHOD_CODE;
     }
 
     public function category()
     {
-        return $this->model::CATEGORY;
+        return PaymentMethodType::CATEGORY;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return PaymentMethodType::ICON;
     }
 
     public function description()
     {
-        return $this->model::DESCRIPTION;
+        return PaymentMethodType::DESCRIPTION;
     }
 
     public function configurationSchema()
     {
-        return $this->model::CONFIGURATION_SCHEMA;
+        return PaymentMethodType::CONFIGURATION_SCHEMA;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return PaymentMethodType::IS_ACTIVE;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return PaymentMethodType::DISPLAY_ORDER;
     }
     // functions
 }

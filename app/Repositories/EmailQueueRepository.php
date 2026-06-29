@@ -14,167 +14,167 @@ class EmailQueueRepository extends BaseRepository
     // column constants
     public function emailUid()
     {
-        return $this->model::EMAIL_UID;
+        return EmailQueue::EMAIL_UID;
     }
 
     public function toEmail()
     {
-        return $this->model::TO_EMAIL;
+        return EmailQueue::TO_EMAIL;
     }
 
     public function toName()
     {
-        return $this->model::TO_NAME;
+        return EmailQueue::TO_NAME;
     }
 
     public function cc()
     {
-        return $this->model::CC;
+        return EmailQueue::CC;
     }
 
     public function bcc()
     {
-        return $this->model::BCC;
+        return EmailQueue::BCC;
     }
 
     public function replyTo()
     {
-        return $this->model::REPLY_TO;
+        return EmailQueue::REPLY_TO;
     }
 
     public function subject()
     {
-        return $this->model::SUBJECT;
+        return EmailQueue::SUBJECT;
     }
 
     public function bodyHtml()
     {
-        return $this->model::BODY_HTML;
+        return EmailQueue::BODY_HTML;
     }
 
     public function bodyText()
     {
-        return $this->model::BODY_TEXT;
+        return EmailQueue::BODY_TEXT;
     }
 
     public function templateId()
     {
-        return $this->model::TEMPLATE_ID;
+        return EmailQueue::TEMPLATE_ID;
     }
 
     public function emailType()
     {
-        return $this->model::EMAIL_TYPE;
+        return EmailQueue::EMAIL_TYPE;
     }
 
     public function priority()
     {
-        return $this->model::PRIORITY;
+        return EmailQueue::PRIORITY;
     }
 
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return EmailQueue::CLIENT_ID;
     }
 
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return EmailQueue::CANDIDATE_ID;
     }
 
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return EmailQueue::ORDER_ID;
     }
 
     public function userId()
     {
-        return $this->model::USER_ID;
+        return EmailQueue::USER_ID;
     }
 
     public function assignedServerId()
     {
-        return $this->model::ASSIGNED_SERVER_ID;
+        return EmailQueue::ASSIGNED_SERVER_ID;
     }
 
     public function routingRuleId()
     {
-        return $this->model::ROUTING_RULE_ID;
+        return EmailQueue::ROUTING_RULE_ID;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return EmailQueue::STATUS;
     }
 
     public function attempts()
     {
-        return $this->model::ATTEMPTS;
+        return EmailQueue::ATTEMPTS;
     }
 
     public function maxAttempts()
     {
-        return $this->model::MAX_ATTEMPTS;
+        return EmailQueue::MAX_ATTEMPTS;
     }
 
     public function lastAttemptAt()
     {
-        return $this->model::LAST_ATTEMPT_AT;
+        return EmailQueue::LAST_ATTEMPT_AT;
     }
 
     public function sentAt()
     {
-        return $this->model::SENT_AT;
+        return EmailQueue::SENT_AT;
     }
 
     public function messageId()
     {
-        return $this->model::MESSAGE_ID;
+        return EmailQueue::MESSAGE_ID;
     }
 
     public function providerResponse()
     {
-        return $this->model::PROVIDER_RESPONSE;
+        return EmailQueue::PROVIDER_RESPONSE;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return EmailQueue::ERROR_MESSAGE;
     }
 
     public function opens()
     {
-        return $this->model::OPENS;
+        return EmailQueue::OPENS;
     }
 
     public function clicks()
     {
-        return $this->model::CLICKS;
+        return EmailQueue::CLICKS;
     }
 
     public function lastOpenedAt()
     {
-        return $this->model::LAST_OPENED_AT;
+        return EmailQueue::LAST_OPENED_AT;
     }
 
     public function scheduledAt()
     {
-        return $this->model::SCHEDULED_AT;
+        return EmailQueue::SCHEDULED_AT;
     }
 
     public function expiresAt()
     {
-        return $this->model::EXPIRES_AT;
+        return EmailQueue::EXPIRES_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return EmailQueue::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return EmailQueue::UPDATED_BY;
     }
     // functions
 }

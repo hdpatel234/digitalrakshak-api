@@ -14,42 +14,42 @@ class ApiProviderLogRepository extends BaseRepository
     // column constants
     public function apiProviderId()
     {
-        return $this->model::API_PROVIDER_ID;
+        return ApiProviderLog::API_PROVIDER_ID;
     }
 
     public function endpoint()
     {
-        return $this->model::ENDPOINT;
+        return ApiProviderLog::ENDPOINT;
     }
 
     public function method()
     {
-        return $this->model::METHOD;
+        return ApiProviderLog::METHOD;
     }
 
     public function request()
     {
-        return $this->model::REQUEST;
+        return ApiProviderLog::REQUEST;
     }
 
     public function response()
     {
-        return $this->model::RESPONSE;
+        return ApiProviderLog::RESPONSE;
     }
 
     public function responseCode()
     {
-        return $this->model::RESPONSE_CODE;
+        return ApiProviderLog::RESPONSE_CODE;
     }
 
     public function duration()
     {
-        return $this->model::DURATION;
+        return ApiProviderLog::DURATION;
     }
 
     public function isSuccessful()
     {
-        return $this->model::IS_SUCCESSFUL;
+        return ApiProviderLog::IS_SUCCESSFUL;
     }
     // functions
 }

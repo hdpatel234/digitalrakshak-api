@@ -14,57 +14,57 @@ class ApiLogRepository extends BaseRepository
     // column constants
     public function serviceId()
     {
-        return $this->model::SERVICE_ID;
+        return ApiLog::SERVICE_ID;
     }
 
     public function orderItemId()
     {
-        return $this->model::ORDER_ITEM_ID;
+        return ApiLog::ORDER_ITEM_ID;
     }
 
     public function endpoint()
     {
-        return $this->model::ENDPOINT;
+        return ApiLog::ENDPOINT;
     }
 
     public function method()
     {
-        return $this->model::METHOD;
+        return ApiLog::METHOD;
     }
 
     public function requestData()
     {
-        return $this->model::REQUEST_DATA;
+        return ApiLog::REQUEST_DATA;
     }
 
     public function responseData()
     {
-        return $this->model::RESPONSE_DATA;
+        return ApiLog::RESPONSE_DATA;
     }
 
     public function httpStatus()
     {
-        return $this->model::HTTP_STATUS;
+        return ApiLog::HTTP_STATUS;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return ApiLog::STATUS;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return ApiLog::ERROR_MESSAGE;
     }
 
     public function durationMs()
     {
-        return $this->model::DURATION_MS;
+        return ApiLog::DURATION_MS;
     }
 
     public function ipAddress()
     {
-        return $this->model::IP_ADDRESS;
+        return ApiLog::IP_ADDRESS;
     }
     // functions
 }

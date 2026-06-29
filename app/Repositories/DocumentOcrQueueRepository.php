@@ -14,47 +14,47 @@ class DocumentOcrQueueRepository extends BaseRepository
     // column constants
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return DocumentOcrQueue::DOCUMENT_ID;
     }
 
     public function priority()
     {
-        return $this->model::PRIORITY;
+        return DocumentOcrQueue::PRIORITY;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return DocumentOcrQueue::STATUS;
     }
 
     public function attempts()
     {
-        return $this->model::ATTEMPTS;
+        return DocumentOcrQueue::ATTEMPTS;
     }
 
     public function maxAttempts()
     {
-        return $this->model::MAX_ATTEMPTS;
+        return DocumentOcrQueue::MAX_ATTEMPTS;
     }
 
     public function ocrText()
     {
-        return $this->model::OCR_TEXT;
+        return DocumentOcrQueue::OCR_TEXT;
     }
 
     public function errorMessage()
     {
-        return $this->model::ERROR_MESSAGE;
+        return DocumentOcrQueue::ERROR_MESSAGE;
     }
 
     public function processedAt()
     {
-        return $this->model::PROCESSED_AT;
+        return DocumentOcrQueue::PROCESSED_AT;
     }
 
     public function completedAt()
     {
-        return $this->model::COMPLETED_AT;
+        return DocumentOcrQueue::COMPLETED_AT;
     }
     // functions
 }

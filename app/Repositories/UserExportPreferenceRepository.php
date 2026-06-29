@@ -14,42 +14,42 @@ class UserExportPreferenceRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserExportPreference::USER_ID;
     }
 
     public function defaultFormat()
     {
-        return $this->model::DEFAULT_FORMAT;
+        return UserExportPreference::DEFAULT_FORMAT;
     }
 
     public function paperSize()
     {
-        return $this->model::PAPER_SIZE;
+        return UserExportPreference::PAPER_SIZE;
     }
 
     public function orientation()
     {
-        return $this->model::ORIENTATION;
+        return UserExportPreference::ORIENTATION;
     }
 
     public function includeTimestamps()
     {
-        return $this->model::INCLUDE_TIMESTAMPS;
+        return UserExportPreference::INCLUDE_TIMESTAMPS;
     }
 
     public function includeMetadata()
     {
-        return $this->model::INCLUDE_METADATA;
+        return UserExportPreference::INCLUDE_METADATA;
     }
 
     public function compression()
     {
-        return $this->model::COMPRESSION;
+        return UserExportPreference::COMPRESSION;
     }
 
     public function emailOnComplete()
     {
-        return $this->model::EMAIL_ON_COMPLETE;
+        return UserExportPreference::EMAIL_ON_COMPLETE;
     }
     // functions
 }

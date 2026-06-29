@@ -14,27 +14,27 @@ class SupportPriorityRepository extends BaseRepository
     // column constants
     public function name()
     {
-        return $this->model::NAME;
+        return SupportPriority::NAME;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return SupportPriority::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return SupportPriority::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return SupportPriority::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return SupportPriority::DELETED_BY;
     }
 
     // functions

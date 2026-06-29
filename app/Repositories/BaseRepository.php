@@ -23,11 +23,11 @@ abstract class BaseRepository
 
     public function createdAt()
     {
-        return $this->model::CREATED_AT;
+        return Model::CREATED_AT;
     }
     public function updatedAt()
     {
-        return $this->model::UPDATED_AT;
+        return Model::UPDATED_AT;
     }
 
     // functions

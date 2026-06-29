@@ -14,42 +14,42 @@ class UserFavoriteRepository extends BaseRepository
     // column constants
     public function userId()
     {
-        return $this->model::USER_ID;
+        return UserFavorite::USER_ID;
     }
 
     public function favoriteType()
     {
-        return $this->model::FAVORITE_TYPE;
+        return UserFavorite::FAVORITE_TYPE;
     }
 
     public function favoriteId()
     {
-        return $this->model::FAVORITE_ID;
+        return UserFavorite::FAVORITE_ID;
     }
 
     public function url()
     {
-        return $this->model::URL;
+        return UserFavorite::URL;
     }
 
     public function title()
     {
-        return $this->model::TITLE;
+        return UserFavorite::TITLE;
     }
 
     public function icon()
     {
-        return $this->model::ICON;
+        return UserFavorite::ICON;
     }
 
     public function metadata()
     {
-        return $this->model::METADATA;
+        return UserFavorite::METADATA;
     }
 
     public function displayOrder()
     {
-        return $this->model::DISPLAY_ORDER;
+        return UserFavorite::DISPLAY_ORDER;
     }
     // functions
 }

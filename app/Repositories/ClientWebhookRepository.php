@@ -14,97 +14,97 @@ class ClientWebhookRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientWebhook::CLIENT_ID;
     }
 
     public function webhookName()
     {
-        return $this->model::WEBHOOK_NAME;
+        return ClientWebhook::WEBHOOK_NAME;
     }
 
     public function webhookUrl()
     {
-        return $this->model::WEBHOOK_URL;
+        return ClientWebhook::WEBHOOK_URL;
     }
 
     public function webhookSecret()
     {
-        return $this->model::WEBHOOK_SECRET;
+        return ClientWebhook::WEBHOOK_SECRET;
     }
 
     public function events()
     {
-        return $this->model::EVENTS;
+        return ClientWebhook::EVENTS;
     }
 
     public function headers()
     {
-        return $this->model::HEADERS;
+        return ClientWebhook::HEADERS;
     }
 
     public function format()
     {
-        return $this->model::FORMAT;
+        return ClientWebhook::FORMAT;
     }
 
     public function maxRetries()
     {
-        return $this->model::MAX_RETRIES;
+        return ClientWebhook::MAX_RETRIES;
     }
 
     public function retryDelaySeconds()
     {
-        return $this->model::RETRY_DELAY_SECONDS;
+        return ClientWebhook::RETRY_DELAY_SECONDS;
     }
 
     public function timeoutSeconds()
     {
-        return $this->model::TIMEOUT_SECONDS;
+        return ClientWebhook::TIMEOUT_SECONDS;
     }
 
     public function isActive()
     {
-        return $this->model::IS_ACTIVE;
+        return ClientWebhook::IS_ACTIVE;
     }
 
     public function lastTriggeredAt()
     {
-        return $this->model::LAST_TRIGGERED_AT;
+        return ClientWebhook::LAST_TRIGGERED_AT;
     }
 
     public function lastSuccessAt()
     {
-        return $this->model::LAST_SUCCESS_AT;
+        return ClientWebhook::LAST_SUCCESS_AT;
     }
 
     public function lastFailureAt()
     {
-        return $this->model::LAST_FAILURE_AT;
+        return ClientWebhook::LAST_FAILURE_AT;
     }
 
     public function lastError()
     {
-        return $this->model::LAST_ERROR;
+        return ClientWebhook::LAST_ERROR;
     }
 
     public function totalSuccess()
     {
-        return $this->model::TOTAL_SUCCESS;
+        return ClientWebhook::TOTAL_SUCCESS;
     }
 
     public function totalFailures()
     {
-        return $this->model::TOTAL_FAILURES;
+        return ClientWebhook::TOTAL_FAILURES;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return ClientWebhook::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return ClientWebhook::UPDATED_BY;
     }
     // functions
 }

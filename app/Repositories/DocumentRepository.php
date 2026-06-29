@@ -14,197 +14,197 @@ class DocumentRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return Document::CLIENT_ID;
     }
 
     public function documentConfigId()
     {
-        return $this->model::DOCUMENT_CONFIG_ID;
+        return Document::DOCUMENT_CONFIG_ID;
     }
 
     public function candidateId()
     {
-        return $this->model::CANDIDATE_ID;
+        return Document::CANDIDATE_ID;
     }
 
     public function orderId()
     {
-        return $this->model::ORDER_ID;
+        return Document::ORDER_ID;
     }
 
     public function orderItemId()
     {
-        return $this->model::ORDER_ITEM_ID;
+        return Document::ORDER_ITEM_ID;
     }
 
     public function invitationId()
     {
-        return $this->model::INVITATION_ID;
+        return Document::INVITATION_ID;
     }
 
     public function ticketId()
     {
-        return $this->model::TICKET_ID;
+        return Document::TICKET_ID;
     }
 
     public function documentType()
     {
-        return $this->model::DOCUMENT_TYPE;
+        return Document::DOCUMENT_TYPE;
     }
 
     public function documentCategory()
     {
-        return $this->model::DOCUMENT_CATEGORY;
+        return Document::DOCUMENT_CATEGORY;
     }
 
     public function originalFilename()
     {
-        return $this->model::ORIGINAL_FILENAME;
+        return Document::ORIGINAL_FILENAME;
     }
 
     public function storedFilename()
     {
-        return $this->model::STORED_FILENAME;
+        return Document::STORED_FILENAME;
     }
 
     public function filePath()
     {
-        return $this->model::FILE_PATH;
+        return Document::FILE_PATH;
     }
 
     public function fileSize()
     {
-        return $this->model::FILE_SIZE;
+        return Document::FILE_SIZE;
     }
 
     public function fileHash()
     {
-        return $this->model::FILE_HASH;
+        return Document::FILE_HASH;
     }
 
     public function mimeType()
     {
-        return $this->model::MIME_TYPE;
+        return Document::MIME_TYPE;
     }
 
     public function extension()
     {
-        return $this->model::EXTENSION;
+        return Document::EXTENSION;
     }
 
     public function externalFileId()
     {
-        return $this->model::EXTERNAL_FILE_ID;
+        return Document::EXTERNAL_FILE_ID;
     }
 
     public function externalShareLink()
     {
-        return $this->model::EXTERNAL_SHARE_LINK;
+        return Document::EXTERNAL_SHARE_LINK;
     }
 
     public function externalShareId()
     {
-        return $this->model::EXTERNAL_SHARE_ID;
+        return Document::EXTERNAL_SHARE_ID;
     }
 
     public function sharePassword()
     {
-        return $this->model::SHARE_PASSWORD;
+        return Document::SHARE_PASSWORD;
     }
 
     public function shareExpiresAt()
     {
-        return $this->model::SHARE_EXPIRES_AT;
+        return Document::SHARE_EXPIRES_AT;
     }
 
     public function version()
     {
-        return $this->model::VERSION;
+        return Document::VERSION;
     }
 
     public function isEncrypted()
     {
-        return $this->model::IS_ENCRYPTED;
+        return Document::IS_ENCRYPTED;
     }
 
     public function encryptionKey()
     {
-        return $this->model::ENCRYPTION_KEY;
+        return Document::ENCRYPTION_KEY;
     }
 
     public function metadata()
     {
-        return $this->model::METADATA;
+        return Document::METADATA;
     }
 
     public function ocrText()
     {
-        return $this->model::OCR_TEXT;
+        return Document::OCR_TEXT;
     }
 
     public function ocrStatus()
     {
-        return $this->model::OCR_STATUS;
+        return Document::OCR_STATUS;
     }
 
     public function ocrCompletedAt()
     {
-        return $this->model::OCR_COMPLETED_AT;
+        return Document::OCR_COMPLETED_AT;
     }
 
     public function thumbnailUrl()
     {
-        return $this->model::THUMBNAIL_URL;
+        return Document::THUMBNAIL_URL;
     }
 
     public function previewUrl()
     {
-        return $this->model::PREVIEW_URL;
+        return Document::PREVIEW_URL;
     }
 
     public function downloadCount()
     {
-        return $this->model::DOWNLOAD_COUNT;
+        return Document::DOWNLOAD_COUNT;
     }
 
     public function lastDownloadedAt()
     {
-        return $this->model::LAST_DOWNLOADED_AT;
+        return Document::LAST_DOWNLOADED_AT;
     }
 
     public function lastDownloadedBy()
     {
-        return $this->model::LAST_DOWNLOADED_BY;
+        return Document::LAST_DOWNLOADED_BY;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return Document::STATUS;
     }
 
     public function syncStatus()
     {
-        return $this->model::SYNC_STATUS;
+        return Document::SYNC_STATUS;
     }
 
     public function syncMessage()
     {
-        return $this->model::SYNC_MESSAGE;
+        return Document::SYNC_MESSAGE;
     }
 
     public function lastSyncAt()
     {
-        return $this->model::LAST_SYNC_AT;
+        return Document::LAST_SYNC_AT;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return Document::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return Document::UPDATED_BY;
     }
     // functions
 }

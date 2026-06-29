@@ -14,87 +14,87 @@ class BillingConfigRepository extends BaseRepository
     // column constants
     public function billingPlatformId()
     {
-        return $this->model::BILLING_PLATFORM_ID;
+        return BillingConfig::BILLING_PLATFORM_ID;
     }
 
     public function configName()
     {
-        return $this->model::CONFIG_NAME;
+        return BillingConfig::CONFIG_NAME;
     }
 
     public function isDefault()
     {
-        return $this->model::IS_DEFAULT;
+        return BillingConfig::IS_DEFAULT;
     }
 
     public function apiUrl()
     {
-        return $this->model::API_URL;
+        return BillingConfig::API_URL;
     }
 
     public function apiKey()
     {
-        return $this->model::API_KEY;
+        return BillingConfig::API_KEY;
     }
 
     public function apiSecret()
     {
-        return $this->model::API_SECRET;
+        return BillingConfig::API_SECRET;
     }
 
     public function apiToken()
     {
-        return $this->model::API_TOKEN;
+        return BillingConfig::API_TOKEN;
     }
 
     public function webhookSecret()
     {
-        return $this->model::WEBHOOK_SECRET;
+        return BillingConfig::WEBHOOK_SECRET;
     }
 
     public function additionalConfig()
     {
-        return $this->model::ADDITIONAL_CONFIG;
+        return BillingConfig::ADDITIONAL_CONFIG;
     }
 
     public function invoicePrefix()
     {
-        return $this->model::INVOICE_PREFIX;
+        return BillingConfig::INVOICE_PREFIX;
     }
 
     public function invoiceSeries()
     {
-        return $this->model::INVOICE_SERIES;
+        return BillingConfig::INVOICE_SERIES;
     }
 
     public function taxRate()
     {
-        return $this->model::TAX_RATE;
+        return BillingConfig::TAX_RATE;
     }
 
     public function currency()
     {
-        return $this->model::CURRENCY;
+        return BillingConfig::CURRENCY;
     }
 
     public function paymentTermsDays()
     {
-        return $this->model::PAYMENT_TERMS_DAYS;
+        return BillingConfig::PAYMENT_TERMS_DAYS;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return BillingConfig::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return BillingConfig::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return BillingConfig::UPDATED_BY;
     }
     // functions
 }

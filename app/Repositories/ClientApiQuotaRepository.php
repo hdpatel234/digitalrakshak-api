@@ -14,37 +14,37 @@ class ClientApiQuotaRepository extends BaseRepository
     // column constants
     public function clientId()
     {
-        return $this->model::CLIENT_ID;
+        return ClientApiQuota::CLIENT_ID;
     }
 
     public function periodStart()
     {
-        return $this->model::PERIOD_START;
+        return ClientApiQuota::PERIOD_START;
     }
 
     public function periodEnd()
     {
-        return $this->model::PERIOD_END;
+        return ClientApiQuota::PERIOD_END;
     }
 
     public function requestsLimit()
     {
-        return $this->model::REQUESTS_LIMIT;
+        return ClientApiQuota::REQUESTS_LIMIT;
     }
 
     public function requestsUsed()
     {
-        return $this->model::REQUESTS_USED;
+        return ClientApiQuota::REQUESTS_USED;
     }
 
     public function requestsRemaining()
     {
-        return $this->model::REQUESTS_REMAINING;
+        return ClientApiQuota::REQUESTS_REMAINING;
     }
 
     public function resetAt()
     {
-        return $this->model::RESET_AT;
+        return ClientApiQuota::RESET_AT;
     }
     // functions
 }

@@ -14,42 +14,42 @@ class EmailAttachmentRepository extends BaseRepository
     // column constants
     public function emailQueueId()
     {
-        return $this->model::EMAIL_QUEUE_ID;
+        return EmailAttachment::EMAIL_QUEUE_ID;
     }
 
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return EmailAttachment::DOCUMENT_ID;
     }
 
     public function filename()
     {
-        return $this->model::FILENAME;
+        return EmailAttachment::FILENAME;
     }
 
     public function filePath()
     {
-        return $this->model::FILE_PATH;
+        return EmailAttachment::FILE_PATH;
     }
 
     public function fileSize()
     {
-        return $this->model::FILE_SIZE;
+        return EmailAttachment::FILE_SIZE;
     }
 
     public function mimeType()
     {
-        return $this->model::MIME_TYPE;
+        return EmailAttachment::MIME_TYPE;
     }
 
     public function cid()
     {
-        return $this->model::CID;
+        return EmailAttachment::CID;
     }
 
     public function isInline()
     {
-        return $this->model::IS_INLINE;
+        return EmailAttachment::IS_INLINE;
     }
     // functions
 }

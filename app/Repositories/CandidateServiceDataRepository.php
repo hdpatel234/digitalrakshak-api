@@ -14,57 +14,57 @@ class CandidateServiceDataRepository extends BaseRepository
     // column constants
     public function candidateServiceId()
     {
-        return $this->model::CANDIDATE_SERVICE_ID;
+        return CandidateServiceData::CANDIDATE_SERVICE_ID;
     }
 
     public function fieldId()
     {
-        return $this->model::FIELD_ID;
+        return CandidateServiceData::FIELD_ID;
     }
 
     public function fieldValue()
     {
-        return $this->model::FIELD_VALUE;
+        return CandidateServiceData::FIELD_VALUE;
     }
 
     public function documentId()
     {
-        return $this->model::DOCUMENT_ID;
+        return CandidateServiceData::DOCUMENT_ID;
     }
 
     public function isVerified()
     {
-        return $this->model::IS_VERIFIED;
+        return CandidateServiceData::IS_VERIFIED;
     }
 
     public function verifiedAt()
     {
-        return $this->model::VERIFIED_AT;
+        return CandidateServiceData::VERIFIED_AT;
     }
 
     public function verifiedBy()
     {
-        return $this->model::VERIFIED_BY;
+        return CandidateServiceData::VERIFIED_BY;
     }
 
     public function status()
     {
-        return $this->model::STATUS;
+        return CandidateServiceData::STATUS;
     }
 
     public function createdBy()
     {
-        return $this->model::CREATED_BY;
+        return CandidateServiceData::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return $this->model::UPDATED_BY;
+        return CandidateServiceData::UPDATED_BY;
     }
 
     public function deletedBy()
     {
-        return $this->model::DELETED_BY;
+        return CandidateServiceData::DELETED_BY;
     }
     // functions
 }
