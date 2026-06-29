@@ -10,6 +10,7 @@ use App\Services\PackageServiceService;
 use App\Services\ServiceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\ServicesField;
 
 class PackageService extends BaseService
 {
@@ -95,15 +96,12 @@ class PackageService extends BaseService
         $availableCandidatesByPackageId = collect();
         $servicesByPackageId = collect();
         if ($packageIds !== []) {
-            $availableCandidatesByPackageId = $this->candidateInvitationService->query()
-                ->selectRaw(
-                    $this->candidateInvitationService->packageId() . ', COUNT(DISTINCT ' . $this->candidateInvitationService->candidateId() . ') as total'
-                )
-                ->whereIn($this->candidateInvitationService->packageId(), $packageIds)
-                ->where($this->candidateInvitationService->status(), CandidateInvitationStatus::COMPLETED->value)
-                ->groupBy($this->candidateInvitationService->packageId())
+            $availableCandidatesByPackageId = DB::table('candidate_packages')
+                ->selectRaw('package_id, COUNT(DISTINCT candidate_id) as total')
+                ->whereIn('package_id', $packageIds)
+                ->groupBy('package_id')
                 ->get()
-                ->pluck('total', $this->candidateInvitationService->packageId());
+                ->pluck('total', 'package_id');
 
             $packageServiceRows = $this->packageServiceService->query()
                 ->whereIn($this->packageServiceService->packageId(), $packageIds)
@@ -341,12 +339,36 @@ class PackageService extends BaseService
                 ->get()
                 ->keyBy($this->serviceService->id());
 
+        $fieldsByServiceId = $serviceIds === []
+            ? collect()
+            : ServicesField::whereIn(ServicesField::SERVICE_ID, $serviceIds)
+                ->where(function ($query) {
+                    $query->where(ServicesField::STATUS, 'active')
+                        ->orWhere(ServicesField::STATUS, 1);
+                })
+                ->orderBy(ServicesField::DISPLAY_ORDER, 'asc')
+                ->get()
+                ->groupBy(ServicesField::SERVICE_ID);
+
         $services = $packageServiceRows
-            ->map(function ($row) use ($servicesById) {
+            ->map(function ($row) use ($servicesById, $fieldsByServiceId) {
                 $serviceId = (int) ($row->{$this->packageServiceService->serviceId()} ?? 0);
                 $service = $servicesById->get($serviceId);
                 $basePrice = $service?->{$this->serviceService->basePrice()};
                 $priceOverride = $row->{$this->packageServiceService->priceOverride()};
+
+                $serviceFields = $fieldsByServiceId->get($serviceId, collect())->map(function ($field) {
+                    return [
+                        'id' => $field->id,
+                        'field_name' => $field->field_name,
+                        'field_label' => $field->field_label,
+                        'section' => $field->section,
+                        'field_type' => $field->field_type,
+                        'is_required' => $field->is_required,
+                        'validation_regex' => $field->validation_regex,
+                        'display_order' => $field->display_order,
+                    ];
+                })->values()->all();
 
                 return [
                     'package_service_id' => $row->{$this->packageServiceService->id()},
@@ -363,6 +385,7 @@ class PackageService extends BaseService
                     'display_order' => $row->{$this->packageServiceService->displayOrder()},
                     'status' => $row->{$this->packageServiceService->status()},
                     'service_status' => $service?->{$this->serviceService->status()},
+                    'fields' => $serviceFields,
                 ];
             })
             ->values()
@@ -398,30 +421,20 @@ class PackageService extends BaseService
             throw new \Exception('Package not found.', 404);
         }
 
-        $completedInvitations = $this->candidateInvitationService->query()
-            ->where($this->candidateInvitationService->packageId(), $packageId)
-            ->where($this->candidateInvitationService->clientId(), $clientId)
-            ->where($this->candidateInvitationService->status(), CandidateInvitationStatus::COMPLETED->value)
-            ->with('candidate')
-            ->orderByDesc($this->candidateInvitationService->completedAt())
-            ->orderByDesc($this->candidateInvitationService->id())
-            ->get();
-
-        $candidates = $completedInvitations
-            ->unique($this->candidateInvitationService->candidateId())
-            ->map(function ($invitation) {
-                $candidate = $invitation->candidate;
-                $candidateData = $candidate ? $candidate->toArray() : [];
-
-                return [
-                    'candidate_id' => (int) ($invitation->{$this->candidateInvitationService->candidateId()} ?? 0),
-                    'invitation_id' => (int) ($invitation->{$this->candidateInvitationService->id()} ?? 0),
-                    'completed_at' => $invitation->{$this->candidateInvitationService->completedAt()},
-                    'candidate' => $candidateData,
-                ];
-            })
-            ->values()
-            ->all();
+        $candidates = \App\Models\Candidate::whereHas('packages', function ($q) use ($packageId) {
+            $q->where('candidate_packages.package_id', $packageId);
+        })
+        ->where('client_id', $clientId)
+        ->orderByDesc('id')
+        ->get()
+        ->map(function ($candidate) {
+            return [
+                'candidate_id' => $candidate->id,
+                'candidate' => $candidate->toArray(),
+            ];
+        })
+        ->values()
+        ->all();
 
         return [
             'package_id' => (int) $packageModel->{$this->packageService->id()},

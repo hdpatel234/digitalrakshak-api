@@ -227,6 +227,21 @@ class CandidateService extends BaseService
                 $this->candidatesLogRepository->status() => CandidateStatus::CREATED->value,
             ]);
 
+            if (isset($payload['package_ids']) && is_array($payload['package_ids'])) {
+                $packagesData = [];
+                foreach ($payload['package_ids'] as $packageId) {
+                    $packagesData[] = [
+                        'candidate_id' => $candidate->{$this->id()},
+                        'package_id' => $packageId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                if (!empty($packagesData)) {
+                    DB::table('candidate_packages')->insert($packagesData);
+                }
+            }
+
             return [
                 'candidate' => $candidate->fresh(),
                 'manager_emails' => $managerEmails,

@@ -35,6 +35,12 @@ class CandidateService extends BaseService
             $query->where($this->candidateService->clientId(), $user->client_id);
         }
 
+        if (!empty($params['package_id'])) {
+            $query->whereHas('packages', function ($q) use ($params) {
+                $q->where('candidate_packages.package_id', $params['package_id']);
+            });
+        }
+
         $result = $this->candidateService->datatable(
             query: $query,
             params: $params,

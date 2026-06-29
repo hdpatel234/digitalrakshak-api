@@ -159,4 +159,65 @@ class CandidatesController extends BaseController
 
         return $this->success('Candidate imports fetched successfully.', $imports);
     }
+    public function destroy($id)
+    {
+        addInfoLog("Candidate Delete request");
+
+        $user = Auth::user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $candidate = \App\Models\Candidate::where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$candidate) {
+            return $this->error('Candidate not found.', 404);
+        }
+
+        try {
+            $candidate->delete();
+            return $this->success('Candidate deleted successfully.', null, 200);
+        } catch (\Throwable $e) {
+            Log::error('Candidate delete failed', [
+                'error' => $e->getMessage(),
+                'candidate_id' => $id,
+            ]);
+            return $this->error('Failed to delete candidate.', 500);
+        }
+    }
+    public function bulkDelete(Request $request)
+    {
+        addInfoLog("Candidate Bulk Delete request");
+
+        $user = Auth::user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $candidateIds = $request->input('candidate_ids', []);
+
+        if (empty($candidateIds) || !is_array($candidateIds)) {
+            return $this->error('No valid candidate IDs provided.', 422);
+        }
+
+        try {
+            \App\Models\Candidate::whereIn('id', $candidateIds)
+                ->where('client_id', $clientId)
+                ->delete();
+
+            return $this->success('Candidates deleted successfully.', null, 200);
+        } catch (\Throwable $e) {
+            Log::error('Candidate bulk delete failed', [
+                'error' => $e->getMessage(),
+                'candidate_ids' => $candidateIds,
+            ]);
+            return $this->error('Failed to delete candidates.', 500);
+        }
+    }
 }

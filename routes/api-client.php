@@ -28,7 +28,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Candidate Management
     Route::prefix('candidates')->group(function () {
-        Route::apiResource('', CandidatesController::class);
+        Route::apiResource('', CandidatesController::class)->parameters(['' => 'candidate']);
         Route::get('import/sample', [CandidatesController::class, 'importSample']);
         Route::post('import', [CandidatesController::class, 'import']);
         Route::get('imports', [CandidatesController::class, 'imports']);

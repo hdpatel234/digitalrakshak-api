@@ -17,14 +17,14 @@ class StoreCandidateRequest extends BaseRequest
         $clientId = (int) (auth('api')->user()?->client_id ?? auth()->user()?->client_id ?? 0);
 
         return [
-            'first_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('candidates', 'email')->where(
-                    fn ($query) => $query->where('client_id', $clientId)
+                    fn ($query) => $query->where('client_id', $clientId)->whereNull('deleted_at')
                 ),
             ],
             'dialCode' => ['nullable', 'string', 'max:10'],
@@ -40,13 +40,15 @@ class StoreCandidateRequest extends BaseRequest
             'tags' => ['nullable', 'array'],
             'send_invite' => ['nullable', 'boolean'],
             'ip_address' => ['nullable', 'string'],
+            'package_ids' => ['nullable', 'array', 'max:1'],
+            'package_ids.*' => ['integer', 'exists:packages,id'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'email.unique' => 'This email already exists for your client account.',
+            'email.unique' => 'candidate with this email already exist',
         ];
     }
 }

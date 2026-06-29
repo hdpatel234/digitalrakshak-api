@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Candidate extends BaseModel
 {
+    use SoftDeletes;
 
     protected $table = "candidates";
 
@@ -124,5 +126,10 @@ class Candidate extends BaseModel
     public function serviceProcessingQueues(): HasMany
     {
         return $this->hasMany(ServiceProcessingQueue::class, ServiceProcessingQueue::CANDIDATE_ID);
+    }
+
+    public function packages(): BelongsToMany
+    {
+        return $this->belongsToMany(Package::class, 'candidate_packages', 'candidate_id', 'package_id');
     }
 }

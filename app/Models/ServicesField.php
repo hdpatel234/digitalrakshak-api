@@ -17,6 +17,7 @@ class ServicesField extends BaseModel
     const VALIDATION_REGEX = "validation_regex";
     const DISPLAY_ORDER = "display_order";
     const STATUS = "status";
+    const SECTION = "section";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
@@ -24,6 +25,7 @@ class ServicesField extends BaseModel
         self::SERVICE_ID,
         self::FIELD_NAME,
         self::FIELD_LABEL,
+        self::SECTION,
         self::FIELD_TYPE,
         self::IS_REQUIRED,
         self::VALIDATION_REGEX,
