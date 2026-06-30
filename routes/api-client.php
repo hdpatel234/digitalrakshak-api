@@ -55,9 +55,11 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     // Package Management (Client Packages)
     Route::prefix('packages')->group(function () {
         Route::get('', [PackageController::class, 'index']);
-        Route::apiResource('', PackageController::class)->except(['index', 'show']); // Pending
+        Route::post('', [PackageController::class, 'store']);
         Route::get('available', [PackageController::class, 'available']); // Pending
         Route::get('{package}', [PackageController::class, 'show']);
+        Route::put('{package}', [PackageController::class, 'update']);
+        Route::delete('{package}', [PackageController::class, 'destroy']);
         Route::get('{package}/services', [PackageController::class, 'services']);
         Route::get('{package}/candidates', [PackageController::class, 'candidates']);
         Route::post('{package}/duplicate', [PackageController::class, 'duplicate']); // Pending

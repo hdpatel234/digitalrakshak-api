@@ -49,6 +49,24 @@ class PackageController extends BaseController
         }
     }
 
+    public function update(StorePackageRequest $request, int $package): JsonResponse
+    {
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $result = $this->packageService->updatePackage($package, $request->validated(), $clientId, $user);
+
+            return $this->success('Package updated successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
     public function show(Request $request, int $package): JsonResponse
     {
         $user = $request->user('api') ?? $request->user();

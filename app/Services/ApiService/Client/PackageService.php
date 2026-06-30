@@ -254,6 +254,83 @@ class PackageService extends BaseService
         ];
     }
 
+    public function updatePackage(int $packageId, array $payload, int $clientId, ?object $user): array
+    {
+        $packageModel = $this->packageService->query()
+            ->where($this->packageService->id(), $packageId)
+            ->where(function ($builder) use ($clientId) {
+                $builder->where($this->packageService->clientId(), $clientId)
+                    ->orWhere($this->packageService->clientId(), 0);
+            })
+            ->first();
+
+        if (!$packageModel) {
+            throw new \Exception('Package not found.', 404);
+        }
+
+        if ($packageModel->{$this->packageService->type()} === 'admin') {
+            throw new \Exception('Cannot modify a system package.', 403);
+        }
+
+        $serviceIds = collect($payload['service_ids'] ?? [])
+            ->map(static fn($id) => (int) $id)
+            ->filter(static fn($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $selectedServices = $this->serviceService->query()
+            ->whereIn($this->serviceService->id(), $serviceIds)
+            ->where(function ($query) {
+                $query->where($this->serviceService->status(), 'active')
+                    ->orWhere($this->serviceService->status(), 1);
+            })
+            ->get();
+
+        $activeServiceIds = $selectedServices
+            ->pluck($this->serviceService->id())
+            ->map(static fn($id) => (int) $id)
+            ->values()
+            ->all();
+
+        $invalidServiceIds = array_values(array_diff($serviceIds, $activeServiceIds));
+        if ($invalidServiceIds !== []) {
+            throw new \Exception('Some services are invalid or inactive.', 422);
+        }
+
+        $totalPrice = (float) $selectedServices
+            ->sum(fn($service) => (float) ($service->{$this->serviceService->basePrice()} ?? 0));
+
+        DB::transaction(function () use ($packageModel, $payload, $serviceIds, $user, $totalPrice) {
+            $packageModel->update([
+                $this->packageService->packageName() => trim((string) ($payload['package_name'] ?? '')),
+                $this->packageService->description() => trim((string) ($payload['description'] ?? '')),
+                $this->packageService->totalPrice() => $totalPrice,
+                $this->packageService->finalPrice() => $totalPrice,
+                $this->packageService->updatedBy() => $user?->id,
+            ]);
+
+            // Clear old services
+            $this->packageServiceService->query()
+                ->where($this->packageServiceService->packageId(), $packageModel->{$this->packageService->id()})
+                ->delete();
+
+            // Recreate new services
+            foreach ($serviceIds as $index => $serviceId) {
+                $this->packageServiceService->create([
+                    $this->packageServiceService->packageId() => $packageModel->{$this->packageService->id()},
+                    $this->packageServiceService->serviceId() => $serviceId,
+                    $this->packageServiceService->isMandatory() => 1,
+                    $this->packageServiceService->displayOrder() => $index + 1,
+                    $this->packageServiceService->status() => 'active',
+                    $this->packageServiceService->createdBy() => $user?->id,
+                ]);
+            }
+        });
+
+        return $this->getPackage($packageId, $clientId);
+    }
+
     public function getPackage(int $packageId, int $clientId): array
     {
         $packageModel = $this->packageService->query()
