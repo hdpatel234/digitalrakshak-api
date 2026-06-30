@@ -5,7 +5,6 @@ namespace App\Services\Billing;
 use App\Models\Client;
 use App\Models\BillingConfig;
 use App\Services\Billing\Drivers\AbstractBillingDriver;
-use App\Services\Billing\Drivers\InvoiceNinjaDriver;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -69,9 +68,7 @@ class BillingDriverFactory
             throw new RuntimeException("Billing platform code not configured for client billing config [{$billingConfig->id}].");
         }
 
-        $drivers = config('billing.drivers', [
-            'invoice_ninja' => InvoiceNinjaDriver::class,
-        ]);
+        $drivers = config('billing.drivers', []);
 
         $driverClass = $drivers[$platformCode] ?? null;
 

@@ -6,7 +6,6 @@ use App\Enums\EmailPriority;
 use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
 use App\Enums\OrderStatus;
-use App\Models\BillingServiceMapping;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\BaseService;
@@ -24,7 +23,6 @@ use App\Services\PaymentGatewayService;
 use App\Services\PaymentMethodTypeService;
 use App\Services\PaymentTransactionService;
 use App\Services\UserService;
-use App\Services\Billing\BillingManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -539,133 +537,47 @@ class OrderService extends BaseService
         }
 
         try {
-            /** @var BillingManager $billingManager */
-            $billingManager = app(BillingManager::class);
+            // Generate local invoice
+            $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad($order->{$this->candidateOrderService->id()}, 5, '0', STR_PAD_LEFT);
+            $productKey = $package->{$this->packageService->packageName()} ?? 'Package order';
 
-            $billingDriver = null;
-            try {
-                $billingDriver = $billingManager->driver($client);
-            } catch (\Exception $e) {
-                Log::warning("Billing driver not resolved for client {$client->{$this->clientService->id()}}: " . $e->getMessage());
-            }
+            $localInvoice = Invoice::create([
+                Invoice::CLIENT_ID => $client->{$this->clientService->id()},
+                Invoice::ORDER_ID => $order->{$this->candidateOrderService->id()},
+                Invoice::BILLING_CONFIG_ID => $order->{$this->candidateOrderService->billingConfigId()},
+                Invoice::EXTERNAL_INVOICE_ID => null,
+                Invoice::EXTERNAL_INVOICE_NUMBER => null,
+                Invoice::INVOICE_NUMBER => $invoiceNumber,
+                Invoice::INVOICE_DATE => date('Y-m-d'),
+                Invoice::SUBTOTAL => $subtotal,
+                Invoice::TOTAL_AMOUNT => $subtotal,
+                Invoice::AMOUNT_DUE => $subtotal,
+                Invoice::STATUS => 'sent',
+                Invoice::PAYMENT_STATUS => 'unpaid',
+                Invoice::SYNC_STATUS => 'manual',
+                Invoice::LAST_SYNC_AT => now(),
+                Invoice::CREATED_BY => $user?->id ?? null,
+            ]);
 
-            if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver) {
-                $email = $client->{$this->clientService->email()} ?? '';
-                $externalClient = $email ? $billingManager->getClientByEmail($client, $email) : null;
+            InvoiceItem::create([
+                InvoiceItem::INVOICE_ID => $localInvoice->id,
+                InvoiceItem::ITEM_TYPE => 'package',
+                InvoiceItem::DESCRIPTION => $productKey,
+                InvoiceItem::QUANTITY => count($candidateIds),
+                InvoiceItem::UNIT_PRICE => $unitPrice,
+                InvoiceItem::TOTAL_PRICE => $subtotal,
+                InvoiceItem::EXTERNAL_ITEM_ID => null,
+            ]);
 
-                if (!$externalClient) {
-                    $fullName = $client->{$this->clientService->contactPerson()} ?? '';
-                    $nameParts = explode(' ', $fullName, 2);
+            $order->update([
+                $this->candidateOrderService->invoiceId() => $localInvoice->id,
+                $this->candidateOrderService->invoiceNumber() => $invoiceNumber,
+                $this->candidateOrderService->billingSyncStatus() => 'manual',
+                $this->candidateOrderService->invoiceGeneratedAt() => now(),
+            ]);
 
-                    $externalClient = $billingManager->createClient($client, [
-                        'name' => $client->{$this->clientService->companyName()} ?: $fullName,
-                        'contacts' => [
-                            [
-                                'email' => $email,
-                                'first_name' => $nameParts[0] ?? '',
-                                'last_name' => $nameParts[1] ?? '',
-                                'phone' => $client->{$this->clientService->phone()} ?? '',
-                                'send_email' => true,
-                            ]
-                        ]
-                    ]);
-                }
-
-                $clientIdExternal = $externalClient['data']['id'] ?? $externalClient['id'] ?? null;
-
-                if ($clientIdExternal) {
-                    $mapping = BillingServiceMapping::where('billing_platform_id', $client->{$this->clientService->defaultBillingConfigId()})
-                        ->where('package_id', $package->{$this->packageService->id()})
-                        ->first();
-
-                    $externalItemId = $mapping ? $mapping->external_service_id : null;
-                    $productKey = $package->{$this->packageService->packageName()} ?? 'Package order';
-
-                    if (!$externalItemId) {
-                        $product = $billingManager->getProductByKey($client, $productKey);
-
-                        if (!$product) {
-                            $product = $billingManager->createProduct($client, [
-                                'product_key' => $productKey,
-                                'notes' => $package->description ?? $productKey,
-                                'cost' => 0,
-                                'price' => $unitPrice,
-                            ]);
-                        }
-
-                        $externalItemId = $product['data']['product_key'] ?? $product['product_key'] ?? null;
-
-                        if ($externalItemId) {
-                            BillingServiceMapping::create([
-                                'billing_platform_id' => $client->{$this->clientService->defaultBillingConfigId()},
-                                'package_id' => $package->{$this->packageService->id()},
-                                'external_service_id' => $externalItemId,
-                                'created_by' => $user?->id ?? null,
-                                'status' => 'active'
-                            ]);
-                        }
-                    }
-
-                    $invoicePayload = [
-                        'client_id' => $clientIdExternal,
-                        'date' => date('Y-m-d'),
-                        'public_notes' => 'Invoice for Order #' . $order->{$this->candidateOrderService->orderNumber()},
-                        'private_notes' => 'Internal Order ID: ' . $order->{$this->candidateOrderService->id()},
-                        'line_items' => [
-                            [
-                                'product_key' => $externalItemId ?: $productKey,
-                                'notes' => $package->description ?? $productKey,
-                                'cost' => $unitPrice,
-                                'quantity' => count($candidateIds),
-                            ]
-                        ],
-                    ];
-
-                    $invoice = $billingManager->createInvoice($client, $invoicePayload);
-
-                    $invoiceId = $invoice['data']['id'] ?? $invoice['id'] ?? null;
-                    $invoiceNumber = $invoice['data']['number'] ?? $invoice['number'] ?? null;
-
-                    if ($invoiceId || $invoiceNumber) {
-                        $localInvoice = Invoice::create([
-                            Invoice::CLIENT_ID => $client->{$this->clientService->id()},
-                            Invoice::ORDER_ID => $order->{$this->candidateOrderService->id()},
-                            Invoice::BILLING_CONFIG_ID => $order->{$this->candidateOrderService->billingConfigId()},
-                            Invoice::EXTERNAL_INVOICE_ID => $invoiceId,
-                            Invoice::EXTERNAL_INVOICE_NUMBER => $invoiceNumber,
-                            Invoice::INVOICE_NUMBER => $invoiceNumber,
-                            Invoice::INVOICE_DATE => date('Y-m-d'),
-                            Invoice::SUBTOTAL => $subtotal,
-                            Invoice::TOTAL_AMOUNT => $subtotal,
-                            Invoice::AMOUNT_DUE => $subtotal,
-                            Invoice::STATUS => 'sent',
-                            Invoice::PAYMENT_STATUS => 'unpaid',
-                            Invoice::SYNC_STATUS => 'synced',
-                            Invoice::LAST_SYNC_AT => now(),
-                            Invoice::CREATED_BY => $user?->id ?? null,
-                        ]);
-
-                        InvoiceItem::create([
-                            InvoiceItem::INVOICE_ID => $localInvoice->id,
-                            InvoiceItem::ITEM_TYPE => 'package',
-                            InvoiceItem::DESCRIPTION => $productKey,
-                            InvoiceItem::QUANTITY => count($candidateIds),
-                            InvoiceItem::UNIT_PRICE => $unitPrice,
-                            InvoiceItem::TOTAL_PRICE => $subtotal,
-                            InvoiceItem::EXTERNAL_ITEM_ID => $externalItemId ?: $productKey,
-                        ]);
-
-                        $order->update([
-                            $this->candidateOrderService->invoiceId() => $localInvoice->id,
-                            $this->candidateOrderService->invoiceNumber() => $invoiceNumber,
-                            $this->candidateOrderService->billingSyncStatus() => 'synced',
-                            $this->candidateOrderService->invoiceGeneratedAt() => now(),
-                        ]);
-                    }
-                }
-            }
         } catch (\Throwable $e) {
-            Log::error("Failed to generate invoice for order {$order->{$this->candidateOrderService->id()}}: " . $e->getMessage());
+            Log::error("Failed to generate local invoice for order {$order->{$this->candidateOrderService->id()}}: " . $e->getMessage());
         }
 
         return [
