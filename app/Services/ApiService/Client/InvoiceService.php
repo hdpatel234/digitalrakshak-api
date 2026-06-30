@@ -32,6 +32,7 @@ class InvoiceService extends BaseService
         $qualifiedStatusColumn = $table . '.' . $statusColumn;
 
         $query = $this->invoiceService->query()
+            ->with('order')
             ->where($qualifiedClientIdColumn, $clientId);
 
         $startDate = $params['start_date'] ?? null;

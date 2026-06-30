@@ -62,4 +62,9 @@ class Invoice extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+    }
 }
