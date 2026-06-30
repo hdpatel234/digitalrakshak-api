@@ -52,4 +52,9 @@ class CandidateService extends BaseModel
     {
         return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
     }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class, self::SERVICE_ID);
+    }
 }

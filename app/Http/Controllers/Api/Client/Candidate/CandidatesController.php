@@ -65,6 +65,28 @@ class CandidatesController extends BaseController
         }
     }
 
+    public function show(Request $request, $id)
+    {
+        addInfoLog("Candidate Show request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $candidate = \App\Models\Candidate::with(['packages', 'candidateServices.service', 'candidateInvitations'])
+            ->where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$candidate) {
+            return $this->error('Candidate not found.', 404);
+        }
+
+        return $this->success('Candidate fetched successfully.', $candidate);
+    }
     public function importSample(Request $request): Response
     {
         addInfoLog("Candiate Sheet Sample Request");
