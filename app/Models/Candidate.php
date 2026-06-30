@@ -14,6 +14,20 @@ class Candidate extends BaseModel
 
     protected $table = "candidates";
 
+    protected static function booted(): void
+    {
+        parent::booted();
+
+        static::deleting(function (self $candidate): void {
+            if (method_exists($candidate, 'isForceDeleting') && $candidate->isForceDeleting()) {
+                return;
+            }
+            $candidate->candidateInvitations()->delete();
+            $candidate->candidateServices()->delete();
+            $candidate->documents()->delete();
+        });
+    }
+
     const CLIENT_ID = "client_id";
     const FIRST_NAME = "first_name";
     const LAST_NAME = "last_name";

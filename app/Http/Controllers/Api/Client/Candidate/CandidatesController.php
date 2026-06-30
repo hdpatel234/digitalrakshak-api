@@ -220,4 +220,86 @@ class CandidatesController extends BaseController
             return $this->error('Failed to delete candidates.', 500);
         }
     }
+
+    public function export(Request $request)
+    {
+        addInfoLog("Candidate Export request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $format = strtolower((string) $request->query('format', 'csv'));
+        if (!in_array($format, ['csv', 'xlsx'], true)) {
+            return $this->error('Invalid format. Allowed formats: csv, xlsx.', 422);
+        }
+
+        $params = $request->all();
+        $params['limit'] = 5000;
+        $params['page'] = 1;
+
+        $result = $this->candidateService->getCandidates($params, $user);
+        
+        $candidates = $result['items']['list'] ?? $result['list'] ?? [];
+        if (isset($result['list']) && is_array($result['list'])) {
+            $candidates = $result['list'];
+        }
+
+        $headers = [
+            'ID',
+            'First Name',
+            'Last Name',
+            'Email',
+            'Phone Number',
+            'Country',
+            'State',
+            'City',
+            'Status',
+            'Created At'
+        ];
+
+        $rows = [];
+        foreach ($candidates as $candidate) {
+            $rows[] = [
+                $candidate['id'] ?? '',
+                $candidate['first_name'] ?? '',
+                $candidate['last_name'] ?? '',
+                $candidate['email'] ?? '',
+                $candidate['phone_number'] ?? '',
+                $candidate['country'] ?? '',
+                $candidate['state'] ?? '',
+                $candidate['city'] ?? '',
+                $candidate['status'] ?? '',
+                $candidate['created_at'] ?? ''
+            ];
+        }
+
+        if ($format === 'csv') {
+            $filename = 'candidates-export-' . date('Y-m-d') . '.csv';
+            return $this->downloadResponse(function () use ($headers, $rows): void {
+                $stream = fopen('php://output', 'wb');
+                fputcsv($stream, $headers);
+                foreach ($rows as $row) {
+                    fputcsv($stream, $row);
+                }
+                fclose($stream);
+            }, $filename, [
+                'Content-Type' => 'text/csv',
+            ]);
+        }
+
+        $filename = 'candidates-export-' . date('Y-m-d') . '.xlsx';
+        $binary = $this->candidateService->buildSimpleXlsx($headers, $rows);
+
+        return $this->downloadResponse(
+            static function () use ($binary): void {
+                echo $binary;
+            },
+            $filename,
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        );
+    }
 }
