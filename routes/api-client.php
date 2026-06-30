@@ -18,6 +18,8 @@ use App\Http\Controllers\Controller;
 
 Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_user', 'throttle:100,1'])->group(function () {
 
+    // Global Search
+    Route::get('search', [\App\Http\Controllers\Api\Client\SearchController::class, 'index']);
     // Dashboard
     Route::prefix('dashboard')->group(function () {
         Route::get('data', [DashboardController::class, 'index']);
