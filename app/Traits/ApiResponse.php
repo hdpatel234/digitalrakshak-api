@@ -24,12 +24,14 @@ trait ApiResponse
 
     protected function error($message = '', $code = 400, $data = []): JsonResponse
     {
+        $statusCode = (is_numeric($code) && (int)$code >= 100 && (int)$code <= 599) ? (int)$code : 500;
+
         return response()->json([
             'status' => false,
             'message' => __($message),
             'data' => $data,
             'timestamp' => $this->responseTimestamp(),
-        ], $code);
+        ], $statusCode);
     }
 
     protected function validationError($errors, $message = 'common.validation_error', $code = 422): JsonResponse

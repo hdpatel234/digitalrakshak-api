@@ -92,14 +92,14 @@ class OrderController extends BaseController
                     if (!empty($candidateServiceIds)) {
                         $candidateServiceData = \App\Models\CandidateServiceData::whereIn('candidate_service_id', $candidateServiceIds)
                             ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
-                            ->join('tblservices', 'services_fields.service_id', '=', 'tblservices.id')
+                            ->join('services', 'services_fields.service_id', '=', 'services.id')
                             ->select(
                                 'candidate_service_data.*', 
                                 'services_fields.field_name', 
                                 'services_fields.field_label', 
                                 'services_fields.field_type',
-                                'tblservices.service_name',
-                                'tblservices.service_code',
+                                'services.service_name',
+                                'services.service_code',
                                 'candidate_services.candidate_id'
                             )
                             ->join('candidate_services', 'candidate_service_data.candidate_service_id', '=', 'candidate_services.id')
