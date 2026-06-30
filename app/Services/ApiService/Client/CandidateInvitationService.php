@@ -633,9 +633,15 @@ class CandidateInvitationService extends BaseService
                     ->first();
 
                 $value = $fieldInput['value'] ?? null;
-                $normalizedValue = is_scalar($value) || $value === null
-                    ? $value
-                    : json_encode($value);
+                
+                if ($value instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $value->store('candidate_documents', 'local');
+                    $normalizedValue = $path;
+                } else {
+                    $normalizedValue = is_scalar($value) || $value === null
+                        ? $value
+                        : json_encode($value);
+                }
 
                 if ($existingValue) {
                     $this->candidateServiceDataService->update(
