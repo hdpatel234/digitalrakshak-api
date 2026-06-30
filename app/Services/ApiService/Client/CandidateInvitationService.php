@@ -110,8 +110,43 @@ class CandidateInvitationService extends BaseService
             ->get()
             ->keyBy($invitationIdColumn);
 
+        $allPackageIds = collect($list)->map(function ($item) use ($formDataColumn, $packageIdColumn) {
+            $formData = $item[$formDataColumn] ?? [];
+            if (is_string($formData)) {
+                $decoded = json_decode($formData, true);
+                $formData = is_array($decoded) ? $decoded : [];
+            }
+            if (!is_array($formData)) {
+                $formData = [];
+            }
+            $ids = collect($formData['package_ids'] ?? [])
+                ->map(static fn($id) => (int) $id)
+                ->filter(static fn($id) => $id > 0)
+                ->unique()
+                ->values()
+                ->all();
+            if ($ids === [] && !empty($item[$packageIdColumn])) {
+                $ids = [(int) $item[$packageIdColumn]];
+            }
+            return $ids;
+        })->flatten()->unique()->values()->all();
+
+        $packagesById = collect();
+        if (!empty($allPackageIds)) {
+            $packagesById = $this->packageService->query()
+                ->whereIn($this->packageService->id(), $allPackageIds)
+                ->get()
+                ->keyBy($this->packageService->id());
+        }
+
+        $clientAppUrl = $this->configurationService->getStringValue(
+            ConfigurationKey::CLIENT_APP_URL,
+            (string) config('app.client_url', env('CLIENT_URL', ''))
+        );
+        $baseUrl = rtrim($clientAppUrl, '/');
+
         $normalized = $list
-            ->map(function ($item) use ($packageIdColumn, $formDataColumn, $invitationsById, $invitationIdColumn) {
+            ->map(function ($item) use ($packageIdColumn, $formDataColumn, $invitationsById, $invitationIdColumn, $baseUrl, $packagesById) {
                 $invitation = $item;
                 $invitationModel = $invitationsById->get((int) ($invitation[$invitationIdColumn] ?? 0));
 
@@ -156,6 +191,25 @@ class CandidateInvitationService extends BaseService
                     'code' => $package?->{$this->packageService->packageCode()} ?? null,
                     'package_ids' => $packageIds,
                 ];
+
+                $invitation['packages'] = collect($packageIds)->map(function ($id) use ($packagesById) {
+                    $pkg = $packagesById->get($id);
+                    if ($pkg) {
+                        return [
+                            'id' => $pkg->{$this->packageService->id()},
+                            'name' => $pkg->{$this->packageService->packageName()},
+                            'code' => $pkg->{$this->packageService->packageCode()},
+                        ];
+                    }
+                    return null;
+                })->filter()->values()->all();
+
+                $relativeLink = (string) ($invitation[$this->invitationService->formLink()] ?? '');
+                if ($relativeLink) {
+                    $invitation[$this->invitationService->formLink()] = $baseUrl !== ''
+                        ? $baseUrl . '/' . ltrim($relativeLink, '/')
+                        : '/' . ltrim($relativeLink, '/');
+                }
 
                 return $invitation;
             })
@@ -283,6 +337,10 @@ class CandidateInvitationService extends BaseService
                     ]
                 );
 
+                if (!empty($packageIds)) {
+                    $candidate->packages()->syncWithoutDetaching($packageIds);
+                }
+
                 $invitations[] = $invitation;
             }
 
@@ -370,8 +428,14 @@ class CandidateInvitationService extends BaseService
             ->with(['candidate', 'package'])
             ->get();
 
+        $baseUrl = rtrim($clientAppUrl, '/');
         $responseInvitations = $createdInvitationWithRelations
-            ->map(function ($invitation) use ($packageIds) {
+            ->map(function ($invitation) use ($packageIds, $baseUrl) {
+                $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+                $fullFormLink = $baseUrl !== '' && $relativeLink
+                    ? $baseUrl . '/' . ltrim($relativeLink, '/')
+                    : ($relativeLink ? '/' . ltrim($relativeLink, '/') : null);
+
                 return [
                     'id' => $invitation->{$this->invitationService->id()},
                     'candidate_id' => $invitation->{$this->invitationService->candidateId()},
@@ -379,7 +443,7 @@ class CandidateInvitationService extends BaseService
                     'package_ids' => $packageIds,
                     'invitation_type' => $invitation->{$this->invitationService->invitationType()},
                     'invitation_token' => $invitation->{$this->invitationService->invitationToken()},
-                    'form_link' => $invitation->{$this->invitationService->formLink()},
+                    'form_link' => $fullFormLink,
                     'status' => $invitation->{$this->invitationService->status()},
                     'invited_at' => $invitation->{$this->invitationService->invitedAt()},
                     'expires_at' => $invitation->{$this->invitationService->expiresAt()},
@@ -506,6 +570,17 @@ class CandidateInvitationService extends BaseService
         }
 
         $invitationData = $invitation->toArray();
+        
+        $clientAppUrl = $this->configurationService->getStringValue(
+            ConfigurationKey::CLIENT_APP_URL,
+            (string) config('app.client_url', env('CLIENT_URL', ''))
+        );
+        $baseUrl = rtrim($clientAppUrl, '/');
+        $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+        $invitationData[$this->invitationService->formLink()] = $baseUrl !== '' && $relativeLink
+            ? $baseUrl . '/' . ltrim($relativeLink, '/')
+            : ($relativeLink ? '/' . ltrim($relativeLink, '/') : null);
+
         $invitationData['package_ids'] = $packageIds->values()->all();
         $invitationData['form_data'] = $formData;
         $candidateData = $candidate?->toArray();

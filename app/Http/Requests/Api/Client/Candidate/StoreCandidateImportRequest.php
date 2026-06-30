@@ -14,7 +14,7 @@ class StoreCandidateImportRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:csv,xlsx', 'max:10240'],
+            'file' => ['required', 'file', 'extensions:csv,xlsx', 'max:10240'],
         ];
     }
 }

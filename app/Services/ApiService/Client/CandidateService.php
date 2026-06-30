@@ -29,7 +29,7 @@ class CandidateService extends BaseService
 
     public function getCandidates(array $params, ?object $user): array
     {
-        $query = $this->candidateService->query();
+        $query = $this->candidateService->query()->with(['packages', 'candidateServices']);
 
         if ($user && isset($user->client_id) && $user->client_id !== null) {
             $query->where($this->candidateService->clientId(), $user->client_id);
@@ -158,6 +158,26 @@ class CandidateService extends BaseService
                             $row[$this->candidateService->city()] = $cityNamesById->get($cityId);
                         }
                     }
+
+                    if (!empty($row['packages']) && is_array($row['packages'])) {
+                        $row['package_name'] = collect($row['packages'])->pluck('name')->filter()->join(', ') ?: collect($row['packages'])->pluck('package_name')->filter()->join(', ');
+                    }
+
+                    $progress = 0;
+                    if (!empty($row['candidate_services']) && is_array($row['candidate_services'])) {
+                        $services = collect($row['candidate_services']);
+                        $total = $services->count();
+                        if ($total > 0) {
+                            $completed = $services->filter(function($s) {
+                                $status = strtolower(trim((string) ($s['status'] ?? '')));
+                                $pStatus = strtolower(trim((string) ($s['processing_status'] ?? '')));
+                                $completedStatuses = ['completed', 'verified', 'approved', 'success'];
+                                return in_array($status, $completedStatuses, true) || in_array($pStatus, $completedStatuses, true);
+                            })->count();
+                            $progress = (int) round(($completed / $total) * 100);
+                        }
+                    }
+                    $row['progress'] = $progress;
 
                     return $row;
                 })

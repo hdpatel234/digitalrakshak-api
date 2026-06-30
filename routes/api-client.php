@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Client\Package\PackageController;
 use App\Http\Controllers\Api\Client\Service\ServicesController;
 use App\Http\Controllers\Api\Client\Support\SupportTicketController;
 use App\Http\Controllers\Api\Client\ProteanController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 
@@ -19,6 +20,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Dashboard
     Route::prefix('dashboard')->group(function () {
+        Route::get('data', [DashboardController::class, 'index']);
         Route::get('stats', [Controller::class, 'stats']); // Pending
         Route::get('recent-orders', [Controller::class, 'recentOrders']); // Pending
         Route::get('recent-candidates', [Controller::class, 'recentCandidates']); // Pending
@@ -28,7 +30,6 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
     // Candidate Management
     Route::prefix('candidates')->group(function () {
-        Route::apiResource('', CandidatesController::class)->parameters(['' => 'candidate']);
         Route::get('import/sample', [CandidatesController::class, 'importSample']);
         Route::post('import', [CandidatesController::class, 'import']);
         Route::get('imports', [CandidatesController::class, 'imports']);
@@ -36,6 +37,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('export', [CandidatesController::class, 'export']); // Pending
         Route::post('{candidate}/invite', [CandidateInvitationController::class, 'invite']);
         Route::post('bulk-invite', [CandidateInvitationController::class, 'store']);
+        Route::apiResource('', CandidatesController::class)->parameters(['' => 'candidate']);
     });
 
     // Candidate Invitations
