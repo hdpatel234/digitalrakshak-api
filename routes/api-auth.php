@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\SocialLoginController;
 use App\Http\Controllers\Api\Auth\StateController;
 use App\Http\Controllers\Api\Auth\UserConfigController;
+use App\Http\Controllers\Api\Auth\PostalCodeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
@@ -39,6 +40,7 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
         Route::get('countries', [CountryController::class, 'index']);
         Route::get('states', [StateController::class, 'index']);
         Route::get('cities', [CityController::class, 'index']);
+        Route::get('postal-codes', [PostalCodeController::class, 'index']);
     });
 
     Route::middleware(['auth:api'])->group(function () {
@@ -62,5 +64,6 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
         Route::get('countries', [CountryController::class, 'index']);
         Route::get('states', [StateController::class, 'index']);
         Route::get('cities', [CityController::class, 'index']);
+        Route::get('postal-codes', [PostalCodeController::class, 'index']);
     });
 });
