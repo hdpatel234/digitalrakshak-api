@@ -90,4 +90,9 @@ class CandidateOrder extends BaseModel
             OrderCandidate::CANDIDATE_ID
         );
     }
+
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class, PaymentTransaction::ORDER_ID);
+    }
 }

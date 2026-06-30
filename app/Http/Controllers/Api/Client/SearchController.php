@@ -142,6 +142,38 @@ class SearchController extends BaseController
             ];
         }
 
+        // 5. Search Orders
+        $orders = \App\Models\CandidateOrder::where('client_id', $clientId)
+            ->where(function ($query) use ($queryStr) {
+                $query->where('order_number', 'like', "%{$queryStr}%")
+                      ->orWhere('payment_reference', 'like', "%{$queryStr}%")
+                      ->orWhereHas('paymentTransactions', function ($q) use ($queryStr) {
+                          $q->where('gateway_payment_id', 'like', "%{$queryStr}%")
+                            ->orWhere('gateway_transaction_id', 'like', "%{$queryStr}%")
+                            ->orWhere('bank_reference', 'like', "%{$queryStr}%");
+                      });
+            })
+            ->limit(5)
+            ->get();
+
+        if ($orders->isNotEmpty()) {
+            $orderData = $orders->map(function ($o) {
+                return [
+                    'key' => "order-{$o->id}",
+                    'path' => "/orders/details/{$o->id}", // Route to order details
+                    'title' => "Order {$o->order_number}",
+                    'icon' => 'orders',
+                    'category' => 'Orders',
+                    'categoryTitle' => 'Orders',
+                ];
+            })->toArray();
+
+            $results[] = [
+                'title' => 'Orders',
+                'data' => $orderData,
+            ];
+        }
+
         return $this->success('Search results fetched successfully.', $results);
     }
 }
