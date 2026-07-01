@@ -7,6 +7,8 @@ use App\Services\BaseService;
 use App\Services\Billing\BillingManager;
 use App\Services\ClientService;
 use App\Services\InvoiceService as CoreInvoiceService;
+use App\Models\InvoiceItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceService extends BaseService
@@ -132,15 +134,30 @@ class InvoiceService extends BaseService
             throw new \Exception('You do not have permission to download this invoice.', 403);
         }
 
-        if (!$invoice->external_invoice_id) {
-            throw new \Exception('Invoice has not been generated on the billing provider yet.', 400);
-        }
-
         /** @var Client|null $client */
         $client = $this->clientService->query()->find($invoice->client_id);
 
         if (!$client) {
             throw new \Exception('Client not found', 404);
+        }
+
+        if (!$invoice->external_invoice_id) {
+            try {
+                $items = InvoiceItem::where('invoice_id', $invoice->id)->get();
+                $pdf = Pdf::loadView('invoices.client_pdf', [
+                    'invoice' => $invoice,
+                    'client' => $client,
+                    'items' => $items
+                ]);
+
+                return [
+                    'content' => $pdf->output(),
+                    'filename' => 'invoice_' . ($invoice->invoice_number ?? $invoice->id) . '.pdf',
+                ];
+            } catch (\Throwable $e) {
+                Log::error("Failed to generate local invoice pdf: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+                throw new \Exception('Failed to generate local invoice.', 500);
+            }
         }
 
         try {
@@ -150,7 +167,7 @@ class InvoiceService extends BaseService
                 'content' => $pdfContent,
                 'filename' => 'invoice_' . ($invoice->invoice_number ?? $invoice->id) . '.pdf',
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Failed to download invoice pdf: " . $e->getMessage());
             throw new \Exception('Failed to download invoice from billing provider.', 400);
         }
