@@ -97,9 +97,13 @@ class PackageService extends BaseService
         $servicesByPackageId = collect();
         if ($packageIds !== []) {
             $availableCandidatesByPackageId = DB::table('candidate_packages')
-                ->selectRaw('package_id, COUNT(DISTINCT candidate_id) as total')
-                ->whereIn('package_id', $packageIds)
-                ->groupBy('package_id')
+                ->join('candidates', 'candidate_packages.candidate_id', '=', 'candidates.id')
+                ->select('candidate_packages.package_id', DB::raw('COUNT(DISTINCT candidate_id) as total'))
+                ->whereIn('candidate_packages.package_id', $packageIds)
+                ->where('candidates.status', 'active')
+                ->whereNotIn('candidates.status', ['created', 'sent'])
+                ->whereNull('candidates.deleted_at')
+                ->groupBy('candidate_packages.package_id')
                 ->get()
                 ->pluck('total', 'package_id');
 
@@ -357,11 +361,15 @@ class PackageService extends BaseService
         $totalPrice = $packageData[$this->packageService->totalPrice()] ?? null;
         $finalPrice = $packageData[$this->packageService->finalPrice()] ?? null;
 
-        $availableCandidates = (int) $this->candidateInvitationService->query()
-            ->where($this->candidateInvitationService->packageId(), (int) ($packageData[$this->packageService->id()] ?? 0))
-            ->where($this->candidateInvitationService->status(), CandidateInvitationStatus::COMPLETED->value)
-            ->distinct($this->candidateInvitationService->candidateId())
-            ->count($this->candidateInvitationService->candidateId());
+        $packageId = (int) ($packageData[$this->packageService->id()] ?? 0);
+        $availableCandidates = (int) DB::table('candidate_packages')
+            ->join('candidates', 'candidate_packages.candidate_id', '=', 'candidates.id')
+            ->where('candidate_packages.package_id', $packageId)
+            ->where('candidates.status', 'active')
+            ->whereNotIn('candidates.status', ['created', 'sent'])
+            ->whereNull('candidates.deleted_at')
+            ->distinct()
+            ->count('candidate_packages.candidate_id');
 
         $packageData['price'] = $finalPrice ?? $totalPrice;
         $packageData['is_discounted'] = $finalPrice !== null && $totalPrice !== null && (float) $finalPrice < (float) $totalPrice;
