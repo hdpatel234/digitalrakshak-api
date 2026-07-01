@@ -23,8 +23,10 @@ class Package extends BaseModel
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
+    const ICON = "icon";
     protected $fillable = [
         self::PACKAGE_NAME,
+        self::ICON,
         self::PACKAGE_CODE,
         self::DESCRIPTION,
         self::TYPE,
