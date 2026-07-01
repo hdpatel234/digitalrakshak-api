@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\Models\CandidateOrder;
+use App\Models\CandidateService;
+use App\Services\Verification\VerificationServiceFactory;
+use Illuminate\Support\Facades\Log;
+
+class ProcessCandidateServicesCommand extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:process-candidate-services';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Process candidate services for orders in processing state';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        $this->info('Starting candidate services processing...');
+
+        // Get all orders in processing state
+        $orders = CandidateOrder::where('status', 'processing')
+            ->with(['candidates.candidateServices' => function($q) {
+                // only get services that are not completed
+                $q->where('status', '!=', 'completed')->with('service');
+            }])
+            ->get();
+
+        if ($orders->isEmpty()) {
+            $this->info('No orders in processing state found.');
+            return;
+        }
+
+        foreach ($orders as $order) {
+            $this->info("Processing order ID: {$order->id}");
+            
+            $allServicesCompleted = true;
+
+            foreach ($order->candidates as $candidate) {
+                foreach ($candidate->candidateServices as $candidateService) {
+                    if (!$candidateService->service || !$candidateService->service->service_code) {
+                        $this->warn("Candidate Service ID {$candidateService->id} is missing service or service_code.");
+                        $allServicesCompleted = false;
+                        continue;
+                    }
+                    
+                    try {
+                        $serviceInstance = VerificationServiceFactory::make($candidateService->service->service_code);
+                        $serviceInstance->process($candidateService);
+                        
+                        // Check if it's completed now
+                        if ($candidateService->fresh()->status !== 'completed') {
+                            $allServicesCompleted = false;
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Failed to process Candidate Service ID {$candidateService->id}: " . $e->getMessage());
+                        $this->error("Failed to process Candidate Service ID {$candidateService->id}: " . $e->getMessage());
+                        $allServicesCompleted = false;
+                    }
+                }
+            }
+
+            // After processing all candidates and their services for this order, 
+            // check if there are any pending services left for this order at the DB level
+            // in case the eager load missed anything or if we successfully finished everything.
+            
+            $pendingServicesCount = CandidateService::where('order_id', $order->id)
+                ->where('status', '!=', 'completed')
+                ->count();
+
+            if ($pendingServicesCount === 0) {
+                $order->status = 'completed';
+                $order->completed_at = now();
+                $order->save();
+                $this->info("Order ID {$order->id} marked as completed.");
+            } else {
+                $this->info("Order ID {$order->id} still has {$pendingServicesCount} pending services.");
+            }
+        }
+
+        $this->info('Candidate services processing finished.');
+    }
+}

@@ -30,3 +30,6 @@ Schedule::command('ai:reset-daily-usage')->dailyAt('01:00')->timezone(config('ap
 Schedule::command('csc:sync countries')->weekly();
 Schedule::command('csc:sync states')->weekly();
 Schedule::command('csc:sync cities')->dailyAt('03:00');
+
+// Process candidate services for orders in processing state
+Schedule::command('app:process-candidate-services')->everyFiveMinutes();
