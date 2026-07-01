@@ -450,6 +450,7 @@ class PackageService extends BaseService
                         'section' => $field->section,
                         'field_type' => $field->field_type,
                         'is_required' => $field->is_required,
+                        'or_group_name' => $field->or_group_name,
                         'validation_regex' => $field->validation_regex,
                         'display_order' => $field->display_order,
                     ];

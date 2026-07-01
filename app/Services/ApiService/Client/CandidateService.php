@@ -161,6 +161,7 @@ class CandidateService extends BaseService
 
                     if (!empty($row['packages']) && is_array($row['packages'])) {
                         $row['package_name'] = collect($row['packages'])->pluck('name')->filter()->join(', ') ?: collect($row['packages'])->pluck('package_name')->filter()->join(', ');
+                        $row['package_id'] = collect($row['packages'])->pluck('id')->filter()->first();
                     }
 
                     $progress = 0;

@@ -18,6 +18,7 @@ class ServicesField extends BaseModel
     const DISPLAY_ORDER = "display_order";
     const STATUS = "status";
     const SECTION = "section";
+    const OR_GROUP_NAME = "or_group_name";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
@@ -26,6 +27,7 @@ class ServicesField extends BaseModel
         self::FIELD_NAME,
         self::FIELD_LABEL,
         self::SECTION,
+        self::OR_GROUP_NAME,
         self::FIELD_TYPE,
         self::IS_REQUIRED,
         self::VALIDATION_REGEX,
