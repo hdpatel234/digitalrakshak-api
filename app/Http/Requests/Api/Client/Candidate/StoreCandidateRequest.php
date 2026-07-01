@@ -14,17 +14,17 @@ class StoreCandidateRequest extends BaseRequest
 
     public function rules(): array
     {
-        $clientId = (int) (auth('api')->user()?->client_id ?? auth()->user()?->client_id ?? 0);
+        $clientId = (int) ($this->user()?->client_id ?? 0);
 
         return [
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'first_name' => ['string', 'max:255'],
+            'last_name' => ['string', 'max:255'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('candidates', 'email')->where(
-                    fn ($query) => $query->where('client_id', $clientId)->whereNull('deleted_at')
+                    fn($query) => $query->where('client_id', $clientId)->whereNull('deleted_at')
                 ),
             ],
             'dialCode' => ['nullable', 'string', 'max:10'],
@@ -48,7 +48,7 @@ class StoreCandidateRequest extends BaseRequest
     public function messages(): array
     {
         return [
-            'email.unique' => 'candidate with this email already exist',
+            'email.unique' => 'Candidate with this email already exist',
         ];
     }
 }
