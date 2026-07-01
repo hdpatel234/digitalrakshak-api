@@ -120,4 +120,22 @@ class PackageController extends BaseController
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
     }
+
+    public function destroy(Request $request, int $package): JsonResponse
+    {
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $this->packageService->deletePackage($package, $clientId, $user);
+
+            return $this->success('Package deleted successfully.');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
 }

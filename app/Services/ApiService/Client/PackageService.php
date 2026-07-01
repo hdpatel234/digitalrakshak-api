@@ -541,4 +541,32 @@ class PackageService extends BaseService
 
         return $code;
     }
+
+    public function deletePackage(int $packageId, int $clientId, ?object $user): void
+    {
+        $packageModel = $this->packageService->query()
+            ->where($this->packageService->id(), $packageId)
+            ->where(function ($builder) use ($clientId) {
+                $builder->where($this->packageService->clientId(), $clientId)
+                    ->orWhere($this->packageService->clientId(), 0);
+            })
+            ->first();
+
+        if (!$packageModel) {
+            throw new \Exception('Package not found.', 404);
+        }
+
+        if ($packageModel->{$this->packageService->type()} === 'admin') {
+            throw new \Exception('Cannot delete a system package.', 403);
+        }
+
+        DB::transaction(function () use ($packageModel, $user) {
+            if ($user) {
+                $packageModel->update([
+                    'deleted_by' => $user->id,
+                ]);
+            }
+            $packageModel->delete();
+        });
+    }
 }
