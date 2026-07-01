@@ -13,6 +13,7 @@ class Service extends BaseModel
     const SERVICE_NAME = "service_name";
     const SERVICE_CODE = "service_code";
     const DESCRIPTION = "description";
+    const ICON = "icon";
     const BASE_PRICE = "base_price";
     const STATUS = "status";
     const CREATED_BY = "created_by";
@@ -23,6 +24,7 @@ class Service extends BaseModel
         self::SERVICE_NAME,
         self::SERVICE_CODE,
         self::DESCRIPTION,
+        self::ICON,
         self::BASE_PRICE,
         self::STATUS,
         self::CREATED_BY,
