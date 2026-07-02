@@ -206,3 +206,9 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::post('epf-uan', [ProteanController::class, 'epfUan']);
     });
 });
+
+// Public Verification Routes
+Route::prefix('v1/verifications')->group(function () {
+    Route::get('employment/{token}', [\App\Http\Controllers\Api\EmploymentVerificationController::class, 'show']);
+    Route::post('employment/{token}', [\App\Http\Controllers\Api\EmploymentVerificationController::class, 'verify']);
+});
