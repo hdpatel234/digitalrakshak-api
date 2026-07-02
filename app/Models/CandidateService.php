@@ -57,4 +57,9 @@ class CandidateService extends BaseModel
     {
         return $this->belongsTo(Service::class, self::SERVICE_ID);
     }
+
+    public function serviceData()
+    {
+        return $this->hasMany(CandidateServiceData::class, CandidateServiceData::CANDIDATE_SERVICE_ID);
+    }
 }

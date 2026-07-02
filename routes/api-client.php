@@ -37,6 +37,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
         Route::get('imports', [CandidatesController::class, 'imports']);
         Route::post('bulk-delete', [CandidatesController::class, 'bulkDelete']); // Pending
         Route::get('export', [CandidatesController::class, 'export']); // Pending
+        Route::get('{candidate}/report', [CandidatesController::class, 'downloadReport']);
         Route::post('{candidate}/invite', [CandidateInvitationController::class, 'invite']);
         Route::post('bulk-invite', [CandidateInvitationController::class, 'store']);
         Route::apiResource('', CandidatesController::class)->parameters(['' => 'candidate']);

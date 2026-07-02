@@ -324,4 +324,43 @@ class CandidatesController extends BaseController
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
         );
     }
+
+    public function downloadReport(Request $request, $id)
+    {
+        addInfoLog("Candidate Download Report request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        $candidate = \App\Models\Candidate::where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$candidate) {
+            return $this->error('Candidate not found.', 404);
+        }
+
+        // Find the latest report for this candidate
+        $files = \Illuminate\Support\Facades\Storage::disk('local')->files('reports');
+        $candidateFiles = array_filter($files, function($file) use ($candidate) {
+            return str_starts_with($file, 'reports/Candidate_' . $candidate->id . '_');
+        });
+
+        if (empty($candidateFiles)) {
+            return $this->error('Report not found for this candidate.', 404);
+        }
+
+        // Sort by last modified
+        usort($candidateFiles, function($a, $b) {
+            return \Illuminate\Support\Facades\Storage::disk('local')->lastModified($b) - \Illuminate\Support\Facades\Storage::disk('local')->lastModified($a);
+        });
+
+        $latestReport = $candidateFiles[0];
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->download($latestReport);
+    }
 }

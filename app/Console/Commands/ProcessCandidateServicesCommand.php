@@ -71,6 +71,31 @@ class ProcessCandidateServicesCommand extends Command
                         $allServicesCompleted = false;
                     }
                 }
+                
+                // Check if candidate is completed
+                $pendingCandidateServicesCount = \App\Models\CandidateService::where('candidate_id', $candidate->id)
+                    ->where('status', '!=', 'completed')
+                    ->count();
+
+                if ($pendingCandidateServicesCount === 0 && $candidate->status !== 'completed') {
+                    $candidate->status = 'completed';
+                    $candidate->save();
+                    $this->info("Candidate ID {$candidate->id} marked as completed.");
+                    
+                    // Generate PDF Report for candidate
+                    try {
+                        $reportService = new \App\Services\CandidateReportService();
+                        $reportPath = $reportService->generateForCandidate($candidate);
+                        if ($reportPath) {
+                            $this->info("Generated report for Candidate ID {$candidate->id} at {$reportPath}");
+                        } else {
+                            $this->error("Failed to generate report for Candidate ID {$candidate->id}");
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Report generation failed for candidate {$candidate->id}: " . $e->getMessage());
+                        $this->error("Report generation failed: " . $e->getMessage());
+                    }
+                }
             }
 
             // After processing all candidates and their services for this order, 
