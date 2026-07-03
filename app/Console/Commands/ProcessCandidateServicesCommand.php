@@ -87,6 +87,8 @@ class ProcessCandidateServicesCommand extends Command
                         $reportService = new \App\Services\CandidateReportService();
                         $reportPath = $reportService->generateForCandidate($candidate);
                         if ($reportPath) {
+                            $candidate->report_path = $reportPath;
+                            $candidate->save();
                             $this->info("Generated report for Candidate ID {$candidate->id} at {$reportPath}");
                         } else {
                             $this->error("Failed to generate report for Candidate ID {$candidate->id}");

@@ -56,6 +56,7 @@ class Candidate extends BaseModel
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
+    const REPORT_PATH = "report_path";
     protected $fillable = [
         self::CLIENT_ID,
         self::FIRST_NAME,
@@ -85,6 +86,7 @@ class Candidate extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
         self::DELETED_BY,
+        self::REPORT_PATH,
     ];
 
     public function client(): BelongsTo
@@ -130,11 +132,6 @@ class Candidate extends BaseModel
     public function emailQueues(): HasMany
     {
         return $this->hasMany(EmailQueue::class, EmailQueue::CANDIDATE_ID);
-    }
-
-    public function supportTickets(): HasMany
-    {
-        return $this->hasMany(SupportTicket::class, SupportTicket::CANDIDATE_ID);
     }
 
     public function serviceProcessingQueues(): HasMany
