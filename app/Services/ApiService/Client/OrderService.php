@@ -998,55 +998,6 @@ class OrderService extends BaseService
                     $this->invoiceService->paymentStatus() => 'paid',
                     $this->invoiceService->status() => 'paid',
                 ]);
-
-                /** @var BillingManager $billingManager */
-                $billingManager = app(BillingManager::class);
-
-                $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
-
-                $billingDriver = null;
-                if ($client) {
-                    try {
-                        $billingDriver = $billingManager->driver($client);
-                    } catch (\Exception $e) {
-                        Log::warning("Billing driver not resolved for client {$clientId}: " . $e->getMessage());
-                    }
-                }
-
-                if ($billingDriver instanceof \App\Services\Billing\Drivers\InvoiceNinjaDriver && $localInvoice->{$this->invoiceService->externalInvoiceId()}) {
-                    $invoiceData = $billingDriver->getInvoice($localInvoice->{$this->invoiceService->externalInvoiceId()});
-
-                    $externalClientId = $invoiceData['data']['client_id'] ?? null;
-                    $invoiceAmount = $invoiceData['data']['amount'] ?? $transaction->amount;
-
-                    if ($externalClientId) {
-                        $paymentMethodId = (int) ($orderRow->{$this->candidateOrderService->paymentMethod()} ?? 0);
-                        $methodName = '';
-                        if ($paymentMethodId > 0) {
-                            $methodRow = $this->paymentMethodTypeService->query()
-                                ->where($this->paymentMethodTypeService->id(), $paymentMethodId)
-                                ->first();
-                            $methodName = (string) ($methodRow ? $methodRow->{$this->paymentMethodTypeService->methodName()} : '');
-                        }
-                        $typeId = $billingDriver->getInvoiceNinjaPaymentTypeId($methodName);
-
-                        $paymentPayload = [
-                            'client_id' => $externalClientId,
-                            'amount' => (string) $invoiceAmount,
-                            'transaction_reference' => $gatewayPaymentId ?: $transactionUuid,
-                            'date' => date('Y-m-d'),
-                            'type_id' => $typeId,
-                            'invoices' => [
-                                [
-                                    'invoice_id' => $localInvoice->external_invoice_id,
-                                    'amount' => (string) $invoiceAmount
-                                ]
-                            ]
-                        ];
-
-                        $billingDriver->recordPayment($paymentPayload);
-                    }
-                }
             }
         } catch (\Throwable $e) {
             Log::error("Failed to process invoice payment for order {$orderId}: " . $e->getMessage());

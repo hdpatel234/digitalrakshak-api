@@ -143,4 +143,9 @@ class Candidate extends BaseModel
     {
         return $this->belongsToMany(Package::class, 'candidate_packages', 'candidate_id', 'package_id');
     }
+
+    public function serviceLogs(): HasMany
+    {
+        return $this->hasMany(CandidateServiceLog::class, 'candidate_id')->orderBy('created_at', 'desc');
+    }
 }

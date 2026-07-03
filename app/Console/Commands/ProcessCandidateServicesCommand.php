@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\CandidateOrder;
 use App\Models\CandidateService;
+use App\Models\CandidateServiceLog;
 use App\Services\Verification\VerificationServiceFactory;
 use Illuminate\Support\Facades\Log;
 
@@ -62,8 +63,21 @@ class ProcessCandidateServicesCommand extends Command
                         $serviceInstance->process($candidateService);
                         
                         // Check if it's completed now
-                        if ($candidateService->fresh()->status !== 'completed') {
+                        $freshService = $candidateService->fresh();
+                        if ($freshService->status !== 'completed') {
                             $allServicesCompleted = false;
+                        } else {
+                            // Store Audit Log
+                            $existingLog = CandidateServiceLog::where('candidate_service_id', $candidateService->id)->first();
+                            if (!$existingLog) {
+                                CandidateServiceLog::create([
+                                    'candidate_id' => $candidate->id,
+                                    'candidate_service_id' => $candidateService->id,
+                                    'title' => "Provider Service Approved: " . ($candidateService->service->name ?? 'Service Verification'),
+                                    'description' => "Verified via " . ($candidateService->service->service_code ?? 'Internal Gateway'),
+                                    'status' => 'completed'
+                                ]);
+                            }
                         }
                     } catch (\Exception $e) {
                         Log::error("Failed to process Candidate Service ID {$candidateService->id}: " . $e->getMessage());
@@ -90,6 +104,15 @@ class ProcessCandidateServicesCommand extends Command
                             $candidate->report_path = $reportPath;
                             $candidate->save();
                             $this->info("Generated report for Candidate ID {$candidate->id} at {$reportPath}");
+                            
+                            // Log report generation
+                            CandidateServiceLog::create([
+                                'candidate_id' => $candidate->id,
+                                'candidate_service_id' => null,
+                                'title' => "Verification Report Cryptographically Sealed",
+                                'description' => "System Automated Agent",
+                                'status' => 'completed'
+                            ]);
                         } else {
                             $this->error("Failed to generate report for Candidate ID {$candidate->id}");
                         }
