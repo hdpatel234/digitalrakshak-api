@@ -511,6 +511,8 @@ class PackageService extends BaseService
             $q->where('candidate_packages.package_id', $packageId);
         })
         ->where('client_id', $clientId)
+        ->where('status', 'active')
+        ->whereNotIn('status', ['created', 'sent'])
         ->orderByDesc('id')
         ->get()
         ->map(function ($candidate) {
