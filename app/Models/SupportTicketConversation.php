@@ -8,6 +8,8 @@ class SupportTicketConversation extends BaseModel
 {
 
     protected $table = "support_ticket_conversations";
+    
+    const UPDATED_AT = null;
 
     const TICKET_ID = "ticket_id";
     const EXTERNAL_CONVERSATION_ID = "external_conversation_id";

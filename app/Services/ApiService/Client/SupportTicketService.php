@@ -7,8 +7,8 @@ use App\Repositories\SupportPriorityRepository;
 use App\Repositories\SupportTicketRepository;
 use App\Services\BaseService;
 use App\Services\ClientService;
-use App\Services\Support\SupportManager;
 use App\Services\UserService;
+use App\Models\SupportTicketConversation;
 use Illuminate\Support\Str;
 
 /**
@@ -19,7 +19,6 @@ class SupportTicketService extends BaseService
     protected SupportDepartmentRepository $departmentRepository;
     protected SupportPriorityRepository $priorityRepository;
     protected ClientService $clientService;
-    protected SupportManager $supportManager;
     protected UserService $userService;
 
     public function __construct(
@@ -27,13 +26,11 @@ class SupportTicketService extends BaseService
         SupportDepartmentRepository $departmentRepository,
         SupportPriorityRepository $priorityRepository,
         ClientService $clientService,
-        SupportManager $supportManager,
         UserService $userService
     ) {
         $this->departmentRepository = $departmentRepository;
         $this->priorityRepository = $priorityRepository;
         $this->clientService = $clientService;
-        $this->supportManager = $supportManager;
         $this->userService = $userService;
         parent::__construct($repository);
     }
@@ -197,55 +194,60 @@ class SupportTicketService extends BaseService
             throw new \Exception("Ticket not found", 404);
         }
 
-        $externalTicketId = $ticket->{$this->repository->externalTicketId()};
-        $supportConfigId = $ticket->{$this->repository->supportConfigId()};
-
         $threads = [];
 
-        if ($externalTicketId && $supportConfigId) {
-            try {
-                $supportConfig = \App\Models\SupportConfig::find($supportConfigId);
-                /** @var \App\Models\Client $client */
-                $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
+        $conversations = SupportTicketConversation::where('ticket_id', $ticket->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-                if ($supportConfig && $client) {
-                    $externalData = $this->supportManager->getTicket($client, $externalTicketId, $supportConfig);
+        foreach ($conversations as $conversation) {
+            $createdAt = $conversation->created_at;
+            $formattedDate = null;
+            $timeAgo = null;
 
-                    if (isset($externalData['ticket']['threads']) && is_array($externalData['ticket']['threads'])) {
-                        foreach ($externalData['ticket']['threads'] as $thread) {
-                            $createdAt = $thread['createdAt'] ?? null;
-                            $formattedDate = null;
-                            $timeAgo = null;
-
-                            if ($createdAt) {
-                                try {
-                                    $carbonDate = \App\Models\BaseModel::convertToUserTimezone($createdAt);
-                                    $formattedDate = \App\Models\BaseModel::formatToUserDateTime($carbonDate);
-                                    $timeAgo = \App\Models\BaseModel::formatTimeAgo($carbonDate);
-                                } catch (\Exception $e) {
-                                    $formattedDate = $createdAt;
-                                }
-                            }
-
-                            $threads[] = [
-                                'id' => $thread['id'] ?? null,
-                                'message' => html_entity_decode($thread['message'] ?? ''),
-                                'sender_type' => $thread['createdBy'] ?? 'customer',
-                                'sender_name' => $thread['user']['name'] ?? 'Unknown',
-                                'sender_email' => $thread['user']['email'] ?? null,
-                                'created_at' => $formattedDate,
-                                'time_ago' => $timeAgo,
-                                'attachments' => $thread['attachments'] ?? [],
-                            ];
-                        }
-                    }
+            if ($createdAt) {
+                try {
+                    $carbonDate = \App\Models\BaseModel::convertToUserTimezone($createdAt);
+                    $formattedDate = \App\Models\BaseModel::formatToUserDateTime($carbonDate);
+                    $timeAgo = \App\Models\BaseModel::formatTimeAgo($carbonDate);
+                } catch (\Exception $e) {
+                    $formattedDate = $createdAt;
                 }
-            } catch (\Exception $e) {
-                addErrorLog("Failed to fetch external ticket threads for ticket ID: {$id}. Error: " . $e->getMessage());
             }
+
+            $attachments = $conversation->attachments;
+            if (is_string($attachments)) {
+                $attachments = json_decode($attachments, true);
+            }
+            if (!is_array($attachments)) {
+                $attachments = [];
+            }
+
+            $threads[] = [
+                'id' => $conversation->id,
+                'message' => html_entity_decode($conversation->message ?? ''),
+                'sender_type' => $conversation->sender_type ?? 'customer',
+                'sender_name' => $conversation->sender_name ?? 'Unknown',
+                'sender_email' => $conversation->sender_email ?? null,
+                'created_at' => $formattedDate,
+                'time_ago' => $timeAgo,
+                'attachments' => $attachments,
+            ];
         }
 
         return $threads;
+    }
+
+    protected function handleAttachments(array $attachments): array
+    {
+        $storedPaths = [];
+        foreach ($attachments as $attachment) {
+            if ($attachment instanceof \Illuminate\Http\UploadedFile) {
+                $path = $attachment->store('tickets/attachments', 'public');
+                $storedPaths[] = ['url' => '/storage/' . $path, 'name' => $attachment->getClientOriginalName()];
+            }
+        }
+        return $storedPaths;
     }
 
     public function createTicket(array $payload, int $clientId, ?object $user): array
@@ -259,57 +261,32 @@ class SupportTicketService extends BaseService
 
         $email = $client->{$this->clientService->email()} ?? ($user->email ?? '');
         $name = $user ? ($user->{$this->userService->firstName()} .  $user->{$this->userService->lastName()}) : 'Client';
-
-        $uvdeskPayload = [
-            'message' => $payload['message'] ?? '',
-            'actAsType' => 'customer',
-            'actAsEmail' => $email,
-            'name' => $name,
-            'subject' => $payload['title'] ?? '',
-            'from' => $email,
-            'attachments' => $payload['attachments'] ?? $payload['attachment'] ?? [],
-        ];
-
-        try {
-            $externalResponse = $this->supportManager->createTicket($client, $uvdeskPayload);
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to create ticket with support provider: " . $e->getMessage(), 500);
-        }
-
-        $externalTicketId = $externalResponse['ticket']['id'] ?? $externalResponse['id'] ?? null;
-        $ticketData = is_array($externalResponse) ? json_encode($externalResponse) : null;
-
+        
         $ticketNumber = strtoupper(Str::random(3)) . rand(100, 999);
 
-        $platformId = (int) $client->default_support_config_id;
-        $supportConfigId = null;
-
-        if ($platformId > 0) {
-            $supportConfig = \App\Models\SupportConfig::where('support_platform_id', $platformId)
-                ->where(function ($query) {
-                    $query->where('is_default', true)
-                        ->orWhere('status', 'active');
-                })
-                ->first()
-                ?? \App\Models\SupportConfig::where('support_platform_id', $platformId)
-                ->first();
-
-            $supportConfigId = $supportConfig ? $supportConfig->id : null;
-        }
+        $attachments = $payload['attachments'] ?? $payload['attachment'] ?? [];
+        $storedAttachments = $this->handleAttachments($attachments);
 
         $ticket = $this->repository->create([
             $this->repository->clientId() => $clientId,
-            $this->repository->supportConfigId() => $supportConfigId,
             $this->repository->orderId() => $payload['order'] ?? null,
-            $this->repository->externalTicketId() => (string) $externalTicketId,
             $this->repository->departmentId() => $payload['department'] ?? null,
             $this->repository->priorityId() => $payload['priority'] ?? null,
             $this->repository->ticketNumber() => $ticketNumber,
             $this->repository->subject() => $payload['title'] ?? '',
             $this->repository->description() => $payload['message'] ?? '',
             $this->repository->status() => 'open',
-            $this->repository->ticketData() => $ticketData,
             $this->repository->createdBy() => $user?->id,
+        ]);
+
+        SupportTicketConversation::create([
+            'ticket_id' => $ticket->id,
+            'message' => $payload['message'] ?? '',
+            'sender_type' => 'customer',
+            'sender_name' => $name,
+            'sender_email' => $email,
+            'is_internal' => false,
+            'attachments' => json_encode($storedAttachments),
         ]);
 
         return $ticket->toArray();
@@ -326,13 +303,6 @@ class SupportTicketService extends BaseService
             throw new \Exception("Ticket not found", 404);
         }
 
-        $externalTicketId = $ticket->{$this->repository->externalTicketId()};
-        $supportConfigId = $ticket->{$this->repository->supportConfigId()};
-
-        if (!$externalTicketId || !$supportConfigId) {
-            throw new \Exception("External ticket reference not found", 422);
-        }
-
         /** @var \App\Models\Client $client */
         $client = $this->clientService->query()->where($this->clientService->id(), $clientId)->first();
 
@@ -340,22 +310,22 @@ class SupportTicketService extends BaseService
             throw new \Exception("Client not found", 404);
         }
 
-        $supportConfig = \App\Models\SupportConfig::find($supportConfigId);
-        if (!$supportConfig) {
-            throw new \Exception("Support configuration not found", 404);
-        }
-
         $email = $client->{$this->clientService->email()} ?? ($user->email ?? '');
+        $name = $user ? ($user->{$this->userService->firstName()} .  $user->{$this->userService->lastName()}) : 'Client';
 
-        $payload = [
+        $storedAttachments = $this->handleAttachments($attachments);
+
+        $conversation = SupportTicketConversation::create([
+            'ticket_id' => $ticket->id,
             'message' => $message,
-            'actAsType' => 'customer',
-            'actAsEmail' => $email,
-            'threadType' => 'reply',
-            'attachments' => $attachments
-        ];
+            'sender_type' => 'customer',
+            'sender_name' => $name,
+            'sender_email' => $email,
+            'is_internal' => false,
+            'attachments' => json_encode($storedAttachments),
+        ]);
 
-        return $this->supportManager->addReply($client, $externalTicketId, $payload, $supportConfig);
+        return $conversation->toArray();
     }
 
     public function getDepartments()
