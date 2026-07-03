@@ -379,6 +379,11 @@ class OrderService extends BaseService
         );
 
         $subtotal = $unitPrice * count($candidateIds);
+        
+        $gstConfig = \App\Models\Configuration::where('config_key', 'gst_percentage')->first();
+        $taxPercentage = $gstConfig ? (float) $gstConfig->config_value : 18;
+        $taxAmount = $subtotal * ($taxPercentage / 100);
+        $totalAmount = $subtotal + $taxAmount;
 
         if ($orderId > 0) {
             $orderRow = $this->candidateOrderService->query()
@@ -416,9 +421,9 @@ class OrderService extends BaseService
             if ($hasCandidateIds) {
                 $updateData[$this->candidateOrderService->subtotal()] = $subtotal;
                 $updateData[$this->candidateOrderService->discountAmount()] = 0;
-                $updateData[$this->candidateOrderService->taxAmount()] = 0;
-                $updateData[$this->candidateOrderService->taxPercentage()] = 0;
-                $updateData[$this->candidateOrderService->totalAmount()] = $subtotal;
+                $updateData[$this->candidateOrderService->taxAmount()] = $taxAmount;
+                $updateData[$this->candidateOrderService->taxPercentage()] = $taxPercentage;
+                $updateData[$this->candidateOrderService->totalAmount()] = $totalAmount;
             }
 
             $orderRow->update($updateData);
@@ -434,8 +439,8 @@ class OrderService extends BaseService
                         $this->orderCandidateService->candidateId() => $candidateId,
                         $this->orderCandidateService->subtotal() => $unitPrice,
                         $this->orderCandidateService->discountAmount() => 0,
-                        $this->orderCandidateService->taxAmount() => 0,
-                        $this->orderCandidateService->totalAmount() => $unitPrice,
+                        $this->orderCandidateService->taxAmount() => $unitPrice * ($taxPercentage / 100),
+                        $this->orderCandidateService->totalAmount() => $unitPrice + ($unitPrice * ($taxPercentage / 100)),
                         $this->orderCandidateService->status() => 'pending',
                         $this->orderCandidateService->createdBy() => $user?->id,
                     ]);
@@ -451,16 +456,16 @@ class OrderService extends BaseService
                 'payment_method_id' => $paymentMethodId > 0 ? $paymentMethodId : (int) ($orderRow->{$this->candidateOrderService->paymentMethod()} ?? 0),
                 'billing_config_id' => $orderRow->{$this->candidateOrderService->billingConfigId()},
                 'order_type' => $orderRow->{$this->candidateOrderService->orderType()},
-                'subtotal' => $orderRow->{$this->candidateOrderService->subtotal()},
-                'total_amount' => (int) $orderRow->{$this->candidateOrderService->totalAmount()},
-                'total_amount_in_paise' => (int) $orderRow->{$this->candidateOrderService->totalAmount()} * 100,
+                'subtotal' => (float) $orderRow->{$this->candidateOrderService->subtotal()},
+                'total_amount' => (float) $orderRow->{$this->candidateOrderService->totalAmount()},
+                'total_amount_in_paise' => (int) round((float) $orderRow->{$this->candidateOrderService->totalAmount()} * 100),
                 'payment_status' => $orderRow->{$this->candidateOrderService->paymentStatus()},
                 'status' => $orderRow->{$this->candidateOrderService->status()},
                 'candidate_ids' => $candidateIds,
             ];
         }
 
-        $created = DB::transaction(function () use ($package, $candidateIds, $clientId, $user, $unitPrice, $subtotal, $gatewayConfig, $paymentMethodId, $isDraft) {
+        $created = DB::transaction(function () use ($package, $candidateIds, $clientId, $user, $unitPrice, $subtotal, $gatewayConfig, $paymentMethodId, $isDraft, $taxAmount, $taxPercentage, $totalAmount) {
             $orderNumber = $this->generateOrderNumber($clientId);
 
             $orderStatus = $isDraft ? OrderStatus::DRAFT->value : OrderStatus::PENDING->value;
@@ -472,9 +477,9 @@ class OrderService extends BaseService
                 $this->candidateOrderService->orderType() => 'package',
                 $this->candidateOrderService->subtotal() => $subtotal,
                 $this->candidateOrderService->discountAmount() => 0,
-                $this->candidateOrderService->taxAmount() => 0,
-                $this->candidateOrderService->taxPercentage() => 0,
-                $this->candidateOrderService->totalAmount() => $subtotal,
+                $this->candidateOrderService->taxAmount() => $taxAmount,
+                $this->candidateOrderService->taxPercentage() => $taxPercentage,
+                $this->candidateOrderService->totalAmount() => $totalAmount,
                 $this->candidateOrderService->paymentStatus() => 'pending',
                 $this->candidateOrderService->paymentMethod() => (string) $paymentMethodId,
                 $this->candidateOrderService->billingConfigId() => $gatewayConfig ? $gatewayConfig->{$this->paymentGatewayConfigService->id()} : 0,
@@ -489,8 +494,8 @@ class OrderService extends BaseService
                     $this->orderCandidateService->candidateId() => $candidateId,
                     $this->orderCandidateService->subtotal() => $unitPrice,
                     $this->orderCandidateService->discountAmount() => 0,
-                    $this->orderCandidateService->taxAmount() => 0,
-                    $this->orderCandidateService->totalAmount() => $unitPrice,
+                    $this->orderCandidateService->taxAmount() => $unitPrice * ($taxPercentage / 100),
+                    $this->orderCandidateService->totalAmount() => $unitPrice + ($unitPrice * ($taxPercentage / 100)),
                     $this->orderCandidateService->status() => 'pending',
                     $this->orderCandidateService->createdBy() => $user?->id,
                 ]);
@@ -550,8 +555,8 @@ class OrderService extends BaseService
                 Invoice::INVOICE_NUMBER => $invoiceNumber,
                 Invoice::INVOICE_DATE => date('Y-m-d'),
                 Invoice::SUBTOTAL => $subtotal,
-                Invoice::TOTAL_AMOUNT => $subtotal,
-                Invoice::AMOUNT_DUE => $subtotal,
+                Invoice::TOTAL_AMOUNT => $totalAmount,
+                Invoice::AMOUNT_DUE => $totalAmount,
                 Invoice::STATUS => 'sent',
                 Invoice::PAYMENT_STATUS => 'unpaid',
                 Invoice::SYNC_STATUS => 'manual',
@@ -565,7 +570,7 @@ class OrderService extends BaseService
                 InvoiceItem::DESCRIPTION => $productKey,
                 InvoiceItem::QUANTITY => count($candidateIds),
                 InvoiceItem::UNIT_PRICE => $unitPrice,
-                InvoiceItem::TOTAL_PRICE => $subtotal,
+                InvoiceItem::TOTAL_PRICE => $totalAmount,
                 InvoiceItem::EXTERNAL_ITEM_ID => null,
             ]);
 
@@ -589,9 +594,9 @@ class OrderService extends BaseService
             'payment_method_id' => $paymentMethodId,
             'billing_config_id' => $order->{$this->candidateOrderService->billingConfigId()},
             'order_type' => $order->{$this->candidateOrderService->orderType()},
-            'subtotal' => $order->{$this->candidateOrderService->subtotal()},
-            'total_amount' => (int) $order->{$this->candidateOrderService->totalAmount()},
-            'total_amount_in_paise' => (int) $order->{$this->candidateOrderService->totalAmount()} * 100,
+            'subtotal' => (float) $order->{$this->candidateOrderService->subtotal()},
+            'total_amount' => (float) $order->{$this->candidateOrderService->totalAmount()},
+            'total_amount_in_paise' => (int) round((float) $order->{$this->candidateOrderService->totalAmount()} * 100),
             'payment_status' => $order->{$this->candidateOrderService->paymentStatus()},
             'status' => $order->{$this->candidateOrderService->status()},
             'candidate_ids' => collect($orderCandidateRows)

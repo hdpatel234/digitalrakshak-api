@@ -26,7 +26,7 @@ class EmploymentVerificationService extends BaseVerificationService
             $serviceData = CandidateServiceData::with('field')
                 ->where('candidate_service_id', $candidateService->id)
                 ->get();
-            
+
             // Format data and try to find an email
             $formattedData = [];
             $companyEmail = 'hr@example.com'; // Default fallback
@@ -34,13 +34,13 @@ class EmploymentVerificationService extends BaseVerificationService
             foreach ($serviceData as $data) {
                 $fieldName = $data->field ? $data->field->name : 'Unknown Field';
                 $formattedData[$fieldName] = $data->field_value;
-                
+
                 // Very naive email detection for the sake of the flow
-                if (str_contains(strtolower($fieldName), 'email') || filter_var($data->field_value, FILTER_VALIDATE_EMAIL)) {
-                    if ($companyEmail === 'hr@example.com') { // only override if it's the fallback
-                        $companyEmail = $data->field_value;
-                    }
-                }
+                // if (str_contains(strtolower($fieldName), 'email') || filter_var($data->field_value, FILTER_VALIDATE_EMAIL)) {
+                //     if ($companyEmail === 'hr@example.com') { // only override if it's the fallback
+                //         $companyEmail = $data->field_value;
+                //     }
+                // }
             }
 
             // Generate token

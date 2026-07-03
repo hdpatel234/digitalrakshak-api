@@ -10,19 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class LoginService extends BaseService
 {
-    protected $userRepository;
-    protected $userSessionRepository;
-    protected UserConfigService $userConfigService;
-
     public function __construct
     (
-        UserRepository $userRepository,
-        UserConfigService $userConfigService,
-        UserSessionRepository $userSessionRepository
+        protected UserRepository $userRepository,
+        protected UserConfigService $userConfigService,
+        protected UserSessionRepository $userSessionRepository
     ) {
-        $this->userRepository = $userRepository;
-        $this->userConfigService = $userConfigService;
-        $this->userSessionRepository = $userSessionRepository;
     }
 
     public function login($request)
