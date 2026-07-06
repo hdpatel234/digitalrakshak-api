@@ -69,13 +69,22 @@ class DashboardController extends Controller
                         ['category' => 'Other Services', 'amount' => 4500],
                     ]
                 ],
-                'active_packages' => Package::where('is_active', true)->take(5)->get()->map(function($pkg) {
-                    return [
-                        'id' => $pkg->id,
-                        'name' => $pkg->name,
-                        'price' => $pkg->price,
-                        'expires_at' => '2026-12-31' // Placeholder
-                    ];
+                'active_packages' => Package::where('is_active', true)
+                    ->where(function($query) {
+                        $query->where('type', 'admin')
+                              ->orWhereNotNull('client_id'); // Assuming client created packages have client_id
+                    })
+                    ->get()
+                    ->map(function($pkg) {
+                        $servicesCount = \App\Models\PackageService::where('package_id', $pkg->id)->count();
+                        return [
+                            'id' => $pkg->id,
+                            'name' => $pkg->package_name ?? $pkg->name ?? 'Unknown Package',
+                            'price' => $pkg->final_price ?? $pkg->total_price ?? 0,
+                            'services_count' => $servicesCount,
+                            'type' => $pkg->type,
+                            'expires_at' => '2026-12-31' // Placeholder
+                        ];
                 }),
                 'latest_candidates' => Candidate::latest()->take(5)->get()->map(function($cand) {
                     return [
