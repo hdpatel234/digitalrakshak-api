@@ -83,7 +83,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::delete('/providers/response-mappings/{mapping}', [Controller::class, 'destroy']);
     });
 
-    Route::apiResource('services', Controller::class);
+    Route::apiResource('services', App\Http\Controllers\Api\Admin\ServiceController::class);
 
     // Package Management (Admin Packages)
     Route::prefix('packages/{package}')->group(function () {

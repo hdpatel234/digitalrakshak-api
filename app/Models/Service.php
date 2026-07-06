@@ -31,4 +31,9 @@ class Service extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(ServiceCategory::class, self::SERVICE_CATEGORY);
+    }
 }
