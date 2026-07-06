@@ -6,156 +6,195 @@ use App\Http\Controllers\Controller;
 Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'throttle:60,1'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboard/stats', [Controller::class, 'stats']); // Pending
-    Route::get('/dashboard/revenue-chart', [Controller::class, 'revenueChart']); // Pending
-    Route::get('/dashboard/recent-activities', [Controller::class, 'recentActivities']); // Pending
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/stats', [Controller::class, 'stats']);
+        Route::get('/revenue-chart', [Controller::class, 'revenueChart']);
+        Route::get('/recent-activities', [Controller::class, 'recentActivities']);
+    });
 
     // Client Management
+    Route::prefix('clients/{client}')->group(function () {
+        Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+        Route::get('/stats', [Controller::class, 'getStats']);
+        Route::get('/orders', [Controller::class, 'getOrders']);
+        Route::get('/invoices', [Controller::class, 'getInvoices']);
+        Route::get('/pricing', [Controller::class, 'getClientPricing']);
+        Route::post('/pricing', [Controller::class, 'setPricing']);
+        Route::get('/pricing/history', [Controller::class, 'history']);
+        Route::get('/api-keys', [Controller::class, 'index']);
+        Route::post('/api-keys', [Controller::class, 'store']);
+
+        // User Management
+        Route::get('/users', [Controller::class, 'getUsers']);
+        Route::post('/users', [Controller::class, 'addUser']);
+        Route::put('/users/{user}', [Controller::class, 'updateUser']);
+        Route::delete('/users/{user}', [Controller::class, 'removeUser']);
+    });
+
+    // Client standalone routes
+    Route::prefix('clients')->group(function () {
+        Route::get('/pricing', [Controller::class, 'index']);
+        Route::put('/pricing/{pricing}', [Controller::class, 'update']);
+        Route::delete('/pricing/{pricing}', [Controller::class, 'destroy']);
+        Route::put('/api-keys/{key}', [Controller::class, 'update']);
+        Route::delete('/api-keys/{key}', [Controller::class, 'destroy']);
+    });
+
     Route::apiResource('clients', App\Http\Controllers\Api\Admin\ClientController::class);
-    Route::post('clients/{client}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
-    Route::get('clients/{client}/stats', [Controller::class, 'getStats']); // Pending
-    Route::get('clients/{client}/orders', [Controller::class, 'getOrders']); // Pending
-    Route::get('clients/{client}/invoices', [Controller::class, 'getInvoices']); // Pending
-    Route::get('clients/{client}/users', [Controller::class, 'getUsers']); // Pending
-    Route::post('clients/{client}/users', [Controller::class, 'addUser']); // Pending
-    Route::put('clients/{client}/users/{user}', [Controller::class, 'updateUser']); // Pending
-    Route::delete('clients/{client}/users/{user}', [Controller::class, 'removeUser']); // Pending
 
     // Service Management
-    Route::apiResource('services', Controller::class);
-    Route::post('services/{service}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
-    Route::get('services/{service}/fields', [Controller::class, 'getFields']); // Pending
-    Route::post('services/{service}/fields', [Controller::class, 'addField']); // Pending
-    Route::put('services/fields/{field}', [Controller::class, 'updateField']); // Pending
-    Route::delete('services/fields/{field}', [Controller::class, 'deleteField']); // Pending
-    Route::post('services/fields/reorder', [Controller::class, 'reorderFields']); // Pending
+    Route::prefix('services')->group(function () {
+        Route::prefix('{service}')->group(function () {
+            Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+            Route::get('/fields', [Controller::class, 'getFields']);
+            Route::post('/fields', [Controller::class, 'addField']);
+            Route::get('/processing-rules', [Controller::class, 'getProcessingRules']);
+            Route::post('/processing-rules', [Controller::class, 'createProcessingRule']);
+            Route::get('/providers', [Controller::class, 'index']);
+            Route::post('/providers', [Controller::class, 'assign']);
+        });
 
-    // Service Processing Rules
-    Route::get('services/{service}/processing-rules', [Controller::class, 'getProcessingRules']); // Pending
-    Route::post('services/{service}/processing-rules', [Controller::class, 'createProcessingRule']); // Pending
-    Route::put('services/processing-rules/{rule}', [Controller::class, 'updateProcessingRule']); // Pending
-    Route::delete('services/processing-rules/{rule}', [Controller::class, 'deleteProcessingRule']); // Pending
-    Route::post('services/processing-rules/{rule}/test', [Controller::class, 'testProcessingRule']); // Pending
+        // Field Management (standalone routes)
+        Route::put('/fields/{field}', [Controller::class, 'updateField']);
+        Route::delete('/fields/{field}', [Controller::class, 'deleteField']);
+        Route::post('/fields/reorder', [Controller::class, 'reorderFields']);
+
+        // Processing Rules (standalone routes)
+        Route::put('/processing-rules/{rule}', [Controller::class, 'updateProcessingRule']);
+        Route::delete('/processing-rules/{rule}', [Controller::class, 'deleteProcessingRule']);
+        Route::post('/processing-rules/{rule}/test', [Controller::class, 'testProcessingRule']);
+
+        // Service-Provider Assignments (standalone routes)
+        Route::put('/providers/{assignment}', [Controller::class, 'update']);
+        Route::delete('/providers/{assignment}', [Controller::class, 'remove']);
+        Route::post('/providers/reorder', [Controller::class, 'reorder']);
+
+        // Field Mappings
+        Route::prefix('providers/{assignment}')->group(function () {
+            Route::get('/field-mappings', [Controller::class, 'index']);
+            Route::post('/field-mappings', [Controller::class, 'store']);
+            Route::get('/response-mappings', [Controller::class, 'index']);
+            Route::post('/response-mappings', [Controller::class, 'store']);
+        });
+
+        Route::put('/providers/field-mappings/{mapping}', [Controller::class, 'update']);
+        Route::delete('/providers/field-mappings/{mapping}', [Controller::class, 'destroy']);
+        Route::put('/providers/response-mappings/{mapping}', [Controller::class, 'update']);
+        Route::delete('/providers/response-mappings/{mapping}', [Controller::class, 'destroy']);
+    });
+
+    Route::apiResource('services', Controller::class);
 
     // Package Management (Admin Packages)
-    Route::apiResource('packages', Controller::class);
-    Route::get('packages/{package}/services', [Controller::class, 'getServices']); // Pending
-    Route::post('packages/{package}/services', [Controller::class, 'addService']); // Pending
-    Route::put('packages/{package}/services/{service}', [Controller::class, 'updateService']); // Pending
-    Route::delete('packages/{package}/services/{service}', [Controller::class, 'removeService']); // Pending
-    Route::post('packages/{package}/duplicate', [Controller::class, 'duplicate']); // Pending
-    Route::post('packages/{package}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
+    Route::prefix('packages/{package}')->group(function () {
+        Route::get('/services', [Controller::class, 'getServices']);
+        Route::post('/services', [Controller::class, 'addService']);
+        Route::put('/services/{service}', [Controller::class, 'updateService']);
+        Route::delete('/services/{service}', [Controller::class, 'removeService']);
+        Route::post('/duplicate', [Controller::class, 'duplicate']);
+        Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+    });
 
-    // Client Service Pricing
-    Route::get('client-pricing', [Controller::class, 'index']); // Pending
-    Route::get('clients/{client}/pricing', [Controller::class, 'getClientPricing']); // Pending
-    Route::post('clients/{client}/pricing', [Controller::class, 'setPricing']); // Pending
-    Route::put('clients/pricing/{pricing}', [Controller::class, 'update']); // Pending
-    Route::delete('clients/pricing/{pricing}', [Controller::class, 'destroy']); // Pending
-    Route::get('clients/{client}/pricing/history', [Controller::class, 'history']); // Pending
+    Route::apiResource('packages', Controller::class);
 
     // Billing Platform Configuration
-    Route::get('billing/platforms', [Controller::class, 'index']); // Pending
-    Route::post('billing/platforms', [Controller::class, 'store']); // Pending
-    Route::put('billing/platforms/{platform}', [Controller::class, 'update']); // Pending
-    Route::delete('billing/platforms/{platform}', [Controller::class, 'destroy']); // Pending
+    Route::prefix('billing')->group(function () {
+        Route::get('/platforms', [Controller::class, 'index']);
+        Route::post('/platforms', [Controller::class, 'store']);
+        Route::put('/platforms/{platform}', [Controller::class, 'update']);
+        Route::delete('/platforms/{platform}', [Controller::class, 'destroy']);
+    });
 
     // Support Platform Configuration
-    Route::get('support/platforms', [Controller::class, 'index']); // Pending
-    Route::post('support/platforms', [Controller::class, 'store']); // Pending
-    Route::put('support/platforms/{platform}', [Controller::class, 'update']); // Pending
-    Route::delete('support/platforms/{platform}', [Controller::class, 'destroy']); // Pending
+    Route::prefix('support')->group(function () {
+        Route::get('/platforms', [Controller::class, 'index']);
+        Route::post('/platforms', [Controller::class, 'store']);
+        Route::put('/platforms/{platform}', [Controller::class, 'update']);
+        Route::delete('/platforms/{platform}', [Controller::class, 'destroy']);
+    });
 
     // Email Templates
+    Route::prefix('email-templates/{template}')->group(function () {
+        Route::post('/duplicate', [Controller::class, 'duplicate']);
+        Route::post('/test', [Controller::class, 'test']);
+    });
+
     Route::apiResource('email-templates', Controller::class);
-    Route::post('email-templates/{template}/duplicate', [Controller::class, 'duplicate']); // Pending
-    Route::post('email-templates/{template}/test', [Controller::class, 'test']); // Pending
 
     // Reports
     Route::prefix('reports')->group(function () {
-        Route::get('revenue', [Controller::class, 'revenue']); // Pending
-        Route::get('orders', [Controller::class, 'orders']); // Pending
-        Route::get('services', [Controller::class, 'services']); // Pending
-        Route::get('clients', [Controller::class, 'clients']); // Pending
-        Route::get('candidates', [Controller::class, 'candidates']); // Pending
-        Route::get('processing-times', [Controller::class, 'processingTimes']); // Pending
-        Route::get('export/{type}', [Controller::class, 'export']); // Pending
+        Route::get('/revenue', [Controller::class, 'revenue']);
+        Route::get('/orders', [Controller::class, 'orders']);
+        Route::get('/services', [Controller::class, 'services']);
+        Route::get('/clients', [Controller::class, 'clients']);
+        Route::get('/candidates', [Controller::class, 'candidates']);
+        Route::get('/processing-times', [Controller::class, 'processingTimes']);
+        Route::get('/export/{type}', [Controller::class, 'export']);
     });
 
     // Provider CRUD
-    Route::apiResource('providers', Controller::class); // Pending
-    Route::post('providers/{provider}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
-    Route::get('providers/{provider}/stats', [Controller::class, 'stats']); // Pending
+    Route::prefix('providers/{provider}')->group(function () {
+        Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+        Route::get('/stats', [Controller::class, 'stats']);
+        Route::get('/configs', [Controller::class, 'index']);
+        Route::post('/configs', [Controller::class, 'store']);
+        Route::get('/costs', [Controller::class, 'index']);
+        Route::post('/costs', [Controller::class, 'store']);
+    });
 
-    // Provider API Configs
-    Route::get('providers/{provider}/configs', [Controller::class, 'index']); // Pending
-    Route::post('providers/{provider}/configs', [Controller::class, 'store']); // Pending
-    Route::put('providers/configs/{config}', [Controller::class, 'update']); // Pending
-    Route::delete('providers/configs/{config}', [Controller::class, 'destroy']); // Pending
-    Route::post('providers/configs/{config}/test', [Controller::class, 'testConnection']); // Pending
+    Route::apiResource('providers', Controller::class);
 
-    // Service-Provider Assignments
-    Route::get('services/{service}/providers', [Controller::class, 'index']); // Pending
-    Route::post('services/{service}/providers', [Controller::class, 'assign']); // Pending
-    Route::put('services/providers/{assignment}', [Controller::class, 'update']); // Pending
-    Route::delete('services/providers/{assignment}', [Controller::class, 'remove']); // Pending
-    Route::post('services/providers/reorder', [Controller::class, 'reorder']); // Pending
+    // Provider standalone routes
+    Route::prefix('providers')->group(function () {
+        Route::put('/configs/{config}', [Controller::class, 'update']);
+        Route::delete('/configs/{config}', [Controller::class, 'destroy']);
+        Route::post('/configs/{config}/test', [Controller::class, 'testConnection']);
+        Route::put('/costs/{cost}', [Controller::class, 'update']);
 
-    // Field Mappings
-    Route::get('services/providers/{assignment}/field-mappings', [Controller::class, 'index']); // Pending
-    Route::post('services/providers/{assignment}/field-mappings', [Controller::class, 'store']); // Pending
-    Route::put('services/providers/field-mappings/{mapping}', [Controller::class, 'update']); // Pending
-    Route::delete('services/providers/field-mappings/{mapping}', [Controller::class, 'destroy']); // Pending
-
-    // Response Mappings
-    Route::get('services/providers/{assignment}/response-mappings', [Controller::class, 'index']); // Pending
-    Route::post('services/providers/{assignment}/response-mappings', [Controller::class, 'store']); // Pending
-    Route::put('services/providers/response-mappings/{mapping}', [Controller::class, 'update']);  // Pending
-    Route::delete('services/providers/response-mappings/{mapping}', [Controller::class, 'destroy']); // Pending
-
-    // Provider Monitoring
-    Route::get('providers/monitoring/health', [Controller::class, 'health']); // Pending
-    Route::get('providers/monitoring/performance', [Controller::class, 'performance']); // Pending
-    Route::get('providers/monitoring/outages', [Controller::class, 'outages']); // Pending
-    Route::get('providers/monitoring/costs', [Controller::class, 'costs']); // Pending
-
-    // Provider Costs
-    Route::get('providers/{provider}/costs', [Controller::class, 'index']); // Pending
-    Route::post('providers/{provider}/costs', [Controller::class, 'store']); // Pending
-    Route::put('providers/costs/{cost}', [Controller::class, 'update']); // Pending
+        // Provider Monitoring
+        Route::prefix('monitoring')->group(function () {
+            Route::get('/health', [Controller::class, 'health']);
+            Route::get('/performance', [Controller::class, 'performance']);
+            Route::get('/outages', [Controller::class, 'outages']);
+            Route::get('/costs', [Controller::class, 'costs']);
+        });
+    });
 
     // System Monitoring
-    Route::get('system/health', [Controller::class, 'health']); // Pending
-    Route::get('system/queue-stats', [Controller::class, 'queueStats']); // Pending
-    Route::get('system/failed-jobs', [Controller::class, 'failedJobs']); // Pending
-    Route::post('system/failed-jobs/{id}/retry', [Controller::class, 'retryJob']); // Pending
-    Route::delete('system/failed-jobs/{id}', [Controller::class, 'deleteFailedJob']); // Pending
-    Route::get('system/cron-jobs', [Controller::class, 'cronJobs']); // Pending
-    Route::post('system/cron-jobs/{job}/run', [Controller::class, 'runCronJob']); // Pending
+    Route::prefix('system')->group(function () {
+        Route::get('/health', [Controller::class, 'health']);
+        Route::get('/queue-stats', [Controller::class, 'queueStats']);
+        Route::get('/failed-jobs', [Controller::class, 'failedJobs']);
+        Route::post('/failed-jobs/{id}/retry', [Controller::class, 'retryJob']);
+        Route::delete('/failed-jobs/{id}', [Controller::class, 'deleteFailedJob']);
+        Route::get('/cron-jobs', [Controller::class, 'cronJobs']);
+        Route::post('/cron-jobs/{job}/run', [Controller::class, 'runCronJob']);
+    });
 
     // Audit Logs
-    Route::get('audit-logs', [Controller::class, 'index']); // Pending
-    Route::get('audit-logs/{id}', [Controller::class, 'show']); // Pending
-    Route::get('audit-logs/export', [Controller::class, 'export']); // Pending
+    Route::prefix('audit-logs')->group(function () {
+        Route::get('/', [Controller::class, 'index']);
+        Route::get('/{id}', [Controller::class, 'show']);
+        Route::get('/export', [Controller::class, 'export']);
+    });
 
-    // Client API Configuration
-    Route::get('clients/{client}/api-keys', [Controller::class, 'index']); // Pending
-    Route::post('clients/{client}/api-keys', [Controller::class, 'store']); // Pending
-    Route::put('clients/api-keys/{key}', [Controller::class, 'update']); // Pending
-    Route::delete('clients/api-keys/{key}', [Controller::class, 'destroy']); // Pending
+    // API Management
+    Route::prefix('api')->group(function () {
+        Route::get('/settings', [Controller::class, 'index']);
+        Route::put('/settings', [Controller::class, 'update']);
 
-    // Global API Settings
-    Route::get('api/settings', [Controller::class, 'index']); // Pending
-    Route::put('api/settings', [Controller::class, 'update']); // Pending
-
-    // API Monitoring
-    Route::get('api/monitoring/overview', [Controller::class, 'overview']); // Pending
-    Route::get('api/monitoring/clients', [Controller::class, 'clientUsage']); // Pending
-    Route::get('api/monitoring/errors', [Controller::class, 'errorLogs']); // Pending
-    Route::get('api/monitoring/rate-limits', [Controller::class, 'rateLimitHits']); // Pending
+        Route::prefix('monitoring')->group(function () {
+            Route::get('/overview', [Controller::class, 'overview']);
+            Route::get('/clients', [Controller::class, 'clientUsage']);
+            Route::get('/errors', [Controller::class, 'errorLogs']);
+            Route::get('/rate-limits', [Controller::class, 'rateLimitHits']);
+        });
+    });
 
     // Webhook Monitoring
-    Route::get('webhooks/monitoring', [Controller::class, 'index']); // Pending
-    Route::get('webhooks/failed', [Controller::class, 'failedDeliveries']); // Pending
-    Route::post('webhooks/{log}/retry', [Controller::class, 'retry']); // Pending
+    Route::prefix('webhooks')->group(function () {
+        Route::get('/monitoring', [Controller::class, 'index']);
+        Route::get('/failed', [Controller::class, 'failedDeliveries']);
+        Route::post('/{log}/retry', [Controller::class, 'retry']);
+    });
 });
