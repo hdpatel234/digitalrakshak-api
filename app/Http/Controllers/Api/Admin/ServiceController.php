@@ -64,4 +64,36 @@ class ServiceController extends BaseController
             ]
         ]);
     }
+
+    /**
+     * Store a newly created service.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'service_name' => 'required|string|max:255',
+            'service_code' => 'required|string|max:255|unique:services,service_code',
+            'service_category' => 'required|exists:service_categories,id',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'base_price' => 'required|numeric|min:0',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $service = Service::create($validator->validated());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Service created successfully.',
+            'data' => $service
+        ], 201);
+    }
 }
