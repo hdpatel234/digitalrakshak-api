@@ -53,7 +53,7 @@ Route::prefix('v1/auth')->middleware('throttle:100,1')->group(function () {
 
         Route::post('change-password', [ChangePasswordController::class, 'changePassword']);
 
-        // Route::get('permissions', [LoginController::class, 'getPermissions']);
+        Route::get('permissions', [ProfileController::class, 'getPermissions']);
         // Route::get('notifications', [LoginController::class, 'index']);
         // Route::post('notifications/{id}/read', [LoginController::class, 'markAsRead']);
         // Route::post('notifications/read-all', [LoginController::class, 'markAllAsRead']);

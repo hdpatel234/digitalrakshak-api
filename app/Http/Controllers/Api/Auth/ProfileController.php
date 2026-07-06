@@ -40,6 +40,14 @@ class ProfileController extends BaseController
         return $this->success('auth.get_profile.response_messages.profile_success', $response);
     }
 
+    public function getPermissions()
+    {
+        $user = auth()->user();
+        $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
+
+        return $this->success('Permissions retrieved successfully', $permissions);
+    }
+
     public function updateProfile(UpdateProfileRequest $request)
     {
         try {
