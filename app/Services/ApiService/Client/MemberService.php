@@ -62,6 +62,14 @@ class MemberService extends BaseService
 
     public function createUser(array $data, int $clientId)
     {
+        $permissions = [];
+        $hasPermissions = false;
+        if (array_key_exists('permissions', $data)) {
+            $permissions = $data['permissions'] ?? [];
+            $hasPermissions = true;
+            unset($data['permissions']);
+        }
+
         $data[$this->userRepository->clientID()] = $clientId;
         $data[$this->userRepository->userType()] = UserType::CLIENT_USER;
         $data[$this->userRepository->isActive()] = 1;
@@ -70,11 +78,22 @@ class MemberService extends BaseService
             $data[$this->userRepository->password()] = Hash::make(Str::random(12));
         }
 
-        return $this->userRepository->create($data);
+        $user = $this->userRepository->create($data);
+        
+        // Ensure user has client_user role
+        if (!$user->hasRole('client_user')) {
+            $user->assignRole('client_user');
+        }
+
+        if ($hasPermissions) {
+            $user->syncPermissions($permissions);
+        }
+
+        return $user;
     }
     public function showUser($user)
     {
-        return $this->userRepository->find($user);
+        return $this->userRepository->query()->with('permissions')->find($user);
     }
     public function updateUser(array $data, int $clientId, $userId)
     {
@@ -87,7 +106,21 @@ class MemberService extends BaseService
             throw new \Exception("User not found or you don't have permission to update this user.", 404);
         }
 
-        return $this->userRepository->update($userId, $data);
+        $permissions = [];
+        $hasPermissions = false;
+        if (array_key_exists('permissions', $data)) {
+            $permissions = $data['permissions'] ?? [];
+            $hasPermissions = true;
+            unset($data['permissions']);
+        }
+
+        $user = $this->userRepository->update($userId, $data);
+
+        if ($hasPermissions) {
+            $userObj->syncPermissions($permissions);
+        }
+
+        return $user;
     }
     public function destroyUser(int $clientId, $userId)
     {

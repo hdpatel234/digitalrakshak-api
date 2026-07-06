@@ -25,10 +25,12 @@ class UpdateMemberRequest extends FormRequest
 
         return [
             'email' => 'required|email|max:255|unique:users,email,' . $userId,
-            'first_name' => 'nullable|string|max:255',
-            'last_name' => 'nullable|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'phone_code' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
+            'permissions' => 'required|array|min:1',
+            'permissions.*' => 'string',
         ];
     }
 }
