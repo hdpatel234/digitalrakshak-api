@@ -11,6 +11,8 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use App\Models\Invoice;
+use App\Models\SupportTicket;
 class SearchController extends BaseController
 {
     use ApiResponse;
@@ -171,6 +173,57 @@ class SearchController extends BaseController
             $results[] = [
                 'title' => 'Orders',
                 'data' => $orderData,
+            ];
+        }
+
+        // 6. Search Invoices
+        $invoices = Invoice::where('client_id', $clientId)
+            ->where('invoice_number', 'like', "%{$queryStr}%")
+            ->limit(5)
+            ->get();
+
+        if ($invoices->isNotEmpty()) {
+            $invoiceData = $invoices->map(function ($i) {
+                return [
+                    'key' => "invoice-{$i->id}",
+                    'path' => "/billing/invoices?search={$i->invoice_number}",
+                    'title' => "Invoice {$i->invoice_number}",
+                    'icon' => 'invoices',
+                    'category' => 'Invoices',
+                    'categoryTitle' => 'Invoices',
+                ];
+            })->toArray();
+
+            $results[] = [
+                'title' => 'Invoices',
+                'data' => $invoiceData,
+            ];
+        }
+
+        // 7. Search Support Tickets
+        $tickets = SupportTicket::where('client_id', $clientId)
+            ->where(function ($query) use ($queryStr) {
+                $query->where('ticket_number', 'like', "%{$queryStr}%")
+                      ->orWhere('subject', 'like', "%{$queryStr}%");
+            })
+            ->limit(5)
+            ->get();
+
+        if ($tickets->isNotEmpty()) {
+            $ticketData = $tickets->map(function ($t) {
+                return [
+                    'key' => "ticket-{$t->id}",
+                    'path' => "/support/ticket-details/{$t->id}",
+                    'title' => "Ticket {$t->ticket_number}: {$t->subject}",
+                    'icon' => 'help', // or tickets
+                    'category' => 'Support Tickets',
+                    'categoryTitle' => 'Support Tickets',
+                ];
+            })->toArray();
+
+            $results[] = [
+                'title' => 'Support Tickets',
+                'data' => $ticketData,
             ];
         }
 
