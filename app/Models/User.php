@@ -169,4 +169,13 @@ class User extends BaseAuthenticatable
     {
         return $this->hasMany(UserShortcut::class, UserShortcut::USER_ID);
     }
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+        if (!empty($array[self::AVATAR])) {
+            $array[self::AVATAR] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $array[self::AVATAR], '/');
+        }
+        return $array;
+    }
 }
