@@ -86,12 +86,14 @@ class DashboardController extends Controller
                             'expires_at' => '2026-12-31' // Placeholder
                         ];
                 }),
-                'latest_candidates' => Candidate::latest()->take(5)->get()->map(function($cand) {
+                'latest_candidates' => Candidate::withCount('packages')->latest()->take(5)->get()->map(function($cand) {
                     return [
                         'id' => $cand->id,
                         'name' => $cand->first_name . ' ' . $cand->last_name,
-                        'status' => 'Pending',
-                        'created_at' => $cand->created_at->format('Y-m-d H:i:s')
+                        'email' => $cand->email,
+                        'packages_count' => $cand->packages_count,
+                        'status' => $cand->status ?? 'Pending',
+                        'created_at' => $cand->created_at ? $cand->created_at->format('Y-m-d H:i:s') : null
                     ];
                 })
             ]
