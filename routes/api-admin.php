@@ -11,7 +11,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
     Route::get('/dashboard/recent-activities', [Controller::class, 'recentActivities']); // Pending
 
     // Client Management
-    Route::apiResource('clients', Controller::class);
+    Route::apiResource('clients', App\Http\Controllers\Api\Admin\ClientController::class);
     Route::post('clients/{client}/toggle-status', [Controller::class, 'toggleStatus']); // Pending
     Route::get('clients/{client}/stats', [Controller::class, 'getStats']); // Pending
     Route::get('clients/{client}/orders', [Controller::class, 'getOrders']); // Pending
