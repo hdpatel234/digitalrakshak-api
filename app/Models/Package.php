@@ -41,4 +41,9 @@ class Package extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
 }
