@@ -95,4 +95,9 @@ class CandidateOrder extends BaseModel
     {
         return $this->hasMany(PaymentTransaction::class, PaymentTransaction::ORDER_ID);
     }
+
+    public function client(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
 }

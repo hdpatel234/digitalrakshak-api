@@ -101,6 +101,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     Route::apiResource('packages', App\Http\Controllers\Api\Admin\PackageController::class);
 
+    // Orders Management (Global)
+    Route::get('orders', [App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
+
     // Client Packages
     Route::prefix('client-packages')->group(function () {
         Route::get('/', [App\Http\Controllers\Api\Admin\ClientPackageController::class, 'index']);
