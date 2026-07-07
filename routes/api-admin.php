@@ -144,6 +144,12 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::post('/platforms', [Controller::class, 'store']);
         Route::put('/platforms/{platform}', [Controller::class, 'update']);
         Route::delete('/platforms/{platform}', [Controller::class, 'destroy']);
+        
+        // Support Tickets
+        Route::get('/tickets', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'index']);
+        Route::get('/tickets/{ticket}', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'show']);
+        Route::get('/tickets/{ticket}/conversations', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'conversations']);
+        Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'reply']);
     });
 
     // Email Templates

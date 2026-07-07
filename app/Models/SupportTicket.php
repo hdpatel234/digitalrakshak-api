@@ -72,4 +72,9 @@ class SupportTicket extends BaseModel
     {
         return $this->belongsTo(SupportPriority::class, self::PRIORITY_ID);
     }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
 }
