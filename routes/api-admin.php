@@ -147,6 +147,10 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         
         // Support Tickets
         Route::get('/tickets', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'index']);
+        Route::get('/tickets/meta/departments', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'departments']);
+        Route::get('/tickets/meta/priorities', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'priorities']);
+        Route::get('/tickets/meta/orders/{clientId}', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'orders']);
+        Route::post('/tickets', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'store']);
         Route::get('/tickets/{ticket}', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'show']);
         Route::get('/tickets/{ticket}/conversations', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'conversations']);
         Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\Api\Admin\SupportTicketController::class, 'reply']);

@@ -71,4 +71,54 @@ class SupportTicketController extends Controller
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
     }
+
+    public function departments()
+    {
+        try {
+            $result = $this->service->getDepartments();
+            return $this->success('Departments fetched successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function priorities()
+    {
+        try {
+            $result = $this->service->getPriorities();
+            return $this->success('Priorities fetched successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function orders($clientId)
+    {
+        try {
+            $result = $this->service->getClientOrders((int) $clientId);
+            return $this->success('Orders fetched successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'client_id' => 'required|integer',
+            'title' => 'required|string',
+            'message' => 'required|string',
+            'department' => 'required|integer',
+            'priority' => 'required|integer',
+        ]);
+
+        $user = $request->user('api') ?? $request->user();
+
+        try {
+            $result = $this->service->createTicket($request->all(), (int) $request->input('client_id'), $user);
+            return $this->success('Support ticket created successfully.', $result);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
 }

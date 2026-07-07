@@ -8,6 +8,7 @@ use App\Repositories\SupportTicketRepository;
 use App\Services\BaseService;
 use App\Services\UserService;
 use App\Models\SupportTicketConversation;
+use Illuminate\Support\Str;
 
 /**
  * @property SupportTicketRepository $repository
@@ -258,5 +259,59 @@ class SupportTicketService extends BaseService
         ]);
 
         return $conversation->toArray();
+    }
+
+    public function getDepartments()
+    {
+        return $this->departmentRepository->getActiveDepartments();
+    }
+
+    public function getPriorities()
+    {
+        return $this->priorityRepository->getActivePriorities();
+    }
+
+    public function getClientOrders(int $clientId)
+    {
+        return \App\Models\CandidateOrder::where('client_id', $clientId)
+            ->select('id', 'order_number')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    public function createTicket(array $payload, int $clientId, ?object $user): array
+    {
+        $email = $user->email ?? 'admin@example.com';
+        $name = $user ? ($user->{$this->userService->firstName()} . ' ' . $user->{$this->userService->lastName()}) : 'Admin Support';
+        
+        $ticketNumber = strtoupper(Str::random(3)) . rand(100, 999);
+
+        $attachments = $payload['attachments'] ?? $payload['attachment'] ?? [];
+        $storedAttachments = $this->handleAttachments($attachments);
+
+        $ticket = $this->repository->create([
+            $this->repository->clientId() => $clientId,
+            $this->repository->orderId() => $payload['order'] ?? null,
+            $this->repository->departmentId() => $payload['department'] ?? null,
+            $this->repository->priorityId() => $payload['priority'] ?? null,
+            $this->repository->ticketNumber() => $ticketNumber,
+            $this->repository->subject() => $payload['title'] ?? '',
+            $this->repository->description() => $payload['message'] ?? '',
+            $this->repository->status() => 'open',
+            $this->repository->createdBy() => $user?->id,
+        ]);
+
+        SupportTicketConversation::create([
+            'ticket_id' => $ticket->id,
+            'message' => $payload['message'] ?? '',
+            'sender_type' => 'agent',
+            'sender_name' => trim($name) ?: 'Admin Support',
+            'sender_email' => $email,
+            'is_internal' => false,
+            'attachments' => json_encode($storedAttachments),
+        ]);
+
+        return $ticket->toArray();
     }
 }
