@@ -11,6 +11,10 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/revenue-chart', [Controller::class, 'revenueChart']);
         Route::get('/recent-activities', [Controller::class, 'recentActivities']);
     });
+    
+    // Global Search
+    Route::get('/search', [App\Http\Controllers\Api\Admin\SearchController::class, 'search']);
+
 
     // Client Management
     Route::prefix('clients/{client}')->group(function () {
