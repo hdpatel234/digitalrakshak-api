@@ -122,10 +122,13 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Billing Platform Configuration
     Route::prefix('billing')->group(function () {
-        Route::get('/platforms', [Controller::class, 'index']);
-        Route::post('/platforms', [Controller::class, 'store']);
-        Route::put('/platforms/{platform}', [Controller::class, 'update']);
-        Route::delete('/platforms/{platform}', [Controller::class, 'destroy']);
+        Route::get('/platforms', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'index']);
+        Route::get('/platforms/{platform}', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'show']);
+        Route::post('/platforms', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'store']);
+        Route::put('/platforms/{platform}', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'update']);
+        Route::delete('/platforms/{platform}', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'destroy']);
+        Route::post('/platforms/{platform}/toggle-status', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'toggleStatus']);
+        Route::post('/platforms/{platform}/toggle-default', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'toggleDefault']);
     });
 
     // Support Platform Configuration
