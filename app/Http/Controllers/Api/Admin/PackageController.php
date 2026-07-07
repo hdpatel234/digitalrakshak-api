@@ -34,11 +34,34 @@ class PackageController extends BaseController
         $perPage = $request->get('limit', 10);
         $packages = $query->paginate($perPage);
         
-        $mappedPackages = collect($packages->items())->map(function ($package) {
+        $packageIds = collect($packages->items())->pluck('id')->toArray();
+        
+        $packageServices = \App\Models\PackageService::whereIn('package_id', $packageIds)
+            ->whereIn('status', ['active', 1])
+            ->get();
+            
+        $serviceIds = $packageServices->pluck('service_id')->unique()->toArray();
+        $services = \App\Models\Service::whereIn('id', $serviceIds)->get()->keyBy('id');
+        
+        $servicesByPackageId = [];
+        foreach ($packageServices as $ps) {
+            $service = $services->get($ps->service_id);
+            if ($service) {
+                if (!isset($servicesByPackageId[$ps->package_id])) {
+                    $servicesByPackageId[$ps->package_id] = [];
+                }
+                $servicesByPackageId[$ps->package_id][] = [
+                    'service_id' => $service->id,
+                    'service_name' => $service->service_name,
+                    'service_code' => $service->service_code,
+                    'base_price' => $service->base_price,
+                ];
+            }
+        }
+        
+        $mappedPackages = collect($packages->items())->map(function ($package) use ($servicesByPackageId) {
             $data = $package->toArray();
-            // Fetch available candidates if needed (can be implemented later or similar to Client PackageService)
-            // For now just pass services as empty array if none, or we can load package services if they are mapped
-            $data['services'] = [];
+            $data['services'] = $servicesByPackageId[$package->id] ?? [];
             $data['available_candidates'] = 0;
             return $data;
         });
