@@ -129,6 +129,13 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::delete('/platforms/{platform}', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'destroy']);
         Route::post('/platforms/{platform}/toggle-status', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'toggleStatus']);
         Route::post('/platforms/{platform}/toggle-default', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'toggleDefault']);
+
+        Route::get('/platforms/{platform}/configs', [App\Http\Controllers\Api\Admin\BillingPlatformConfigController::class, 'index']);
+        Route::post('/platforms/{platform}/configs', [App\Http\Controllers\Api\Admin\BillingPlatformConfigController::class, 'store']);
+        Route::put('/platforms/{platform}/configs/{config}', [App\Http\Controllers\Api\Admin\BillingPlatformConfigController::class, 'update']);
+        Route::delete('/platforms/{platform}/configs/{config}', [App\Http\Controllers\Api\Admin\BillingPlatformConfigController::class, 'destroy']);
+        
+        Route::get('/refunds', [App\Http\Controllers\Api\Admin\RefundController::class, 'index']);
     });
 
     // Support Platform Configuration
