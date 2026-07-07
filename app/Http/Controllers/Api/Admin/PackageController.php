@@ -58,18 +58,15 @@ class PackageController extends BaseController
         ]);
     }
 
-    /**
-     * Store a newly created package.
-     */
     public function store(Request $request): JsonResponse
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'package_name' => 'required|string|max:255',
-            'package_code' => 'required|string|max:255|unique:packages,package_code',
             'description' => 'nullable|string',
             'icon' => 'nullable|string',
-            'total_price' => 'required|numeric|min:0',
-            'status' => 'required|in:active,inactive',
+            'service_ids' => 'required|array',
+            'service_ids.*' => 'exists:services,id',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -81,18 +78,67 @@ class PackageController extends BaseController
         }
 
         $data = $validator->validated();
-        $data['type'] = 'admin';
-        $data['client_id'] = 0;
-        $data['final_price'] = $data['total_price'];
-        $data['is_active'] = 1;
-        $data['created_by'] = $request->user('api')?->id;
+        $serviceIds = array_values(array_unique($data['service_ids']));
 
-        $package = Package::create($data);
+        // Calculate total price based on services
+        $services = \App\Models\Service::whereIn('id', $serviceIds)->get();
+        if ($services->count() !== count($serviceIds)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => ['service_ids' => ['Some services are invalid.']]
+            ], 422);
+        }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Package created successfully.',
-            'data' => $package
-        ], 201);
+        $totalPrice = $services->sum('base_price');
+        
+        $packageCode = 'AP-' . strtoupper(\Illuminate\Support\Str::random(5));
+        while (\App\Models\Package::where('package_code', $packageCode)->exists()) {
+            $packageCode = 'AP-' . strtoupper(\Illuminate\Support\Str::random(5));
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $package = Package::create([
+                'package_name' => $data['package_name'],
+                'package_code' => $packageCode,
+                'description' => $data['description'] ?? null,
+                'icon' => $data['icon'] ?? null,
+                'total_price' => $totalPrice,
+                'final_price' => $totalPrice,
+                'type' => 'admin',
+                'client_id' => 0,
+                'is_active' => 1,
+                'status' => $data['status'] ?? 'active',
+                'created_by' => $request->user('api')?->id,
+            ]);
+
+            foreach ($serviceIds as $index => $serviceId) {
+                \App\Models\PackageService::create([
+                    'package_id' => $package->id,
+                    'service_id' => $serviceId,
+                    'is_mandatory' => 1,
+                    'display_order' => $index + 1,
+                    'status' => 'active',
+                    'created_by' => $request->user('api')?->id,
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Package created successfully.',
+                'data' => $package
+            ], 201);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create package.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
