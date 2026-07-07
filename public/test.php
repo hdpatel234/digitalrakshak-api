@@ -16,7 +16,7 @@ ini_set('default_socket_timeout', 120);
 
 require '../vendor/autoload.php';
 
-use phpseclib\Crypt\RSA;
+use phpseclib3\Crypt\RSA;
 
 // Configuration
 define('API_BASE_URL', 'https://uat.risewithprotean.io');
