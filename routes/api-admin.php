@@ -107,6 +107,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
     // Invoices Management (Global)
     Route::get('invoices', [App\Http\Controllers\Api\Admin\InvoiceController::class, 'index']);
 
+    // Transactions Management (Global)
+    Route::get('transactions', [App\Http\Controllers\Api\Admin\TransactionController::class, 'index']);
+
     // Candidates Management (Global)
     Route::get('candidates', [App\Http\Controllers\Api\Admin\CandidateController::class, 'index']);
 
