@@ -87,15 +87,15 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Package Management (Admin Packages)
     Route::prefix('packages/{package}')->group(function () {
-        Route::get('/services', [Controller::class, 'getServices']);
-        Route::post('/services', [Controller::class, 'addService']);
-        Route::put('/services/{service}', [Controller::class, 'updateService']);
-        Route::delete('/services/{service}', [Controller::class, 'removeService']);
-        Route::post('/duplicate', [Controller::class, 'duplicate']);
-        Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+        Route::get('/services', [App\Http\Controllers\Api\Admin\PackageController::class, 'getServices']);
+        Route::post('/services', [App\Http\Controllers\Api\Admin\PackageController::class, 'addService']);
+        Route::put('/services/{service}', [App\Http\Controllers\Api\Admin\PackageController::class, 'updateService']);
+        Route::delete('/services/{service}', [App\Http\Controllers\Api\Admin\PackageController::class, 'removeService']);
+        Route::post('/duplicate', [App\Http\Controllers\Api\Admin\PackageController::class, 'duplicate']);
+        Route::post('/toggle-status', [App\Http\Controllers\Api\Admin\PackageController::class, 'toggleStatus']);
     });
 
-    Route::apiResource('packages', Controller::class);
+    Route::apiResource('packages', App\Http\Controllers\Api\Admin\PackageController::class);
 
     // Billing Platform Configuration
     Route::prefix('billing')->group(function () {
