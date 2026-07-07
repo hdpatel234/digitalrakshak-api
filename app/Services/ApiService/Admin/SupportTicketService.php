@@ -271,13 +271,17 @@ class SupportTicketService extends BaseService
         return $this->priorityRepository->getActivePriorities();
     }
 
-    public function getClientOrders(int $clientId)
+    public function getClientOrders(?int $clientId = null)
     {
-        return \App\Models\CandidateOrder::where('client_id', $clientId)
+        $query = \App\Models\CandidateOrder::query()
             ->select('id', 'order_number')
-            ->orderBy('id', 'desc')
-            ->get()
-            ->toArray();
+            ->orderBy('id', 'desc');
+
+        if ($clientId) {
+            $query->where('client_id', $clientId);
+        }
+
+        return $query->get()->toArray();
     }
 
     public function createTicket(array $payload, int $clientId, ?object $user): array

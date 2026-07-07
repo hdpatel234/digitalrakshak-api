@@ -92,10 +92,11 @@ class SupportTicketController extends Controller
         }
     }
 
-    public function orders($clientId)
+    public function orders(Request $request)
     {
         try {
-            $result = $this->service->getClientOrders((int) $clientId);
+            $clientId = $request->input('client_id');
+            $result = $this->service->getClientOrders($clientId ? (int) $clientId : null);
             return $this->success('Orders fetched successfully.', $result);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
