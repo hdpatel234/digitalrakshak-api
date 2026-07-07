@@ -20,7 +20,7 @@
         "razorpay/razorpay": "^2.9",
         "smalot/pdfparser": "^2.12",
         "spatie/laravel-permission": "^6.24",
-        "phpseclib/phpseclib": "~2"
+        "phpseclib/phpseclib": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
