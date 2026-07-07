@@ -63,6 +63,11 @@ class Invoice extends BaseModel
         self::UPDATED_BY,
     ];
 
+    public function client()
+    {
+        return $this->belongsTo(Client::class, self::CLIENT_ID);
+    }
+
     public function order()
     {
         return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
