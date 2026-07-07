@@ -14,7 +14,7 @@ error_reporting(E_ALL);
 set_time_limit(120);
 ini_set('default_socket_timeout', 120);
 
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use phpseclib\Crypt\RSA;
 
