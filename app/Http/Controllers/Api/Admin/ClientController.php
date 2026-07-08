@@ -67,13 +67,55 @@ class ClientController extends BaseController
             $data['logo'] = $request->file('logo')->store('clients/logos', 'public');
         }
         
-        $client = Client::create($data);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $client = Client::create($data);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Client created successfully.',
-            'data' => $client
-        ], 201);
+            if ($request->has('services')) {
+                $servicesJson = $request->input('services');
+                $services = is_string($servicesJson) ? json_decode($servicesJson, true) : $servicesJson;
+
+                if (is_array($services)) {
+                    foreach ($services as $serviceData) {
+                        $serviceId = $serviceData['service_id'] ?? null;
+                        if (!$serviceId) continue;
+
+                        $isEnabled = $serviceData['is_enabled'] ?? true;
+                        $customPrice = $serviceData['custom_price'] ?? null;
+
+                        \App\Models\ClientService::updateOrCreate(
+                            ['client_id' => $client->id, 'service_id' => $serviceId],
+                            ['status' => $isEnabled ? 'active' : 'inactive']
+                        );
+
+                        if ($customPrice !== null && $customPrice !== '') {
+                            \App\Models\ClientServicePricing::updateOrCreate(
+                                ['client_id' => $client->id, 'service_id' => $serviceId],
+                                [
+                                    'custom_price' => $customPrice,
+                                    'effective_from' => now()->toDateString()
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Client created successfully.',
+                'data' => $client
+            ], 201);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create client.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -81,10 +123,31 @@ class ClientController extends BaseController
      */
     public function show(Client $client): JsonResponse
     {
+        $clientServices = \App\Models\ClientService::where('client_id', $client->id)->get()->keyBy('service_id');
+        $clientPricing = \App\Models\ClientServicePricing::where('client_id', $client->id)->get()->keyBy('service_id');
+
+        $services = [];
+        foreach ($clientServices as $serviceId => $clientService) {
+            if ($clientService->status === 'active') {
+                $customPrice = null;
+                if ($clientPricing->has($serviceId)) {
+                    $customPrice = $clientPricing->get($serviceId)->custom_price;
+                }
+                $services[] = [
+                    'service_id' => (string) $serviceId,
+                    'is_enabled' => true,
+                    'custom_price' => $customPrice !== null ? (float) $customPrice : ''
+                ];
+            }
+        }
+
+        $clientData = $client->toArray();
+        $clientData['services'] = $services;
+
         return response()->json([
             'status' => true,
             'message' => 'Client retrieved successfully.',
-            'data' => $client
+            'data' => $clientData
         ]);
     }
 
@@ -99,13 +162,73 @@ class ClientController extends BaseController
             $data['logo'] = $request->file('logo')->store('clients/logos', 'public');
         }
         
-        $client->update($data);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $client->update($data);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Client updated successfully.',
-            'data' => $client
-        ]);
+            if ($request->has('services')) {
+                $servicesJson = $request->input('services');
+                $services = is_string($servicesJson) ? json_decode($servicesJson, true) : $servicesJson;
+
+                if (is_array($services)) {
+                    $providedServiceIds = [];
+
+                    foreach ($services as $serviceData) {
+                        $serviceId = $serviceData['service_id'] ?? null;
+                        if (!$serviceId) continue;
+                        
+                        $providedServiceIds[] = $serviceId;
+
+                        $isEnabled = $serviceData['is_enabled'] ?? true;
+                        $customPrice = $serviceData['custom_price'] ?? null;
+
+                        \App\Models\ClientService::updateOrCreate(
+                            ['client_id' => $client->id, 'service_id' => $serviceId],
+                            ['status' => $isEnabled ? 'active' : 'inactive']
+                        );
+
+                        if ($customPrice !== null && $customPrice !== '') {
+                            \App\Models\ClientServicePricing::updateOrCreate(
+                                ['client_id' => $client->id, 'service_id' => $serviceId],
+                                [
+                                    'custom_price' => $customPrice,
+                                    'effective_from' => now()->toDateString()
+                                ]
+                            );
+                        } else {
+                            \App\Models\ClientServicePricing::where('client_id', $client->id)
+                                ->where('service_id', $serviceId)
+                                ->delete();
+                        }
+                    }
+                    
+                    // Set status to inactive for services not in the list
+                    if (!empty($providedServiceIds)) {
+                        \App\Models\ClientService::where('client_id', $client->id)
+                            ->whereNotIn('service_id', $providedServiceIds)
+                            ->update(['status' => 'inactive']);
+                    } else {
+                        \App\Models\ClientService::where('client_id', $client->id)
+                            ->update(['status' => 'inactive']);
+                    }
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Client updated successfully.',
+                'data' => $client
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update client.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
