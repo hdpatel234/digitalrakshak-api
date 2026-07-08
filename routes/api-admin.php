@@ -20,9 +20,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/stats', [Controller::class, 'getStats']);
         Route::get('/orders', [Controller::class, 'getOrders']);
         Route::get('/invoices', [Controller::class, 'getInvoices']);
-        Route::get('/pricing', [Controller::class, 'getClientPricing']);
-        Route::post('/pricing', [Controller::class, 'setPricing']);
-        Route::get('/pricing/history', [Controller::class, 'history']);
+        Route::get('/pricing', [\App\Http\Controllers\Api\Admin\ClientController::class, 'getClientPricing']);
+        Route::post('/pricing', [\App\Http\Controllers\Api\Admin\ClientController::class, 'setPricing']);
+        Route::get('/pricing/history', [\App\Http\Controllers\Api\Admin\ClientController::class, 'history']);
         Route::get('/api-keys', [Controller::class, 'index']);
         Route::post('/api-keys', [Controller::class, 'store']);
 

@@ -139,4 +139,95 @@ class ClientController extends BaseController
             'message' => 'Client deleted successfully.'
         ]);
     }
+
+    /**
+     * Get client pricing and services.
+     */
+    public function getClientPricing(Client $client): JsonResponse
+    {
+        $services = \App\Models\Service::all();
+        $clientServices = \App\Models\ClientService::where('client_id', $client->id)->get()->keyBy('service_id');
+        $clientPricing = \App\Models\ClientServicePricing::where('client_id', $client->id)->get()->keyBy('service_id');
+
+        $data = $services->map(function ($service) use ($clientServices, $clientPricing) {
+            $is_enabled = false;
+            if ($clientServices->has($service->id)) {
+                $is_enabled = $clientServices->get($service->id)->status === 'active';
+            }
+
+            $custom_price = null;
+            if ($clientPricing->has($service->id)) {
+                $custom_price = $clientPricing->get($service->id)->custom_price;
+            }
+
+            return [
+                'id' => (string) $service->id,
+                'service_name' => $service->service_name,
+                'base_price' => (float) $service->base_price,
+                'custom_price' => $custom_price !== null ? (float) $custom_price : '',
+                'is_enabled' => $is_enabled,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Client pricing retrieved successfully.',
+            'data' => $data->values()
+        ]);
+    }
+
+    /**
+     * Set client pricing and services.
+     */
+    public function setPricing(Request $request, Client $client): JsonResponse
+    {
+        $validated = $request->validate([
+            'services' => 'required|array',
+            'services.*.service_id' => 'required|exists:services,id',
+            'services.*.is_enabled' => 'required|boolean',
+            'services.*.custom_price' => 'nullable|numeric|min:0',
+        ]);
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+
+        try {
+            foreach ($validated['services'] as $serviceData) {
+                $serviceId = $serviceData['service_id'];
+                $isEnabled = $serviceData['is_enabled'];
+                $customPrice = $serviceData['custom_price'];
+
+                // Update or Create ClientService
+                \App\Models\ClientService::updateOrCreate(
+                    ['client_id' => $client->id, 'service_id' => $serviceId],
+                    ['status' => $isEnabled ? 'active' : 'inactive']
+                );
+
+                // Update or Create ClientServicePricing
+                if ($customPrice !== null && $customPrice !== '') {
+                    \App\Models\ClientServicePricing::updateOrCreate(
+                        ['client_id' => $client->id, 'service_id' => $serviceId],
+                        ['custom_price' => $customPrice]
+                    );
+                } else {
+                    \App\Models\ClientServicePricing::where('client_id', $client->id)
+                        ->where('service_id', $serviceId)
+                        ->delete();
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Client pricing updated successfully.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update client pricing.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
