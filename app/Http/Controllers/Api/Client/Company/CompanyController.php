@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Client\Company;
 use App\Http\Controllers\Api\Client\BaseController;
 use App\Services\ApiService\Client\CompanyService;
 use App\Traits\ApiResponse;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class CompanyController extends BaseController
 {
@@ -18,13 +18,35 @@ class CompanyController extends BaseController
         addInfoLog("Company details data request");
 
         $company = $this->companyService->index();
-        return $this->success('Company fetched successfully', $company);
+        
+        $companyData = $company->toArray();
+        if (!empty($companyData['logo'])) {
+            $companyData['logo'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $companyData['logo'], '/');
+        }
+
+        return $this->success('Company fetched successfully', $companyData);
     }
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         addInfoLog("Company details update request");
+        
+        $id = auth()->user()->client_id;
+        $data = $request->except(['logo', 'remove_logo']);
+        
+        if ($request->has('remove_logo') && $request->remove_logo === 'true') {
+            $data['logo'] = null;
+        } elseif ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('company_logos', 'public');
+            $data['logo'] = $path;
+        }
 
-        $company = $this->companyService->update($id, $request);
-        return $this->success('Company updated successfully', $company);
+        $company = $this->companyService->update($id, $data);
+        
+        $companyData = $company->toArray();
+        if (!empty($companyData['logo'])) {
+            $companyData['logo'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $companyData['logo'], '/');
+        }
+        
+        return $this->success('Company updated successfully', $companyData);
     }
 }

@@ -12,7 +12,6 @@ class Client extends BaseModel
     protected $table = "clients";
 
     const COMPANY_NAME = "company_name";
-    const CONTACT_PERSON = "contact_person";
     const EMAIL = "email";
     const PHONE = "phone";
     const GST_NUMBER = "gst_number";
@@ -38,7 +37,6 @@ class Client extends BaseModel
     const DELETED_BY = "deleted_by";
     protected $fillable = [
         self::COMPANY_NAME,
-        self::CONTACT_PERSON,
         self::EMAIL,
         self::PHONE,
         self::GST_NUMBER,

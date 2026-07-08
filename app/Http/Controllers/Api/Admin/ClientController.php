@@ -70,4 +70,36 @@ class ClientController extends BaseController
             'data' => $client
         ], 201);
     }
+
+    /**
+     * Toggle the status of the specified client.
+     */
+    public function toggleStatus(Request $request, Client $client): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:active,inactive,suspended'
+        ]);
+
+        $client->status = $validated['status'];
+        $client->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Client status updated successfully.',
+            'data' => $client
+        ]);
+    }
+
+    /**
+     * Remove the specified client from storage.
+     */
+    public function destroy(Client $client): JsonResponse
+    {
+        $client->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Client deleted successfully.'
+        ]);
+    }
 }

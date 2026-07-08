@@ -16,7 +16,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Client Management
     Route::prefix('clients/{client}')->group(function () {
-        Route::post('/toggle-status', [Controller::class, 'toggleStatus']);
+        Route::post('/toggle-status', [\App\Http\Controllers\Api\Admin\ClientController::class, 'toggleStatus']);
         Route::get('/stats', [Controller::class, 'getStats']);
         Route::get('/orders', [Controller::class, 'getOrders']);
         Route::get('/invoices', [Controller::class, 'getInvoices']);

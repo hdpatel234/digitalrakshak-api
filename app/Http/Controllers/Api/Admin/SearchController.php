@@ -22,7 +22,6 @@ class SearchController extends Controller
 
         // Search Clients
         $clients = Client::where('company_name', 'like', "%{$query}%")
-                         ->orWhere('contact_person', 'like', "%{$query}%")
                          ->orWhere('email', 'like', "%{$query}%")
                          ->orWhere('address', 'like', "%{$query}%")
                          ->take(5)
@@ -30,7 +29,7 @@ class SearchController extends Controller
         if ($clients->count() > 0) {
             $data = $clients->map(function ($client) {
                 return [
-                    'title' => $client->company_name ?? $client->contact_person,
+                    'title' => $client->company_name,
                     'url' => '/clients/edit/' . $client->id,
                     'icon' => 'users',
                     'category' => 'Clients',
