@@ -7,9 +7,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Dashboard
     Route::prefix('dashboard')->group(function () {
-        Route::get('/stats', [Controller::class, 'stats']);
-        Route::get('/revenue-chart', [Controller::class, 'revenueChart']);
-        Route::get('/recent-activities', [Controller::class, 'recentActivities']);
+        Route::get('/overview', [App\Http\Controllers\Api\Admin\DashboardController::class, 'overview']);
     });
     
     // Global Search
