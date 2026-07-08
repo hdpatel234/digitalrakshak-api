@@ -24,6 +24,7 @@ class SearchController extends Controller
         $clients = Client::where('company_name', 'like', "%{$query}%")
                          ->orWhere('contact_person', 'like', "%{$query}%")
                          ->orWhere('email', 'like', "%{$query}%")
+                         ->orWhere('address', 'like', "%{$query}%")
                          ->take(5)
                          ->get();
         if ($clients->count() > 0) {
@@ -38,6 +39,89 @@ class SearchController extends Controller
             });
             $results[] = [
                 'title' => 'Clients',
+                'data' => $data
+            ];
+        }
+
+        // Search Candidates
+        $candidates = \App\Models\Candidate::where('first_name', 'like', "%{$query}%")
+                         ->orWhere('last_name', 'like', "%{$query}%")
+                         ->orWhere('email', 'like', "%{$query}%")
+                         ->orWhere('address', 'like', "%{$query}%")
+                         ->take(5)
+                         ->get();
+        if ($candidates->count() > 0) {
+            $data = $candidates->map(function ($candidate) {
+                return [
+                    'title' => trim($candidate->first_name . ' ' . $candidate->last_name),
+                    'url' => '/candidates/edit/' . $candidate->id,
+                    'icon' => 'user',
+                    'category' => 'Candidates',
+                    'categoryTitle' => 'Candidates',
+                ];
+            });
+            $results[] = [
+                'title' => 'Candidates',
+                'data' => $data
+            ];
+        }
+
+        // Search Support Tickets
+        $tickets = \App\Models\SupportTicket::where('ticket_number', 'like', "%{$query}%")
+                         ->take(5)
+                         ->get();
+        if ($tickets->count() > 0) {
+            $data = $tickets->map(function ($ticket) {
+                return [
+                    'title' => $ticket->ticket_number,
+                    'url' => '/support/tickets/' . $ticket->id,
+                    'icon' => 'ticket',
+                    'category' => 'Tickets',
+                    'categoryTitle' => 'Tickets',
+                ];
+            });
+            $results[] = [
+                'title' => 'Tickets',
+                'data' => $data
+            ];
+        }
+
+        // Search Invoices
+        $invoices = \App\Models\Invoice::where('invoice_number', 'like', "%{$query}%")
+                         ->take(5)
+                         ->get();
+        if ($invoices->count() > 0) {
+            $data = $invoices->map(function ($invoice) {
+                return [
+                    'title' => $invoice->invoice_number,
+                    'url' => '/invoices/view/' . $invoice->id,
+                    'icon' => 'file-text',
+                    'category' => 'Invoices',
+                    'categoryTitle' => 'Invoices',
+                ];
+            });
+            $results[] = [
+                'title' => 'Invoices',
+                'data' => $data
+            ];
+        }
+
+        // Search Orders
+        $orders = \App\Models\CandidateOrder::where('order_number', 'like', "%{$query}%")
+                         ->take(5)
+                         ->get();
+        if ($orders->count() > 0) {
+            $data = $orders->map(function ($order) {
+                return [
+                    'title' => $order->order_number,
+                    'url' => '/orders/view/' . $order->id,
+                    'icon' => 'shopping-cart',
+                    'category' => 'Orders',
+                    'categoryTitle' => 'Orders',
+                ];
+            });
+            $results[] = [
+                'title' => 'Orders',
                 'data' => $data
             ];
         }
