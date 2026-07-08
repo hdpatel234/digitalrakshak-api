@@ -23,10 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('country_id')->nullable()->index('country_id');
             $table->unsignedBigInteger('state_id')->nullable()->index('state_id');
             $table->unsignedBigInteger('city_id')->nullable()->index('city_id');
-            $table->string('city', 100)->nullable();
-            $table->string('state', 100)->nullable();
             $table->string('pincode', 10)->nullable();
-            $table->string('country', 100)->nullable()->default('India');
             $table->string('currency', 3)->nullable()->default('INR');
             $table->decimal('credit_limit', 10)->nullable()->default(0);
             $table->decimal('credit_balance', 10)->nullable()->default(0);

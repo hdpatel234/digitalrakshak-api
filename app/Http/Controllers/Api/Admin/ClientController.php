@@ -6,6 +6,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Api\Admin\StoreClientRequest;
+use App\Http\Requests\Api\Admin\UpdateClientRequest;
 
 class ClientController extends BaseController
 {
@@ -73,6 +74,38 @@ class ClientController extends BaseController
             'message' => 'Client created successfully.',
             'data' => $client
         ], 201);
+    }
+
+    /**
+     * Display the specified client.
+     */
+    public function show(Client $client): JsonResponse
+    {
+        return response()->json([
+            'status' => true,
+            'message' => 'Client retrieved successfully.',
+            'data' => $client
+        ]);
+    }
+
+    /**
+     * Update the specified client in storage.
+     */
+    public function update(UpdateClientRequest $request, Client $client): JsonResponse
+    {
+        $data = $request->validated();
+        
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('clients/logos', 'public');
+        }
+        
+        $client->update($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Client updated successfully.',
+            'data' => $client
+        ]);
     }
 
     /**

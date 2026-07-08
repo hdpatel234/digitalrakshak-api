@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreClientRequest extends FormRequest
+class UpdateClientRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,7 +21,7 @@ class StoreClientRequest extends FormRequest
     {
         return [
             'company_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:clients,email', 'max:255'],
+            'email' => ['required', 'email', 'unique:clients,email,' . ($this->route('client')->id ?? $this->route('client')), 'max:255'],
             'logo' => ['nullable', 'image', 'max:2048'],
             'phone_code' => ['nullable', 'string', 'max:20'],
             'phone' => ['nullable', 'string', 'max:50'],

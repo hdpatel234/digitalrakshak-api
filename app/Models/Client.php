@@ -22,10 +22,7 @@ class Client extends BaseModel
     const COUNTRY_ID = "country_id";
     const STATE_ID = "state_id";
     const CITY_ID = "city_id";
-    const CITY = "city";
-    const STATE = "state";
     const PINCODE = "pincode";
-    const COUNTRY = "country";
     const CURRENCY = "currency";
     const CREDIT_LIMIT = "credit_limit";
     const CREDIT_BALANCE = "credit_balance";
@@ -49,10 +46,7 @@ class Client extends BaseModel
         self::COUNTRY_ID,
         self::STATE_ID,
         self::CITY_ID,
-        self::CITY,
-        self::STATE,
         self::PINCODE,
-        self::COUNTRY,
         self::CURRENCY,
         self::CREDIT_LIMIT,
         self::CREDIT_BALANCE,
