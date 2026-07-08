@@ -206,7 +206,10 @@ class ClientController extends BaseController
                 if ($customPrice !== null && $customPrice !== '') {
                     \App\Models\ClientServicePricing::updateOrCreate(
                         ['client_id' => $client->id, 'service_id' => $serviceId],
-                        ['custom_price' => $customPrice]
+                        [
+                            'custom_price' => $customPrice,
+                            'effective_from' => now()->toDateString()
+                        ]
                     );
                 } else {
                     \App\Models\ClientServicePricing::where('client_id', $client->id)
