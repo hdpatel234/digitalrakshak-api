@@ -22,8 +22,10 @@ class StoreClientRequest extends FormRequest
         return [
             'company_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:clients,email', 'max:255'],
-            'phone' => ['required', 'string', 'max:50'],
-            'status' => ['required', 'in:active,inactive'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'phone_code' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'status' => ['required', 'in:active,inactive,suspended'],
             'address' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:100'],
             'state' => ['nullable', 'string', 'max:100'],

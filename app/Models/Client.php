@@ -13,6 +13,8 @@ class Client extends BaseModel
 
     const COMPANY_NAME = "company_name";
     const EMAIL = "email";
+    const LOGO = "logo";
+    const PHONE_CODE = "phone_code";
     const PHONE = "phone";
     const GST_NUMBER = "gst_number";
     const PAN_NUMBER = "pan_number";
@@ -38,6 +40,8 @@ class Client extends BaseModel
     protected $fillable = [
         self::COMPANY_NAME,
         self::EMAIL,
+        self::LOGO,
+        self::PHONE_CODE,
         self::PHONE,
         self::GST_NUMBER,
         self::PAN_NUMBER,
