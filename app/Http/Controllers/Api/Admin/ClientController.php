@@ -51,6 +51,11 @@ class ClientController extends BaseController
                     'per_page' => $clients->perPage(),
                     'current_page' => $clients->currentPage(),
                     'last_page' => $clients->lastPage(),
+                ],
+                'status_list' => [
+                    ['key' => 'active', 'name' => 'Active'],
+                    ['key' => 'inactive', 'name' => 'Inactive'],
+                    ['key' => 'suspended', 'name' => 'Suspended'],
                 ]
             ]
         ]);
