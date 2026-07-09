@@ -72,6 +72,23 @@ class ServiceController extends BaseController
     }
 
     /**
+     * Display the specified service.
+     */
+    public function show(Service $service): JsonResponse
+    {
+        $service->load('category');
+        
+        $data = $service->toArray();
+        $data['service_category_name'] = $service->category ? $service->category->category_name : null;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Service retrieved successfully.',
+            'data' => $data
+        ]);
+    }
+
+    /**
      * Store a newly created service.
      */
     public function store(Request $request): JsonResponse
