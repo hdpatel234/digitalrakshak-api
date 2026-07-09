@@ -66,6 +66,12 @@ class PackageController extends BaseController
             return $data;
         });
 
+        // Stats
+        $totalPackages = Package::where('type', 'admin')->count();
+        $activePackages = Package::where('type', 'admin')->where('status', 'active')->count();
+        $inactivePackages = Package::where('type', 'admin')->where('status', 'inactive')->count();
+        $packageCategories = Package::where('type', 'admin')->distinct('type')->count('type');
+
         return response()->json([
             'status' => true,
             'message' => 'Packages retrieved successfully.',
@@ -76,6 +82,12 @@ class PackageController extends BaseController
                     'per_page' => $packages->perPage(),
                     'current_page' => $packages->currentPage(),
                     'last_page' => $packages->lastPage(),
+                ],
+                'stats' => [
+                    'total' => $totalPackages,
+                    'active' => $activePackages,
+                    'inactive' => $inactivePackages,
+                    'categories' => $packageCategories,
                 ]
             ]
         ]);
