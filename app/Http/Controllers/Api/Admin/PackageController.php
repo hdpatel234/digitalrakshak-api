@@ -297,4 +297,69 @@ class PackageController extends BaseController
             ], 500);
         }
     }
+    public function destroy(int $id): JsonResponse
+    {
+        $package = \App\Models\Package::where('type', 'admin')->find($id);
+
+        if (!$package) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Package not found.'
+            ], 404);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            \App\Models\PackageService::where('package_id', $package->id)->delete();
+            $package->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Package deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to delete package.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function toggleStatus(Request $request, int $id): JsonResponse
+    {
+        $package = \App\Models\Package::where('type', 'admin')->find($id);
+
+        if (!$package) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Package not found.'
+            ], 404);
+        }
+
+        try {
+            $newStatus = $package->status === 'active' ? 'inactive' : 'active';
+            $package->update([
+                'status' => $newStatus,
+                'is_active' => $newStatus === 'active' ? 1 : 0,
+                'updated_by' => $request->user('api')?->id,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => "Package status updated to {$newStatus}.",
+                'data' => $package
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update package status.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
