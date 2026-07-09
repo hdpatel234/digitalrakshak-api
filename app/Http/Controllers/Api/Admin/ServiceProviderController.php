@@ -66,7 +66,7 @@ class ServiceProviderController extends BaseController
     {
         $validated = $request->validate([
             'provider_name' => 'required|string|max:255',
-            'provider_code' => 'required|string|max:100|unique:tblservice_providers',
+            'provider_code' => 'required|string|max:100|unique:service_providers',
             'provider_type' => 'nullable|in:api,webhook,manual',
             'logo' => 'nullable|string',
             'description' => 'nullable|string',
@@ -105,7 +105,7 @@ class ServiceProviderController extends BaseController
     {
         $validated = $request->validate([
             'provider_name' => 'required|string|max:255',
-            'provider_code' => 'required|string|max:100|unique:tblservice_providers,provider_code,' . $serviceProvider->id,
+            'provider_code' => 'required|string|max:100|unique:service_providers,provider_code,' . $serviceProvider->id,
             'provider_type' => 'nullable|in:api,webhook,manual',
             'logo' => 'nullable|string',
             'description' => 'nullable|string',
