@@ -86,6 +86,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
     });
 
     Route::apiResource('services', App\Http\Controllers\Api\Admin\ServiceController::class);
+    Route::get('service-fields/sections', [\App\Http\Controllers\Api\Admin\ServiceFieldController::class, 'sections']);
+    Route::get('service-fields/stats', [\App\Http\Controllers\Api\Admin\ServiceFieldController::class, 'stats']);
+    Route::apiResource('service-fields', \App\Http\Controllers\Api\Admin\ServiceFieldController::class);
 
     // Package Management (Admin Packages)
     Route::prefix('packages/{package}')->group(function () {
