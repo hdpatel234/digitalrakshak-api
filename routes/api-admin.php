@@ -44,6 +44,12 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     Route::apiResource('clients', App\Http\Controllers\Api\Admin\ClientController::class);
 
+    // Service Providers
+    Route::prefix('service-providers/{service_provider}')->group(function () {
+        Route::post('/toggle-status', [\App\Http\Controllers\Api\Admin\ServiceProviderController::class, 'toggleStatus']);
+    });
+    Route::apiResource('service-providers', \App\Http\Controllers\Api\Admin\ServiceProviderController::class);
+
     // Service Categories
     Route::get('/service-categories', [\App\Http\Controllers\Api\Admin\ServiceCategoryController::class, 'index']);
 
