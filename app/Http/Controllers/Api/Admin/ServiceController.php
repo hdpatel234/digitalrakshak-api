@@ -60,6 +60,12 @@ class ServiceController extends BaseController
                     'per_page' => $services->perPage(),
                     'current_page' => $services->currentPage(),
                     'last_page' => $services->lastPage(),
+                ],
+                'stats' => [
+                    'total' => Service::count(),
+                    'active' => Service::where('status', 'active')->count(),
+                    'inactive' => Service::where('status', 'inactive')->count(),
+                    'categories' => Service::whereNotNull('service_category')->distinct('service_category')->count('service_category'),
                 ]
             ]
         ]);
@@ -95,5 +101,37 @@ class ServiceController extends BaseController
             'message' => 'Service created successfully.',
             'data' => $service
         ], 201);
+    }
+
+    /**
+     * Update the specified service.
+     */
+    public function update(Request $request, Service $service): JsonResponse
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'service_name' => 'sometimes|required|string|max:255',
+            'service_code' => 'sometimes|required|string|max:255|unique:services,service_code,' . $service->id,
+            'service_category' => 'sometimes|required|exists:service_categories,id',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|string',
+            'base_price' => 'sometimes|required|numeric|min:0',
+            'status' => 'sometimes|required|in:active,inactive',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $service->update($validator->validated());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Service updated successfully.',
+            'data' => $service
+        ], 200);
     }
 }
