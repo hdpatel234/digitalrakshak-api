@@ -44,6 +44,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     Route::apiResource('clients', App\Http\Controllers\Api\Admin\ClientController::class);
 
+    // Service Categories
+    Route::get('/service-categories', [\App\Http\Controllers\Api\Admin\ServiceCategoryController::class, 'index']);
+
     // Service Management
     Route::prefix('services')->group(function () {
         Route::prefix('{service}')->group(function () {
