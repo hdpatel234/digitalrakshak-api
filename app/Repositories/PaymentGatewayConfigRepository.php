@@ -137,19 +137,9 @@ class PaymentGatewayConfigRepository extends BaseRepository
         return PaymentGatewayConfig::SETTLEMENT_ACCOUNT;
     }
 
-    public function isActive()
-    {
-        return PaymentGatewayConfig::IS_ACTIVE;
-    }
-
     public function isDefault()
     {
         return PaymentGatewayConfig::IS_DEFAULT;
-    }
-
-    public function isSandbox()
-    {
-        return PaymentGatewayConfig::IS_SANDBOX;
     }
 
     public function lastUsedAt()

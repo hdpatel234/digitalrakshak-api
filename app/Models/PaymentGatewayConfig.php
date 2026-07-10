@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentGatewayConfig extends BaseModel
 {
-    
+
     protected $table = "payment_gateway_configs";
-    
+
     const GATEWAY_ID = "gateway_id";
     const CONFIG_NAME = "config_name";
     const ENVIRONMENT = "environment";
@@ -36,9 +36,7 @@ class PaymentGatewayConfig extends BaseModel
     const SETTLEMENT_CYCLE = "settlement_cycle";
     const SETTLEMENT_BANK = "settlement_bank";
     const SETTLEMENT_ACCOUNT = "settlement_account";
-    const IS_ACTIVE = "is_active";
     const IS_DEFAULT = "is_default";
-    const IS_SANDBOX = "is_sandbox";
     const LAST_USED_AT = "last_used_at";
     const LAST_CHECKED_AT = "last_checked_at";
     const HEALTH_STATUS = "health_status";
@@ -71,9 +69,7 @@ class PaymentGatewayConfig extends BaseModel
         self::SETTLEMENT_CYCLE,
         self::SETTLEMENT_BANK,
         self::SETTLEMENT_ACCOUNT,
-        self::IS_ACTIVE,
         self::IS_DEFAULT,
-        self::IS_SANDBOX,
         self::LAST_USED_AT,
         self::LAST_CHECKED_AT,
         self::HEALTH_STATUS,
