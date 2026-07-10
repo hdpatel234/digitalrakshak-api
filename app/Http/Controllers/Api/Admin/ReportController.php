@@ -367,4 +367,99 @@ class ReportController extends BaseController
             'top_services' => $topServices
         ]);
     }
+
+    public function clients(Request $request)
+    {
+        $startDate = $request->input('start_date') 
+            ? Carbon::parse($request->input('start_date'))->startOfDay() 
+            : Carbon::now()->subDays(30)->startOfDay();
+            
+        $endDate = $request->input('end_date') 
+            ? Carbon::parse($request->input('end_date'))->endOfDay() 
+            : Carbon::now()->endOfDay();
+
+        $status = $request->input('status', 'all');
+
+        $query = \App\Models\Client::query()
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $cloneQuery = clone $query;
+        $totalClients = (clone $cloneQuery)->count();
+        $activeClients = (clone $cloneQuery)->where('status', 'active')->count();
+
+        // Getting total candidates related to these clients
+        $clientIds = (clone $cloneQuery)->pluck('id');
+        $totalCandidates = \App\Models\Candidate::whereIn('client_id', $clientIds)->count();
+
+        $prefix = DB::connection()->getTablePrefix();
+
+        // Generate chart data (monthly grouping)
+        $chartDataQuery = (clone $cloneQuery)
+            ->select(
+                DB::raw("YEAR({$prefix}clients.created_at) as year"),
+                DB::raw("MONTH({$prefix}clients.created_at) as month"),
+                DB::raw("COUNT({$prefix}clients.id) as total_count")
+            )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $categories = [];
+        $clientsCountData = [];
+
+        $currentDate = $startDate->copy()->startOfMonth();
+        $endMonth = $endDate->copy()->startOfMonth();
+        
+        while ($currentDate <= $endMonth) {
+            $categories[] = $currentDate->format('M');
+            
+            $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
+                return $item->year == $currentDate->year && $item->month == $currentDate->month;
+            });
+            
+            $clientsCountData[] = $monthData ? (int) $monthData->total_count : 0;
+
+            $currentDate->addMonth();
+        }
+
+        // Top clients
+        $topClients = (clone $query)
+            ->withCount('candidateOrders')
+            ->orderBy('candidate_orders_count', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'company_name' => $client->company_name,
+                    'email' => $client->email,
+                    'status' => $client->status,
+                    'orders_count' => $client->candidate_orders_count,
+                    'date' => $client->created_at->timestamp,
+                ];
+            });
+
+        return $this->success('Clients report fetched successfully.', [
+            'stats' => [
+                'totalClients' => ['value' => $totalClients, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'activeClients' => ['value' => $activeClients, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'totalCandidates' => ['value' => $totalCandidates, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+            ],
+            'chart' => [
+                'categories' => $categories,
+                'series' => [
+                    [
+                        'name' => 'New Clients',
+                        'data' => $clientsCountData
+                    ]
+                ]
+            ],
+            'top_clients' => $topClients
+        ]);
+    }
 }
