@@ -227,6 +227,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/cron-jobs', [App\Http\Controllers\Controller::class, 'cronJobs']);
         Route::post('/cron-jobs/{job}/run', [App\Http\Controllers\Controller::class, 'runCronJob']);
         Route::get('/email/overview', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'overview']);
+        Route::get('/email/server-types', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'types']);
+        Route::apiResource('/email/servers', \App\Http\Controllers\Api\Admin\SystemEmailServerController::class);
+        Route::post('/email/servers/{server}/test', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'testConnection']);
     });
 
     // Audit Logs
