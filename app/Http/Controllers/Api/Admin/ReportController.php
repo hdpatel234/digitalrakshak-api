@@ -240,4 +240,131 @@ class ReportController extends BaseController
             'recent_orders' => $recentOrders
         ]);
     }
+    public function serviceFilters()
+    {
+        $categories = \App\Models\ServiceCategory::where('status', 'active')->get()->map(function($cat) {
+            return ['value' => $cat->id, 'label' => $cat->category_name];
+        })->toArray();
+        array_unshift($categories, ['value' => 'all', 'label' => 'All Categories']);
+
+        $statuses = [
+            ['value' => 'all', 'label' => 'All Statuses'],
+            ['value' => 'pending', 'label' => 'Pending'],
+            ['value' => 'in_progress', 'label' => 'In Progress'],
+            ['value' => 'completed', 'label' => 'Completed'],
+            ['value' => 'failed', 'label' => 'Failed'],
+            ['value' => 'cancelled', 'label' => 'Cancelled'],
+        ];
+
+        return $this->success('Filters fetched successfully.', [
+            'categories' => $categories,
+            'statuses' => $statuses
+        ]);
+    }
+
+    public function services(Request $request)
+    {
+        $startDate = $request->input('start_date') 
+            ? Carbon::parse($request->input('start_date'))->startOfDay() 
+            : Carbon::now()->subDays(30)->startOfDay();
+            
+        $endDate = $request->input('end_date') 
+            ? Carbon::parse($request->input('end_date'))->endOfDay() 
+            : Carbon::now()->endOfDay();
+
+        $status = $request->input('status', 'all');
+        $category = $request->input('category', 'all');
+
+        $query = \App\Models\OrderItem::query()
+            ->join('services', 'order_items.service_id', '=', 'services.id')
+            ->select('order_items.*', 'services.service_category')
+            ->whereBetween('order_items.created_at', [$startDate, $endDate]);
+
+        if ($status !== 'all') {
+            $query->where('order_items.processing_status', $status)
+                  ->orWhere('order_items.status', $status);
+        }
+
+        if ($category !== 'all') {
+            $query->where('services.service_category', $category);
+        }
+
+        $cloneQuery = clone $query;
+        $totalServices = (clone $cloneQuery)->count();
+        $activeServices = (clone $cloneQuery)->whereIn('order_items.processing_status', ['pending', 'in_progress'])->count();
+        
+        $totalCategories = (clone $cloneQuery)->distinct('services.service_category')->count('services.service_category');
+        $totalRevenue = (clone $cloneQuery)->sum('order_items.total_price');
+
+        $prefix = DB::connection()->getTablePrefix();
+
+        // Generate chart data (monthly grouping)
+        $chartDataQuery = (clone $cloneQuery)
+            ->select(
+                DB::raw("YEAR({$prefix}order_items.created_at) as year"),
+                DB::raw("MONTH({$prefix}order_items.created_at) as month"),
+                DB::raw("COUNT({$prefix}order_items.id) as total_count"),
+                DB::raw("SUM({$prefix}order_items.total_price) as total_revenue")
+            )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $categoriesList = [];
+        $servicesCountData = [];
+        $revenueData = [];
+
+        $currentDate = $startDate->copy()->startOfMonth();
+        $endMonth = $endDate->copy()->startOfMonth();
+        
+        while ($currentDate <= $endMonth) {
+            $categoriesList[] = $currentDate->format('M');
+            
+            $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
+                return $item->year == $currentDate->year && $item->month == $currentDate->month;
+            });
+            
+            $servicesCountData[] = $monthData ? (int) $monthData->total_count : 0;
+            $revenueData[] = $monthData ? (float) $monthData->total_revenue : 0;
+
+            $currentDate->addMonth();
+        }
+
+        // Top services
+        $topServices = (clone $query)
+            ->select(
+                'services.id',
+                'services.service_name',
+                DB::raw("COUNT({$prefix}order_items.id) as total_purchases"),
+                DB::raw("SUM({$prefix}order_items.total_price) as total_revenue")
+            )
+            ->groupBy('services.id', 'services.service_name')
+            ->orderBy('total_purchases', 'desc')
+            ->limit(5)
+            ->get();
+
+        return $this->success('Services report fetched successfully.', [
+            'stats' => [
+                'totalServices' => ['value' => $totalServices, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'activeServices' => ['value' => $activeServices, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'totalCategories' => ['value' => $totalCategories, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'totalRevenue' => ['value' => $totalRevenue, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+            ],
+            'chart' => [
+                'categories' => $categoriesList,
+                'series' => [
+                    [
+                        'name' => 'Purchased Volume',
+                        'data' => $servicesCountData
+                    ],
+                    [
+                        'name' => 'Revenue generated',
+                        'data' => $revenueData
+                    ]
+                ]
+            ],
+            'top_services' => $topServices
+        ]);
+    }
 }

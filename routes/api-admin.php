@@ -182,7 +182,8 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
     Route::prefix('reports')->group(function () {
         Route::get('/revenue', [\App\Http\Controllers\Api\Admin\ReportController::class, 'revenue']);
         Route::get('/orders', [\App\Http\Controllers\Api\Admin\ReportController::class, 'orders']);
-        Route::get('/services', [Controller::class, 'services']);
+        Route::get('/services', [\App\Http\Controllers\Api\Admin\ReportController::class, 'services']);
+        Route::get('/services/filters', [\App\Http\Controllers\Api\Admin\ReportController::class, 'serviceFilters']);
         Route::get('/clients', [Controller::class, 'clients']);
         Route::get('/candidates', [Controller::class, 'candidates']);
         Route::get('/processing-times', [Controller::class, 'processingTimes']);
