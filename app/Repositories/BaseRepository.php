@@ -96,11 +96,7 @@ abstract class BaseRepository
 
         $filterInput = (array) ($params['filters'] ?? []);
         $flatFilterInput = array_merge(
-            [
-                'status' => $params['status'] ?? null,
-                'date_from' => $params['date_from'] ?? null,
-                'date_to' => $params['date_to'] ?? null,
-            ],
+            $params,
             $filterInput
         );
 

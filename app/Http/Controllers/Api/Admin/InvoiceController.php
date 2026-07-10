@@ -30,8 +30,8 @@ class InvoiceController extends BaseController
 
         $params = $request->all();
 
-        $startDate = $params['start_date'] ?? null;
-        $endDate = $params['end_date'] ?? null;
+        $startDate = $params['start_date'] ?? $params['date_from'] ?? null;
+        $endDate = $params['end_date'] ?? $params['date_to'] ?? null;
 
         if ($startDate) {
             $query->whereDate($table . '.' . $invoiceDateColumn, '>=', $startDate);
@@ -60,6 +60,7 @@ class InvoiceController extends BaseController
                     'payment_status' => $table . '.' . $paymentStatusColumn,
                     'invoice_date' => $table . '.' . $invoiceDateColumn,
                     'due_date' => $table . '.' . $dueDateColumn,
+                    'client_id' => $table . '.client_id',
                 ],
                 'allowed_sorts' => [
                     $table . '.id',
