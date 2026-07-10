@@ -119,6 +119,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Transactions Management (Global)
     Route::get('transactions', [App\Http\Controllers\Api\Admin\TransactionController::class, 'index']);
+    Route::get('transactions/filters', [App\Http\Controllers\Api\Admin\TransactionController::class, 'filters']);
 
     // Candidates Management (Global)
     Route::get('candidates', [App\Http\Controllers\Api\Admin\CandidateController::class, 'index']);
@@ -178,7 +179,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Reports
     Route::prefix('reports')->group(function () {
-        Route::get('/revenue', [Controller::class, 'revenue']);
+        Route::get('/revenue', [\App\Http\Controllers\Api\Admin\ReportController::class, 'revenue']);
         Route::get('/orders', [Controller::class, 'orders']);
         Route::get('/services', [Controller::class, 'services']);
         Route::get('/clients', [Controller::class, 'clients']);
