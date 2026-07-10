@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\AiApiConfigRepository;
 
+/**
+ * @property AiApiConfigRepository $repository
+ */
 class AiApiConfigService extends BaseService
 {
     protected $repository;

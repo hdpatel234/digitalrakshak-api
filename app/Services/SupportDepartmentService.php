@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SupportDepartmentRepository;
 
+/**
+ * @property SupportDepartmentRepository $repository
+ */
 class SupportDepartmentService extends BaseService
 {
     protected $repository;

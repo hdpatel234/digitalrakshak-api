@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SocialLoginProviderRepository;
 
+/**
+ * @property SocialLoginProviderRepository $repository
+ */
 class SocialLoginProviderService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\WebhookEventTypeRepository;
 
+/**
+ * @property WebhookEventTypeRepository $repository
+ */
 class WebhookEventTypeService extends BaseService
 {
     

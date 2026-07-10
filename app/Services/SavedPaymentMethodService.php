@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SavedPaymentMethodRepository;
 
+/**
+ * @property SavedPaymentMethodRepository $repository
+ */
 class SavedPaymentMethodService extends BaseService
 {
     public function __construct(SavedPaymentMethodRepository $repository)

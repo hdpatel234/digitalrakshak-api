@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientApiKeyRepository;
 
+/**
+ * @property ClientApiKeyRepository $repository
+ */
 class ClientApiKeyService extends BaseService
 {
     

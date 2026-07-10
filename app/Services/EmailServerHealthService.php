@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\EmailServerHealthRepository;
 
+/**
+ * @property EmailServerHealthRepository $repository
+ */
 class EmailServerHealthService extends BaseService
 {
     

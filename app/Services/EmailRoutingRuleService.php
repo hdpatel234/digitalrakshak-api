@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\EmailRoutingRuleRepository;
 
+/**
+ * @property EmailRoutingRuleRepository $repository
+ */
 class EmailRoutingRuleService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientWebhookRepository;
 
+/**
+ * @property ClientWebhookRepository $repository
+ */
 class ClientWebhookService extends BaseService
 {
     

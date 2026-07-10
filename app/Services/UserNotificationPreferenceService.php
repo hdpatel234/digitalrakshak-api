@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserNotificationPreferenceRepository;
 
+/**
+ * @property UserNotificationPreferenceRepository $repository
+ */
 class UserNotificationPreferenceService extends BaseService
 {
     

@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Enums\ConfigurationKey;
 use App\Repositories\ConfigurationRepository;
 
+/**
+ * @property ConfigurationRepository $repository
+ */
 class ConfigurationService extends BaseService
 {
     public function __construct(ConfigurationRepository $repository)

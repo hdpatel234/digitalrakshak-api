@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserDatetimePreferenceRepository;
 
+/**
+ * @property UserDatetimePreferenceRepository $repository
+ */
 class UserDatetimePreferenceService extends BaseService
 {
     

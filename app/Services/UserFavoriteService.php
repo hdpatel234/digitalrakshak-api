@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserFavoriteRepository;
 
+/**
+ * @property UserFavoriteRepository $repository
+ */
 class UserFavoriteService extends BaseService
 {
     

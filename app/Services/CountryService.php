@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CountryRepository;
 
+/**
+ * @property CountryRepository $repository
+ */
 class CountryService extends BaseService
 {
     

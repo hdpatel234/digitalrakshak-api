@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\PostalCodeRepository;
 
+/**
+ * @property PostalCodeRepository $repository
+ */
 class PostalCodeService extends BaseService
 {
     

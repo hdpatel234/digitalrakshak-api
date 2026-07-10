@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandidateOrderRepository;
 
+/**
+ * @property CandidateOrderRepository $repository
+ */
 class CandidateOrderService extends BaseService
 {
     

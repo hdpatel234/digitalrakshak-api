@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientApiLogRepository;
 
+/**
+ * @property ClientApiLogRepository $repository
+ */
 class ClientApiLogService extends BaseService
 {
     

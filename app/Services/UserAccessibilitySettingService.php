@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserAccessibilitySettingRepository;
 
+/**
+ * @property UserAccessibilitySettingRepository $repository
+ */
 class UserAccessibilitySettingService extends BaseService
 {
     

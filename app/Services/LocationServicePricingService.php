@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\LocationServicePricingRepository;
 
+/**
+ * @property LocationServicePricingRepository $repository
+ */
 class LocationServicePricingService extends BaseService
 {
     

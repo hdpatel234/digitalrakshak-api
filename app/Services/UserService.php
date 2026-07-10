@@ -9,6 +9,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property UserRepository $repository
+ */
 class UserService extends BaseService
 {
     public function __construct(UserRepository $repository)

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserThemeRepository;
 
+/**
+ * @property UserThemeRepository $repository
+ */
 class UserThemeService extends BaseService
 {
     

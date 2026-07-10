@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProviderOutageRepository;
 
+/**
+ * @property ProviderOutageRepository $repository
+ */
 class ProviderOutageService extends BaseService
 {
     

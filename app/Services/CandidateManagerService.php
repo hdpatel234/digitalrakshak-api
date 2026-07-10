@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandidateManagerRepository;
 
+/**
+ * @property CandidateManagerRepository $repository
+ */
 class CandidateManagerService extends BaseService
 {
     

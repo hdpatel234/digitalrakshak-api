@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\BillingPlatformRepository;
 
+/**
+ * @property BillingPlatformRepository $repository
+ */
 class BillingPlatformService extends BaseService
 {
     

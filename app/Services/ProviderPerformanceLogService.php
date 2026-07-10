@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProviderPerformanceLogRepository;
 
+/**
+ * @property ProviderPerformanceLogRepository $repository
+ */
 class ProviderPerformanceLogService extends BaseService
 {
     

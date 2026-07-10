@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ServiceProviderAssignmentRepository;
 
+/**
+ * @property ServiceProviderAssignmentRepository $repository
+ */
 class ServiceProviderAssignmentService extends BaseService
 {
     

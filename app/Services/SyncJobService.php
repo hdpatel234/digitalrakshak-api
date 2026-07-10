@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SyncJobRepository;
 
+/**
+ * @property SyncJobRepository $repository
+ */
 class SyncJobService extends BaseService
 {
     

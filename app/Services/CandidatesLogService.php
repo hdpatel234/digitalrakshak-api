@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandidatesLogRepository;
 
+/**
+ * @property CandidatesLogRepository $repository
+ */
 class CandidatesLogService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserShortcutRepository;
 
+/**
+ * @property UserShortcutRepository $repository
+ */
 class UserShortcutService extends BaseService
 {
     

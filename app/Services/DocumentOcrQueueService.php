@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\DocumentOcrQueueRepository;
 
+/**
+ * @property DocumentOcrQueueRepository $repository
+ */
 class DocumentOcrQueueService extends BaseService
 {
     

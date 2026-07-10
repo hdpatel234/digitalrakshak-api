@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandidateImportHistoryRepository;
 
+/**
+ * @property CandidateImportHistoryRepository $repository
+ */
 class CandidateImportHistoryService extends BaseService
 {
     

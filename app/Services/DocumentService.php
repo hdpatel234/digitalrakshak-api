@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\DocumentRepository;
 
+/**
+ * @property DocumentRepository $repository
+ */
 class DocumentService extends BaseService
 {
     

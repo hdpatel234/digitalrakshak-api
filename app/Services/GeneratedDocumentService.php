@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\GeneratedDocumentRepository;
 
+/**
+ * @property GeneratedDocumentRepository $repository
+ */
 class GeneratedDocumentService extends BaseService
 {
     

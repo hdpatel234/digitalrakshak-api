@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SupportTicketRepository;
 
+/**
+ * @property SupportTicketRepository $repository
+ */
 class SupportTicketService extends BaseService
 {
 

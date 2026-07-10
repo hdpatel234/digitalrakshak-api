@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\InvoiceRepository;
 
+/**
+ * @property InvoiceRepository $repository
+ */
 class InvoiceService extends BaseService
 {
     

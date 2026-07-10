@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\PackageRepository;
 
+/**
+ * @property PackageRepository $repository
+ */
 class PackageService extends BaseService
 {
     

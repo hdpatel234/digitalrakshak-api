@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserPrivacySettingRepository;
 
+/**
+ * @property UserPrivacySettingRepository $repository
+ */
 class UserPrivacySettingService extends BaseService
 {
     

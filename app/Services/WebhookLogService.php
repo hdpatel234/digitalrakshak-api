@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\WebhookLogRepository;
 
+/**
+ * @property WebhookLogRepository $repository
+ */
 class WebhookLogService extends BaseService
 {
     

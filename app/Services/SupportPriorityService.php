@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SupportPriorityRepository;
 
+/**
+ * @property SupportPriorityRepository $repository
+ */
 class SupportPriorityService extends BaseService
 {
     protected $repository;

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProviderResponseMappingRepository;
 
+/**
+ * @property ProviderResponseMappingRepository $repository
+ */
 class ProviderResponseMappingService extends BaseService
 {
     

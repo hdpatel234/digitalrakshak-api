@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserDashboardPreferenceRepository;
 
+/**
+ * @property UserDashboardPreferenceRepository $repository
+ */
 class UserDashboardPreferenceService extends BaseService
 {
     

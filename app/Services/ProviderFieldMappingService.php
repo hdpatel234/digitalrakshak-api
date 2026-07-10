@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProviderFieldMappingRepository;
 
+/**
+ * @property ProviderFieldMappingRepository $repository
+ */
 class ProviderFieldMappingService extends BaseService
 {
     

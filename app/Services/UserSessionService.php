@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserSessionRepository;
 
+/**
+ * @property UserSessionRepository $repository
+ */
 class UserSessionService extends BaseService
 {
     

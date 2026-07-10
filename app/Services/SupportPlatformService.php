@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SupportPlatformRepository;
 
+/**
+ * @property SupportPlatformRepository $repository
+ */
 class SupportPlatformService extends BaseService
 {
     

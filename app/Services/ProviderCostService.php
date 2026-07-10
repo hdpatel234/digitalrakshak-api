@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ProviderCostRepository;
 
+/**
+ * @property ProviderCostRepository $repository
+ */
 class ProviderCostService extends BaseService
 {
     

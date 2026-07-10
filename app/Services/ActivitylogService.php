@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ActivitylogRepository;
 
+/**
+ * @property ActivitylogRepository $repository
+ */
 class ActivitylogService extends BaseService
 {
     

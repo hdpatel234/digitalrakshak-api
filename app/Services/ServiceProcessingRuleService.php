@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ServiceProcessingRuleRepository;
 
+/**
+ * @property ServiceProcessingRuleRepository $repository
+ */
 class ServiceProcessingRuleService extends BaseService
 {
     

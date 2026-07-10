@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandidateInvitationRepository;
 
+/**
+ * @property CandidateInvitationRepository $repository
+ */
 class CandidateInvitationService extends BaseService
 {
     

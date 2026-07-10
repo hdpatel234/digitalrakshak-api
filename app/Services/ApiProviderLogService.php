@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ApiProviderLogRepository;
 
+/**
+ * @property ApiProviderLogRepository $repository
+ */
 class ApiProviderLogService extends BaseService
 {
     

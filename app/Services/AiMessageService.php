@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\AiMessageRepository;
 
+/**
+ * @property AiMessageRepository $repository
+ */
 class AiMessageService extends BaseService
 {
     protected $repository;

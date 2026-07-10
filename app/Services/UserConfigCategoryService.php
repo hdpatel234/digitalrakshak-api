@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserConfigCategoryRepository;
 
+/**
+ * @property UserConfigCategoryRepository $repository
+ */
 class UserConfigCategoryService extends BaseService
 {
     

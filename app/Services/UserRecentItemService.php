@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserRecentItemRepository;
 
+/**
+ * @property UserRecentItemRepository $repository
+ */
 class UserRecentItemService extends BaseService
 {
     

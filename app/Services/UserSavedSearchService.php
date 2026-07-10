@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserSavedSearchRepository;
 
+/**
+ * @property UserSavedSearchRepository $repository
+ */
 class UserSavedSearchService extends BaseService
 {
     

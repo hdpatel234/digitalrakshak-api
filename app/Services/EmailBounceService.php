@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\EmailBounceRepository;
 
+/**
+ * @property EmailBounceRepository $repository
+ */
 class EmailBounceService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CandiateImportErrorRepository;
 
+/**
+ * @property CandiateImportErrorRepository $repository
+ */
 class CandiateImportErrorService extends BaseService
 {
     

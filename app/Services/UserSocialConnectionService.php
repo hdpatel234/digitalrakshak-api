@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserSocialConnectionRepository;
 
+/**
+ * @property UserSocialConnectionRepository $repository
+ */
 class UserSocialConnectionService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\OrderItemRepository;
 
+/**
+ * @property OrderItemRepository $repository
+ */
 class OrderItemService extends BaseService
 {
     

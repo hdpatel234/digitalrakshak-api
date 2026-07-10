@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ServiceProcessingQueueRepository;
 
+/**
+ * @property ServiceProcessingQueueRepository $repository
+ */
 class ServiceProcessingQueueService extends BaseService
 {
     

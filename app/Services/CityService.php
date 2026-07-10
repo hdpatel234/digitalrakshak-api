@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\CityRepository;
 
+/**
+ * @property CityRepository $repository
+ */
 class CityService extends BaseService
 {
 

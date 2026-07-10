@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ApiProviderRepository;
 
+/**
+ * @property ApiProviderRepository $repository
+ */
 class ApiProviderService extends BaseService
 {
     

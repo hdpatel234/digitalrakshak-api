@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientServicePricingRepository;
 
+/**
+ * @property ClientServicePricingRepository $repository
+ */
 class ClientServicePricingService extends BaseService
 {
     

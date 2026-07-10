@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\DocumentConfigRepository;
 
+/**
+ * @property DocumentConfigRepository $repository
+ */
 class DocumentConfigService extends BaseService
 {
     protected $repository;

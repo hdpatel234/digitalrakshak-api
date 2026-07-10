@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientApiQuotaRepository;
 
+/**
+ * @property ClientApiQuotaRepository $repository
+ */
 class ClientApiQuotaService extends BaseService
 {
     

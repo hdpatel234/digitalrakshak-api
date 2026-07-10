@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\SocialLoginAttemptRepository;
 
+/**
+ * @property SocialLoginAttemptRepository $repository
+ */
 class SocialLoginAttemptService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ClientServiceRepository;
 
+/**
+ * @property ClientServiceRepository $repository
+ */
 class ClientServiceService extends BaseService
 {
     public function __construct(ClientServiceRepository $repository)

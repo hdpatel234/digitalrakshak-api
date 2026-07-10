@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\EmailLogRepository;
 
+/**
+ * @property EmailLogRepository $repository
+ */
 class EmailLogService extends BaseService
 {
     

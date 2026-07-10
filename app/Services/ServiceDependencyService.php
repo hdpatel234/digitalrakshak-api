@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ServiceDependencyRepository;
 
+/**
+ * @property ServiceDependencyRepository $repository
+ */
 class ServiceDependencyService extends BaseService
 {
     

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\AiModelRepository;
 
+/**
+ * @property AiModelRepository $repository
+ */
 class AiModelService extends BaseService
 {
     protected $repository;

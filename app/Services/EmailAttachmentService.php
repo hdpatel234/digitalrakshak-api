@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\EmailAttachmentRepository;
 
+/**
+ * @property EmailAttachmentRepository $repository
+ */
 class EmailAttachmentService extends BaseService
 {
     

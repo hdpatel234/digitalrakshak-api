@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\BillingConfigRepository;
 
+/**
+ * @property BillingConfigRepository $repository
+ */
 class BillingConfigService extends BaseService
 {
     protected $repository;

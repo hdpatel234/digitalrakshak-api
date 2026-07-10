@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\AiPromptVersionRepository;
 
+/**
+ * @property AiPromptVersionRepository $repository
+ */
 class AiPromptVersionService extends BaseService
 {
     protected $repository;

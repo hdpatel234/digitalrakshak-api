@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserExportPreferenceRepository;
 
+/**
+ * @property UserExportPreferenceRepository $repository
+ */
 class UserExportPreferenceService extends BaseService
 {
     

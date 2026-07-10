@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\StateRepository;
 
+/**
+ * @property StateRepository $repository
+ */
 class StateService extends BaseService
 {
 

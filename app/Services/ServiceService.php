@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Repositories\ServiceRepository;
 use Illuminate\Support\Str;
 
+/**
+ * @property ServiceRepository $repository
+ */
 class ServiceService extends BaseService
 {
     private const CATEGORY_PREFIX_MAP = [

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\ServicesFieldRepository;
 
+/**
+ * @property ServicesFieldRepository $repository
+ */
 class ServicesFieldService extends BaseService
 {
     

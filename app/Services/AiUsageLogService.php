@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\AiUsageLogRepository;
 
+/**
+ * @property AiUsageLogRepository $repository
+ */
 class AiUsageLogService extends BaseService
 {
     protected $repository;

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Repositories\UserConfigValueRepository;
 
+/**
+ * @property UserConfigValueRepository $repository
+ */
 class UserConfigValueService extends BaseService
 {
     
