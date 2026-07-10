@@ -20,7 +20,7 @@ class SystemEmailController extends Controller
             'total_queued' => EmailQueue::where('status', 'pending')->count(),
         ];
 
-        $recent_logs = EmailLog::latest()->take(10)->get()->map(function($log) {
+        $recent_logs = EmailLog::latest()->take(5)->get()->map(function($log) {
             return [
                 'id' => $log->id,
                 'recipient_name' => '', // Using empty string as there's no name field
