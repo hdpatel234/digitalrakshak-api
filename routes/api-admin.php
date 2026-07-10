@@ -226,6 +226,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::delete('/failed-jobs/{id}', [App\Http\Controllers\Controller::class, 'deleteFailedJob']);
         Route::get('/cron-jobs', [App\Http\Controllers\Controller::class, 'cronJobs']);
         Route::post('/cron-jobs/{job}/run', [App\Http\Controllers\Controller::class, 'runCronJob']);
+        Route::get('/email/overview', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'overview']);
     });
 
     // Audit Logs
