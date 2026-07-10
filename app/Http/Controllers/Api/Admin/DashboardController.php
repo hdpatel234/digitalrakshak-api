@@ -23,7 +23,7 @@ class DashboardController extends BaseController
         $totalOrders = CandidateOrder::count();
         
         // Using total_amount for revenue
-        $totalRevenue = CandidateOrder::sum('total_amount');
+        $totalRevenue = CandidateOrder::where('payment_status', \App\Enums\PaymentStatus::PAID->value)->sum('total_amount');
 
         // Basic comparison (mocked percentages for now, can be calculated dynamically based on created_at if needed)
         $statisticData = [
