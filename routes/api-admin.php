@@ -132,6 +132,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Billing Platform Configuration
     Route::prefix('billing')->group(function () {
+        Route::get('/payment-methods', [\App\Http\Controllers\Api\Admin\BillingController::class, 'paymentMethods']);
         Route::get('/payment-gateways', [\App\Http\Controllers\Api\Admin\BillingController::class, 'paymentGateways']);
         Route::get('/platforms', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'index']);
         Route::get('/platforms/{platform}', [App\Http\Controllers\Api\Admin\BillingPlatformController::class, 'show']);

@@ -23,4 +23,15 @@ class BillingController extends BaseController
 
         return $this->success('Admin payment gateways fetched successfully.', $response);
     }
+
+    public function paymentMethods(Request $request)
+    {
+        addInfoLog("Admin billing payment methods list request");
+
+        $methods = \App\Models\PaymentMethodType::where('is_active', 1)
+            ->orderBy('display_order', 'asc')
+            ->get(['method_code as value', 'method_name as label']);
+
+        return $this->success('Admin payment methods fetched successfully.', $methods);
+    }
 }
