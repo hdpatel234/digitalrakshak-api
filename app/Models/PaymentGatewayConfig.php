@@ -36,7 +36,7 @@ class PaymentGatewayConfig extends BaseModel
     const SETTLEMENT_CYCLE = "settlement_cycle";
     const SETTLEMENT_BANK = "settlement_bank";
     const SETTLEMENT_ACCOUNT = "settlement_account";
-    const IS_DEFAULT = "is_default";
+    const STATUS = "status";
     const LAST_USED_AT = "last_used_at";
     const LAST_CHECKED_AT = "last_checked_at";
     const HEALTH_STATUS = "health_status";
@@ -69,7 +69,7 @@ class PaymentGatewayConfig extends BaseModel
         self::SETTLEMENT_CYCLE,
         self::SETTLEMENT_BANK,
         self::SETTLEMENT_ACCOUNT,
-        self::IS_DEFAULT,
+        self::STATUS,
         self::LAST_USED_AT,
         self::LAST_CHECKED_AT,
         self::HEALTH_STATUS,

@@ -139,7 +139,7 @@ class PaymentGatewayConfigRepository extends BaseRepository
 
     public function isDefault()
     {
-        return PaymentGatewayConfig::IS_DEFAULT;
+        return PaymentGatewayConfig::STATUS;
     }
 
     public function lastUsedAt()

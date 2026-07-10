@@ -44,11 +44,37 @@ class BillingPlatformConfigController extends BaseController
             PaymentGatewayConfig::ENVIRONMENT => 'required|in:sandbox,production',
         ]);
 
+        $isDefault = $request->input('status', 'inactive');
+        $environment = $request->input('environment', 'production');
+        $forceActive = $request->input('force_active', false);
+
+        if ($isDefault === 'active') {
+            $existingActive = PaymentGatewayConfig::where(PaymentGatewayConfig::GATEWAY_ID, $gateway->id)
+                ->where(PaymentGatewayConfig::ENVIRONMENT, $environment)
+                ->where(PaymentGatewayConfig::STATUS, 'active')
+                ->first();
+
+            if ($existingActive) {
+                if (!$forceActive) {
+                    return response()->json([
+                        'status' => false,
+                        'error_code' => 'already_active',
+                        'message' => 'Another configuration is already active for this environment.'
+                    ], 200);
+                } else {
+                    PaymentGatewayConfig::where(PaymentGatewayConfig::GATEWAY_ID, $gateway->id)
+                        ->where(PaymentGatewayConfig::ENVIRONMENT, $environment)
+                        ->update([PaymentGatewayConfig::STATUS => 'inactive']);
+                }
+            }
+        }
+
         $data = $request->all();
         $data[PaymentGatewayConfig::GATEWAY_ID] = $gateway->id;
         
-        // If this is set as default or active, we might want to unset others.
-        // For simplicity, we just save what is passed.
+        if (isset($data['enabled_methods']) && is_array($data['enabled_methods'])) {
+            $data['enabled_methods'] = json_encode($data['enabled_methods']);
+        }
         
         $config = PaymentGatewayConfig::create($data);
 
@@ -82,7 +108,39 @@ class BillingPlatformConfigController extends BaseController
             PaymentGatewayConfig::ENVIRONMENT => 'sometimes|required|in:sandbox,production',
         ]);
 
-        $config->update($request->all());
+        $isDefault = $request->input('status', $config->status);
+        $environment = $request->input('environment', $config->environment);
+        $forceActive = $request->input('force_active', false);
+
+        if ($isDefault === 'active') {
+            $existingActive = PaymentGatewayConfig::where(PaymentGatewayConfig::GATEWAY_ID, $gateway->id)
+                ->where(PaymentGatewayConfig::ENVIRONMENT, $environment)
+                ->where(PaymentGatewayConfig::STATUS, 'active')
+                ->where('id', '!=', $configId)
+                ->first();
+
+            if ($existingActive) {
+                if (!$forceActive) {
+                    return response()->json([
+                        'status' => false,
+                        'error_code' => 'already_active',
+                        'message' => 'Another configuration is already active for this environment.'
+                    ], 200);
+                } else {
+                    PaymentGatewayConfig::where(PaymentGatewayConfig::GATEWAY_ID, $gateway->id)
+                        ->where(PaymentGatewayConfig::ENVIRONMENT, $environment)
+                        ->where('id', '!=', $configId)
+                        ->update([PaymentGatewayConfig::STATUS => 'inactive']);
+                }
+            }
+        }
+
+        $data = $request->all();
+        if (isset($data['enabled_methods']) && is_array($data['enabled_methods'])) {
+            $data['enabled_methods'] = json_encode($data['enabled_methods']);
+        }
+
+        $config->update($data);
 
         return $this->success('Configuration updated successfully.', $config);
     }
