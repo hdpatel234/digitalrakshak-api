@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use Illuminate\Http\Request;
 use App\Services\PaymentTransactionService;
 use App\Traits\ApiResponse;
+use App\Enums\PaymentStatus;
+use App\Enums\TransactionType;
 
 class TransactionController extends BaseController
 {
@@ -45,24 +47,17 @@ class TransactionController extends BaseController
     {
         $statuses = [
             ['value' => 'all', 'label' => 'All Statuses'],
-            ['value' => 'pending', 'label' => 'Pending'],
-            ['value' => 'completed', 'label' => 'Completed'],
-            ['value' => 'failed', 'label' => 'Failed'],
-            ['value' => 'refunded', 'label' => 'Refunded'],
+            ...array_map(fn($status) => ['value' => $status->value, 'label' => $status->label()], PaymentStatus::cases())
         ];
 
         $transactionTypes = [
             ['value' => 'all', 'label' => 'All Transactions'],
-            ['value' => 'subscriptions', 'label' => 'Subscriptions'],
-            ['value' => 'one_time', 'label' => 'One-time Payments'],
-            ['value' => 'refunds', 'label' => 'Refunds'],
+            ...array_map(fn($type) => ['value' => $type->value, 'label' => $type->label()], TransactionType::cases())
         ];
 
-        $platforms = \App\Models\PaymentGateway::select('gateway_code as value', 'gateway_name as label')
-            ->where('is_active', true)
-            ->get();
+        $platforms = \App\Models\PaymentGateway::select('gateway_code as value', 'gateway_name as label')->get()->toArray();
 
-        $platforms->prepend(['value' => 'all', 'label' => 'All Platforms']);
+        array_unshift($platforms, ['value' => 'all', 'label' => 'All Platforms']);
 
         return $this->success('Filters fetched successfully.', [
             'statuses' => $statuses,
