@@ -131,10 +131,22 @@ class SupportTicketService extends BaseService
             return ['id' => $p->id, 'name' => $p->name];
         })->values()->all();
 
+        $statusCounts = $this->query()->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
+        $totalTickets = array_sum($statusCounts);
+        
+        $statistics = [
+            'total' => $totalTickets,
+            'open' => $statusCounts['open'] ?? 0,
+            'pending' => $statusCounts['pending'] ?? 0,
+            'resolved' => $statusCounts['resolved'] ?? 0,
+            'closed' => $statusCounts['closed'] ?? 0,
+        ];
+
         $lists = [
             'status_list' => $statusList,
             'departments' => $departments,
             'priorities' => $priorities,
+            'statistics' => $statistics,
         ];
 
         if (is_array($result)) {
