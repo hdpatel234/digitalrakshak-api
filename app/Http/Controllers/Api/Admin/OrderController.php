@@ -166,4 +166,23 @@ class OrderController extends BaseController
 
         return $this->success('Orders fetched successfully.', $result);
     }
+
+    public function filters()
+    {
+        $statuses = [
+            ['value' => 'all', 'label' => 'All Statuses'],
+            ...array_map(fn(OrderStatus $status) => ['value' => $status->value, 'label' => ucwords(str_replace('_', ' ', $status->value))], OrderStatus::cases())
+        ];
+
+        $paymentStatuses = [
+            ['value' => 'all', 'label' => 'All Payment Statuses'],
+            // Assuming PaymentStatus enum exists based on TransactionController
+            ...array_map(fn($status) => ['value' => $status->value, 'label' => $status->label()], \App\Enums\PaymentStatus::cases())
+        ];
+
+        return $this->success('Filters fetched successfully.', [
+            'statuses' => $statuses,
+            'payment_statuses' => $paymentStatuses,
+        ]);
+    }
 }

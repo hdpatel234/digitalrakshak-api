@@ -113,6 +113,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
 
     // Orders Management (Global)
     Route::get('orders', [App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
+    Route::get('orders/filters', [App\Http\Controllers\Api\Admin\OrderController::class, 'filters']);
 
     // Invoices Management (Global)
     Route::get('invoices', [App\Http\Controllers\Api\Admin\InvoiceController::class, 'index']);
@@ -180,7 +181,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
     // Reports
     Route::prefix('reports')->group(function () {
         Route::get('/revenue', [\App\Http\Controllers\Api\Admin\ReportController::class, 'revenue']);
-        Route::get('/orders', [Controller::class, 'orders']);
+        Route::get('/orders', [\App\Http\Controllers\Api\Admin\ReportController::class, 'orders']);
         Route::get('/services', [Controller::class, 'services']);
         Route::get('/clients', [Controller::class, 'clients']);
         Route::get('/candidates', [Controller::class, 'candidates']);
