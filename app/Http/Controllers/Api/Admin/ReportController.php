@@ -462,4 +462,96 @@ class ReportController extends BaseController
             'top_clients' => $topClients
         ]);
     }
+
+    public function candidates(Request $request)
+    {
+        $startDate = $request->input('start_date') 
+            ? Carbon::parse($request->input('start_date'))->startOfDay() 
+            : Carbon::now()->subDays(30)->startOfDay();
+            
+        $endDate = $request->input('end_date') 
+            ? Carbon::parse($request->input('end_date'))->endOfDay() 
+            : Carbon::now()->endOfDay();
+
+        $status = $request->input('status', 'all');
+
+        $query = \App\Models\Candidate::query()
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $cloneQuery = clone $query;
+        $totalCandidates = (clone $cloneQuery)->count();
+        $verifiedCandidates = (clone $cloneQuery)->where('status', 'completed')->count(); // Adjust status based on actual statuses
+        $pendingCandidates = (clone $cloneQuery)->whereIn('status', ['pending', 'in_progress'])->count();
+
+        $prefix = DB::connection()->getTablePrefix();
+
+        // Generate chart data (monthly grouping)
+        $chartDataQuery = (clone $cloneQuery)
+            ->select(
+                DB::raw("YEAR({$prefix}candidates.created_at) as year"),
+                DB::raw("MONTH({$prefix}candidates.created_at) as month"),
+                DB::raw("COUNT({$prefix}candidates.id) as total_count")
+            )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $categories = [];
+        $candidatesCountData = [];
+
+        $currentDate = $startDate->copy()->startOfMonth();
+        $endMonth = $endDate->copy()->startOfMonth();
+        
+        while ($currentDate <= $endMonth) {
+            $categories[] = $currentDate->format('M');
+            
+            $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
+                return $item->year == $currentDate->year && $item->month == $currentDate->month;
+            });
+            
+            $candidatesCountData[] = $monthData ? (int) $monthData->total_count : 0;
+
+            $currentDate->addMonth();
+        }
+
+        // Recent candidates
+        $recentCandidates = (clone $query)
+            ->with('client')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($candidate) {
+                return [
+                    'id' => $candidate->id,
+                    'name' => $candidate->first_name . ' ' . $candidate->last_name,
+                    'email' => $candidate->email,
+                    'client' => $candidate->client ? $candidate->client->company_name : 'Unknown',
+                    'status' => $candidate->status,
+                    'date' => $candidate->created_at->timestamp,
+                ];
+            });
+
+        return $this->success('Candidates report fetched successfully.', [
+            'stats' => [
+                'totalCandidates' => ['value' => $totalCandidates, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'verifiedCandidates' => ['value' => $verifiedCandidates, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+                'pendingCandidates' => ['value' => $pendingCandidates, 'growShrink' => 0, 'comparePeriod' => 'vs selected range'],
+            ],
+            'chart' => [
+                'categories' => $categories,
+                'series' => [
+                    [
+                        'name' => 'New Candidates',
+                        'data' => $candidatesCountData
+                    ]
+                ]
+            ],
+            'recent_candidates' => $recentCandidates
+        ]);
+    }
 }
