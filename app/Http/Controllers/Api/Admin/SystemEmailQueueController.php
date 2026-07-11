@@ -26,6 +26,7 @@ class SystemEmailQueueController extends Controller
 
         $queueQuery = EmailQueue::select(
             'id',
+            DB::raw("'queue' as source"),
             'to_email as recipient',
             'subject',
             'body_text',
@@ -38,6 +39,7 @@ class SystemEmailQueueController extends Controller
 
         $logQuery = EmailLog::select(
             'id',
+            DB::raw("'log' as source"),
             'to_email as recipient',
             'subject',
             DB::raw("'' as body_text"),
@@ -111,8 +113,8 @@ class SystemEmailQueueController extends Controller
             // Capitalize status and priority
             $item->status = ucfirst(strtolower($item->status));
             $item->priority = ucfirst(strtolower($item->priority));
-            // Add prefix to ID to mimic Q-1001
-            $item->id = 'Q-' . $item->id;
+            // Add prefix to ID for display
+            $item->display_id = 'Q-' . $item->id;
             return $item;
         });
 
@@ -142,5 +144,67 @@ class SystemEmailQueueController extends Controller
             'failed' => $failed,
             'sentToday' => $sentToday,
         ]);
+    }
+
+    /**
+     * Retry a failed email by recreating it in the queue.
+     */
+    public function retry($source, $id)
+    {
+        if ($source === 'queue') {
+            $record = EmailQueue::find($id);
+            if (!$record) {
+                return $this->error('Email record not found in queue', 404);
+            }
+
+            // Create a new record in queue
+            $newRecord = $record->replicate();
+            $newRecord->email_uid = 'email_' . (string) \Illuminate\Support\Str::uuid();
+            $newRecord->status = 'pending';
+            $newRecord->attempts = $record->attempts + 1;
+            $newRecord->error_message = null;
+            $newRecord->provider_response = null;
+            $newRecord->last_attempt_at = null;
+            $newRecord->sent_at = null;
+            $newRecord->created_at = Carbon::now();
+            $newRecord->updated_at = Carbon::now();
+            $newRecord->save();
+
+            // Mark the old one as retried
+            $record->status = 'retried';
+            $record->save();
+
+        } else if ($source === 'log') {
+            $record = EmailLog::find($id);
+            if (!$record) {
+                return $this->error('Email log not found', 404);
+            }
+
+            // Create a new record in queue based on log
+            $newRecord = new EmailQueue();
+            $newRecord->email_uid = 'email_' . (string) \Illuminate\Support\Str::uuid();
+            $newRecord->to_email = $record->to_email;
+            $newRecord->subject = $record->subject;
+            // Logs don't have body saved natively in this schema unless we have it
+            $newRecord->body_html = '';
+            $newRecord->body_text = '';
+            // Or if metadata has it, we could extract it, but let's leave empty for now
+            $newRecord->priority = 'normal'; // default
+            $newRecord->status = 'pending';
+            $newRecord->attempts = 1;
+            $newRecord->error_message = null;
+            $newRecord->provider_response = null;
+            $newRecord->created_at = Carbon::now();
+            $newRecord->updated_at = Carbon::now();
+            $newRecord->save();
+
+            // Mark the old log as retried
+            $record->status = 'retried';
+            $record->save();
+        } else {
+            return $this->error('Invalid source provided', 400);
+        }
+
+        return $this->success('Email queued for retry successfully');
     }
 }

@@ -237,6 +237,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         
         Route::get('/email/queue/stats', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'stats']);
         Route::get('/email/queue', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'index']);
+        Route::post('/email/queue/{source}/{id}/retry', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'retry']);
     });
 
     // Audit Logs
