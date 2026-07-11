@@ -53,4 +53,8 @@ class EmailServer extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+    public function serverType()
+    {
+        return $this->belongsTo(EmailServerType::class, 'server_type_id', 'id');
+    }
 }
