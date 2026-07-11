@@ -45,10 +45,19 @@ class SystemEmailController extends Controller
         $limit = $request->get('limit', 10);
         $templates = EmailTemplate::paginate($limit);
 
+        $stats = [
+            'total' => EmailTemplate::count(),
+            'active' => EmailTemplate::where('is_active', 1)->count(),
+            'inactive' => EmailTemplate::where('is_active', 0)->count(),
+        ];
+
         return response()->json([
             'status' => true,
             'message' => 'Templates fetched successfully',
-            'data' => $templates
+            'data' => [
+                'templates' => $templates,
+                'stats' => $stats
+            ]
         ]);
     }
 }
