@@ -14,167 +14,107 @@ class EmailServerRepository extends BaseRepository
     // column constants
     public function serverName()
     {
-        return EmailServer::SERVER_NAME;
+        return $this->model::SERVER_NAME;
     }
 
     public function serverTypeId()
     {
-        return EmailServer::SERVER_TYPE_ID;
+        return $this->model::SERVER_TYPE_ID;
     }
 
     public function isDefault()
     {
-        return EmailServer::IS_DEFAULT;
+        return $this->model::IS_DEFAULT;
     }
 
     public function priority()
     {
-        return EmailServer::PRIORITY;
-    }
-
-    public function host()
-    {
-        return EmailServer::HOST;
-    }
-
-    public function port()
-    {
-        return EmailServer::PORT;
-    }
-
-    public function encryption()
-    {
-        return EmailServer::ENCRYPTION;
-    }
-
-    public function username()
-    {
-        return EmailServer::USERNAME;
-    }
-
-    public function password()
-    {
-        return EmailServer::PASSWORD;
-    }
-
-    public function timeout()
-    {
-        return EmailServer::TIMEOUT;
-    }
-
-    public function verifySsl()
-    {
-        return EmailServer::VERIFY_SSL;
-    }
-
-    public function authType()
-    {
-        return EmailServer::AUTH_TYPE;
-    }
-
-    public function apiKey()
-    {
-        return EmailServer::API_KEY;
-    }
-
-    public function apiSecret()
-    {
-        return EmailServer::API_SECRET;
-    }
-
-    public function apiEndpoint()
-    {
-        return EmailServer::API_ENDPOINT;
-    }
-
-    public function domain()
-    {
-        return EmailServer::DOMAIN;
+        return $this->model::PRIORITY;
     }
 
     public function rateLimitPerMinute()
     {
-        return EmailServer::RATE_LIMIT_PER_MINUTE;
+        return $this->model::RATE_LIMIT_PER_MINUTE;
     }
 
     public function rateLimitPerHour()
     {
-        return EmailServer::RATE_LIMIT_PER_HOUR;
+        return $this->model::RATE_LIMIT_PER_HOUR;
     }
 
     public function rateLimitPerDay()
     {
-        return EmailServer::RATE_LIMIT_PER_DAY;
+        return $this->model::RATE_LIMIT_PER_DAY;
     }
 
     public function defaultFromEmail()
     {
-        return EmailServer::DEFAULT_FROM_EMAIL;
+        return $this->model::DEFAULT_FROM_EMAIL;
     }
 
     public function defaultFromName()
     {
-        return EmailServer::DEFAULT_FROM_NAME;
+        return $this->model::DEFAULT_FROM_NAME;
     }
 
     public function defaultReplyTo()
     {
-        return EmailServer::DEFAULT_REPLY_TO;
+        return $this->model::DEFAULT_REPLY_TO;
     }
 
     public function serverGroup()
     {
-        return EmailServer::SERVER_GROUP;
+        return $this->model::SERVER_GROUP;
     }
 
     public function weight()
     {
-        return EmailServer::WEIGHT;
+        return $this->model::WEIGHT;
     }
 
     public function status()
     {
-        return EmailServer::STATUS;
+        return $this->model::STATUS;
     }
 
     public function healthCheckAt()
     {
-        return EmailServer::HEALTH_CHECK_AT;
+        return $this->model::HEALTH_CHECK_AT;
     }
 
     public function healthCheckStatus()
     {
-        return EmailServer::HEALTH_CHECK_STATUS;
+        return $this->model::HEALTH_CHECK_STATUS;
     }
 
     public function lastError()
     {
-        return EmailServer::LAST_ERROR;
+        return $this->model::LAST_ERROR;
     }
 
     public function successCount()
     {
-        return EmailServer::SUCCESS_COUNT;
+        return $this->model::SUCCESS_COUNT;
     }
 
     public function failureCount()
     {
-        return EmailServer::FAILURE_COUNT;
+        return $this->model::FAILURE_COUNT;
     }
 
     public function lastUsedAt()
     {
-        return EmailServer::LAST_USED_AT;
+        return $this->model::LAST_USED_AT;
     }
 
     public function createdBy()
     {
-        return EmailServer::CREATED_BY;
+        return $this->model::CREATED_BY;
     }
 
     public function updatedBy()
     {
-        return EmailServer::UPDATED_BY;
+        return $this->model::UPDATED_BY;
     }
     // functions
 }

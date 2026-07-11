@@ -9,7 +9,6 @@ use App\Repositories\EmailServerTypeRepository;
  */
 class EmailServerTypeService extends BaseService
 {
-    
     public function __construct(EmailServerTypeRepository $repository)
     {
         $this->repository = $repository;

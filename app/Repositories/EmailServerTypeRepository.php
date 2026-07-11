@@ -14,37 +14,37 @@ class EmailServerTypeRepository extends BaseRepository
     // column constants
     public function typeName()
     {
-        return EmailServerType::TYPE_NAME;
+        return $this->model::TYPE_NAME;
     }
 
     public function typeCode()
     {
-        return EmailServerType::TYPE_CODE;
+        return $this->model::TYPE_CODE;
     }
 
     public function description()
     {
-        return EmailServerType::DESCRIPTION;
+        return $this->model::DESCRIPTION;
     }
 
     public function isOutgoing()
     {
-        return EmailServerType::IS_OUTGOING;
+        return $this->model::IS_OUTGOING;
     }
 
     public function isIncoming()
     {
-        return EmailServerType::IS_INCOMING;
+        return $this->model::IS_INCOMING;
     }
 
     public function configurationSchema()
     {
-        return EmailServerType::CONFIGURATION_SCHEMA;
+        return $this->model::CONFIGURATION_SCHEMA;
     }
 
     public function isActive()
     {
-        return EmailServerType::IS_ACTIVE;
+        return $this->model::IS_ACTIVE;
     }
     // functions
 }

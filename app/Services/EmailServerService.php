@@ -9,10 +9,9 @@ use App\Repositories\EmailServerRepository;
  */
 class EmailServerService extends BaseService
 {
-    
     public function __construct(EmailServerRepository $repository)
     {
-        $this->repository = $repository;
+        parent::__construct($repository);
     }
 
     // column constants
@@ -34,66 +33,6 @@ class EmailServerService extends BaseService
     public function priority()
     {
         return $this->repository->priority();
-    }
-
-    public function host()
-    {
-        return $this->repository->host();
-    }
-
-    public function port()
-    {
-        return $this->repository->port();
-    }
-
-    public function encryption()
-    {
-        return $this->repository->encryption();
-    }
-
-    public function username()
-    {
-        return $this->repository->username();
-    }
-
-    public function password()
-    {
-        return $this->repository->password();
-    }
-
-    public function timeout()
-    {
-        return $this->repository->timeout();
-    }
-
-    public function verifySsl()
-    {
-        return $this->repository->verifySsl();
-    }
-
-    public function authType()
-    {
-        return $this->repository->authType();
-    }
-
-    public function apiKey()
-    {
-        return $this->repository->apiKey();
-    }
-
-    public function apiSecret()
-    {
-        return $this->repository->apiSecret();
-    }
-
-    public function apiEndpoint()
-    {
-        return $this->repository->apiEndpoint();
-    }
-
-    public function domain()
-    {
-        return $this->repository->domain();
     }
 
     public function rateLimitPerMinute()

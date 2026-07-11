@@ -4,24 +4,31 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\EmailServer;
 use App\Models\EmailServerType;
+use App\Services\EmailServerService;
+use App\Services\EmailServerConfigurationFieldService;
+use App\Http\Requests\Api\Admin\SystemEmailServer\StoreRequest;
+use App\Http\Requests\Api\Admin\SystemEmailServer\UpdateRequest;
+use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
 class SystemEmailServerController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected EmailServerService $emailServerService,
+        protected EmailServerConfigurationFieldService $fieldService
+    ) {}
+
     /**
      * Display a listing of the email servers.
      */
     public function index()
     {
-        $servers = EmailServer::with('serverType')->orderBy('id', 'desc')->get();
-        return response()->json([
-            'status' => true,
-            'message' => 'Email servers fetched successfully',
-            'data' => $servers
-        ]);
+        $servers = $this->emailServerService->query()->with('serverType')->orderBy('id', 'desc')->get();
+        return $this->success('Email servers fetched successfully', $servers);
     }
 
     /**
@@ -30,11 +37,7 @@ class SystemEmailServerController extends Controller
     public function types()
     {
         $types = EmailServerType::where('is_active', true)->get();
-        return response()->json([
-            'status' => true,
-            'message' => 'Server types fetched successfully',
-            'data' => $types
-        ]);
+        return $this->success('Server types fetched successfully', $types);
     }
 
     /**
@@ -42,113 +45,53 @@ class SystemEmailServerController extends Controller
      */
     public function getServerTypeFields($id)
     {
-        $fields = \Illuminate\Support\Facades\DB::table('email_server_configuration_fields')
+        $fields = $this->fieldService->query()
             ->where('server_type_id', $id)
             ->orderBy('sort_order')
             ->get();
-            
+
         // decode options json
         foreach ($fields as $field) {
-            if ($field->options) {
+            if ($field->options && is_string($field->options)) {
                 $field->options = json_decode($field->options, true);
             }
         }
-            
-        return response()->json([
-            'status' => true,
-            'message' => 'Server type fields fetched successfully',
-            'data' => $fields
-        ]);
+
+        return $this->success('Server type fields fetched successfully', $fields);
     }
 
     /**
      * Store a newly created email server in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'server_name' => 'required|string|max:255',
-            'server_type_id' => 'required|exists:email_server_types,id',
-            'host' => 'required|string|max:255',
-            'port' => 'required|integer',
-            'encryption' => 'nullable|in:none,ssl,tls,starttls',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive,maintenance,failing',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            $server = EmailServer::create($request->all());
+            $server = $this->emailServerService->create($request->validated());
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Email server created successfully',
-                'data' => $server
-            ]);
+            return $this->success('Email server created successfully', $server);
         } catch (Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to create email server',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to create email server: ' . $e->getMessage(), 500);
         }
     }
 
     /**
      * Update the specified email server in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateRequest $request, $id)
     {
-        $server = EmailServer::find($id);
-        
-        if (!$server) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email server not found'
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'server_name' => 'sometimes|string|max:255',
-            'server_type_id' => 'sometimes|exists:email_server_types,id',
-            'host' => 'sometimes|string|max:255',
-            'port' => 'sometimes|integer',
-            'encryption' => 'nullable|in:none,ssl,tls,starttls',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive,maintenance,failing',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+        try {
+            $server = $this->emailServerService->find($id);
+        } catch (Exception $e) {
+            return $this->error('Email server not found', 404);
         }
 
         try {
-            $server->update($request->all());
+            $this->emailServerService->update($id, $request->validated());
+            $server = $this->emailServerService->find($id);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Email server updated successfully',
-                'data' => $server
-            ]);
+            return $this->success('Email server updated successfully', $server);
         } catch (Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to update email server',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to update email server: ' . $e->getMessage(), 500);
         }
     }
 
@@ -157,28 +100,18 @@ class SystemEmailServerController extends Controller
      */
     public function destroy($id)
     {
-        $server = EmailServer::find($id);
-        
-        if (!$server) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email server not found'
-            ], 404);
+        try {
+            $server = $this->emailServerService->find($id);
+        } catch (Exception $e) {
+            return $this->error('Email server not found', 404);
         }
 
         try {
-            $server->delete();
+            $this->emailServerService->delete($id);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Email server deleted successfully'
-            ]);
+            return $this->success('Email server deleted successfully');
         } catch (Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to delete email server',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->error('Failed to delete email server: ' . $e->getMessage(), 500);
         }
     }
 
@@ -187,41 +120,32 @@ class SystemEmailServerController extends Controller
      */
     public function testConnection($id)
     {
-        $server = EmailServer::find($id);
-        
-        if (!$server) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email server not found'
-            ], 404);
+        try {
+            $server = $this->emailServerService->find($id);
+        } catch (Exception $e) {
+            return $this->error('Email server not found', 404);
         }
 
         try {
             // Simplified connection testing simulation
             // In a real-world scenario, you would attempt to connect to SMTP using Symfony Mailer transport
-            
-            $server->health_check_at = now();
-            $server->health_check_status = 'Success';
-            $server->save();
-            
-            return response()->json([
-                'status' => true,
-                'message' => 'Connection successful',
-                'data' => [
-                    'last_tested' => $server->health_check_at
-                ]
+
+            $this->emailServerService->update($id, [
+                'health_check_at' => now(),
+                'health_check_status' => 'Success'
+            ]);
+
+            return $this->success('Connection successful', [
+                'last_tested' => now()
             ]);
         } catch (Exception $e) {
-            $server->health_check_at = now();
-            $server->health_check_status = 'Failed';
-            $server->last_error = $e->getMessage();
-            $server->save();
-            
-            return response()->json([
-                'status' => false,
-                'message' => 'Connection failed',
-                'error' => $e->getMessage()
-            ], 500);
+            $this->emailServerService->update($id, [
+                'health_check_at' => now(),
+                'health_check_status' => 'Failed',
+                'last_error' => $e->getMessage()
+            ]);
+
+            return $this->error('Connection failed: ' . $e->getMessage(), 500);
         }
     }
 }
