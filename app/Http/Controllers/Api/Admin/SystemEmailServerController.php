@@ -272,4 +272,70 @@ class SystemEmailServerController extends Controller
             ]);
         }
     }
+    /**
+     * Send a test email using the specified email server.
+     */
+    public function sendTestEmail(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation Error', 422, $validator->errors());
+        }
+
+        try {
+            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
+        } catch (Exception $e) {
+            return $this->error('Email server not found', 404);
+        }
+
+        try {
+            $configValues = EmailServerConfigurationValue::where('email_server_id', $server->id)->get();
+            $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+            
+            $dynamicValues = [];
+            foreach ($configValues as $val) {
+                $field = $fields->where('id', $val->configuration_field_id)->first();
+                if ($field) {
+                    $decryptedVal = $val->field_value;
+                    if ($field->is_encrypted) {
+                        try {
+                            $decryptedVal = decrypt($val->field_value);
+                        } catch (Exception $e) {
+                            $decryptedVal = '';
+                        }
+                    }
+                    $dynamicValues[$field->field_name] = $decryptedVal;
+                }
+            }
+
+            // Temporarily configure the mailer
+            $mailerName = 'test_mailer_' . $server->id;
+            \Illuminate\Support\Facades\Config::set("mail.mailers.{$mailerName}", [
+                'transport' => 'smtp',
+                'host' => $dynamicValues['host'] ?? '',
+                'port' => $dynamicValues['port'] ?? 587,
+                'encryption' => $dynamicValues['encryption'] ?? 'tls',
+                'username' => $dynamicValues['username'] ?? '',
+                'password' => $dynamicValues['password'] ?? '',
+                'timeout' => null,
+                'auth_mode' => null,
+            ]);
+
+            $fromAddress = $dynamicValues['from_address'] ?? $dynamicValues['username'] ?? 'no-reply@digitalrakshak.com';
+            $fromName = $dynamicValues['from_name'] ?? 'Digital Rakshak';
+
+            \Illuminate\Support\Facades\Mail::mailer($mailerName)->raw('This is a test email to verify your email server configuration.', function ($message) use ($request, $fromAddress, $fromName) {
+                $message->from($fromAddress, $fromName);
+                $message->to($request->email);
+                $message->subject('Test Email - Digital Rakshak');
+            });
+
+            return $this->success('Test email sent successfully');
+        } catch (Exception $e) {
+            return $this->error('Failed to send test email: ' . $e->getMessage(), 500);
+        }
+    }
 }
