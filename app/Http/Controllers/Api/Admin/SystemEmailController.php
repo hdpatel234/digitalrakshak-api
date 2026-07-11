@@ -43,7 +43,26 @@ class SystemEmailController extends Controller
     public function templates(Request $request)
     {
         $limit = $request->get('limit', 10);
-        $templates = EmailTemplate::paginate($limit);
+        $query = EmailTemplate::query();
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('template_name', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('type') && $request->type && $request->type !== 'all') {
+            $query->where('email_type', $request->type);
+        }
+
+        if ($request->has('status') && $request->status !== 'all' && $request->status !== null) {
+            $status = in_array($request->status, ['Active', '1', 1, true, 'true', 'active']) ? 1 : 0;
+            $query->where('is_active', $status);
+        }
+
+        $templates = $query->paginate($limit);
 
         $stats = [
             'total' => EmailTemplate::count(),
