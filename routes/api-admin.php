@@ -238,6 +238,11 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/email/queue/stats', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'stats']);
         Route::get('/email/queue', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'index']);
         Route::post('/email/queue/{source}/{id}/retry', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'retry']);
+
+        Route::get('/email/logs/stats', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'stats']);
+        Route::get('/email/logs/statuses', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'statuses']);
+        Route::get('/email/logs', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'index']);
+        Route::get('/email/logs/{id}', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'show']);
     });
 
     // Audit Logs
