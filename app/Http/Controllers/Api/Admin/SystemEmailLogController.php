@@ -43,6 +43,8 @@ class SystemEmailLogController extends Controller
             $item->sentAt = $item->sent_at ? Carbon::parse($item->sent_at)->format('Y-m-d H:i A') : null;
             $item->status = ucfirst(strtolower($item->status));
             $item->template = $item->metadata['template_name'] ?? 'N/A';
+            $item->body_text = $item->metadata['body_text'] ?? '';
+            $item->body_html = $item->metadata['body_html'] ?? '';
             return $item;
         });
 
