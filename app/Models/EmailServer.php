@@ -18,18 +18,6 @@ class EmailServer extends BaseModel
     const SERVER_TYPE_ID = "server_type_id";
     const IS_DEFAULT = "is_default";
     const PRIORITY = "priority";
-    const HOST = "host";
-    const PORT = "port";
-    const ENCRYPTION = "encryption";
-    const USERNAME = "username";
-    const PASSWORD = "password";
-    const TIMEOUT = "timeout";
-    const VERIFY_SSL = "verify_ssl";
-    const AUTH_TYPE = "auth_type";
-    const API_KEY = "api_key";
-    const API_SECRET = "api_secret";
-    const API_ENDPOINT = "api_endpoint";
-    const DOMAIN = "domain";
     const RATE_LIMIT_PER_MINUTE = "rate_limit_per_minute";
     const RATE_LIMIT_PER_HOUR = "rate_limit_per_hour";
     const RATE_LIMIT_PER_DAY = "rate_limit_per_day";
@@ -52,18 +40,7 @@ class EmailServer extends BaseModel
         self::SERVER_TYPE_ID,
         self::IS_DEFAULT,
         self::PRIORITY,
-        self::HOST,
-        self::PORT,
-        self::ENCRYPTION,
-        self::USERNAME,
-        self::PASSWORD,
-        self::TIMEOUT,
-        self::VERIFY_SSL,
-        self::AUTH_TYPE,
-        self::API_KEY,
-        self::API_SECRET,
-        self::API_ENDPOINT,
-        self::DOMAIN,
+
         self::RATE_LIMIT_PER_MINUTE,
         self::RATE_LIMIT_PER_HOUR,
         self::RATE_LIMIT_PER_DAY,
