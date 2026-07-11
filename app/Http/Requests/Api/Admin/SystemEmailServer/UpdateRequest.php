@@ -24,11 +24,9 @@ class UpdateRequest extends FormRequest
         return [
             'server_name' => 'sometimes|string|max:255',
             'server_type_id' => 'sometimes|exists:email_server_types,id',
-            'host' => 'sometimes|string|max:255',
-            'port' => 'sometimes|integer',
-            'encryption' => 'nullable|in:none,ssl,tls,starttls',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string',
+            'default_from_name' => 'nullable|string|max:255',
+            'default_from_email' => 'nullable|email|max:255',
+            'dynamic_values' => 'nullable|array',
             'status' => 'nullable|in:active,inactive,maintenance,failing',
         ];
     }

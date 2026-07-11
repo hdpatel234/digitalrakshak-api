@@ -64,6 +64,41 @@ class SystemEmailServerController extends Controller
     }
 
     /**
+     * Display the specified email server.
+     */
+    public function show($id)
+    {
+        try {
+            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
+            $configValues = EmailServerConfigurationValue::where('email_server_id', $id)->get();
+            $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+            
+            $dynamicValues = [];
+            foreach ($configValues as $val) {
+                $field = $fields->where('id', $val->configuration_field_id)->first();
+                if ($field) {
+                    $decryptedVal = $val->field_value;
+                    if ($field->is_encrypted) {
+                        try {
+                            $decryptedVal = decrypt($val->field_value);
+                        } catch (Exception $e) {
+                            $decryptedVal = '';
+                        }
+                    }
+                    $dynamicValues[$field->field_name] = $decryptedVal;
+                }
+            }
+
+            $serverArray = $server->toArray();
+            $serverArray['dynamic_values'] = $dynamicValues;
+
+            return $this->success('Email server fetched successfully', $serverArray);
+        } catch (Exception $e) {
+            return $this->error('Email server not found', 404);
+        }
+    }
+
+    /**
      * Store a newly created email server in storage.
      */
     public function store(StoreRequest $request)
@@ -118,11 +153,45 @@ class SystemEmailServerController extends Controller
         }
 
         try {
-            $this->emailServerService->update($id, $request->validated());
-            $server = $this->emailServerService->find($id);
+            DB::beginTransaction();
+            $validated = $request->validated();
+            unset($validated['dynamic_values']);
+            $this->emailServerService->update($id, $validated);
 
+            if ($request->has('dynamic_values') && is_array($request->dynamic_values)) {
+                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+                
+                // We can just delete old values and insert new ones, or update existing. Delete/Insert is easier.
+                EmailServerConfigurationValue::where('email_server_id', $id)->delete();
+                
+                $valuesToInsert = [];
+                foreach ($request->dynamic_values as $key => $value) {
+                    $field = $fields->where('field_name', $key)->first();
+                    if ($field) {
+                        $val = $value;
+                        if ($field->is_encrypted) {
+                            $val = encrypt($value);
+                        }
+                        $valuesToInsert[] = [
+                            'email_server_id' => $id,
+                            'configuration_field_id' => $field->id,
+                            'field_value' => $val,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+                if (!empty($valuesToInsert)) {
+                    EmailServerConfigurationValue::insert($valuesToInsert);
+                }
+            }
+            
+            DB::commit();
+
+            $server = $this->emailServerService->find($id);
             return $this->success('Email server updated successfully', $server);
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->error('Failed to update email server: ' . $e->getMessage(), 500);
         }
     }
