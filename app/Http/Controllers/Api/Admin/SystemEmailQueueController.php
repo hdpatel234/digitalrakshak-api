@@ -97,8 +97,7 @@ class SystemEmailQueueController extends Controller
         
         $sql = $unifiedQuery->toSql();
         $query = DB::table(DB::raw("($sql) as unified_emails"))
-            ->mergeBindings($queueQuery->getQuery())
-            ->mergeBindings($logQuery->getQuery());
+            ->setBindings($unifiedQuery->getBindings());
 
         $paginated = $query->orderBy('scheduledFor', 'desc')->paginate($limit);
 
