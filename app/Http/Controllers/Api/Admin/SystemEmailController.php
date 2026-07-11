@@ -40,4 +40,15 @@ class SystemEmailController extends Controller
             ]
         ]);
     }
+    public function templates(Request $request)
+    {
+        $limit = $request->get('limit', 10);
+        $templates = EmailTemplate::paginate($limit);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Templates fetched successfully',
+            'data' => $templates
+        ]);
+    }
 }
