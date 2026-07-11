@@ -196,9 +196,6 @@ class SystemEmailServerController extends Controller
         }
     }
 
-    /**
-     * Remove the specified email server from storage.
-     */
     public function destroy($id)
     {
         try {
@@ -208,10 +205,18 @@ class SystemEmailServerController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+            
+            // Soft delete configuration values
+            EmailServerConfigurationValue::where('email_server_id', $id)->delete();
+            
+            // Soft delete the server
             $this->emailServerService->delete($id);
 
+            DB::commit();
             return $this->success('Email server deleted successfully');
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->error('Failed to delete email server: ' . $e->getMessage(), 500);
         }
     }
