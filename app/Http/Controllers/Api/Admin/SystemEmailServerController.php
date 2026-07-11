@@ -38,6 +38,30 @@ class SystemEmailServerController extends Controller
     }
 
     /**
+     * Fetch fields for a specific server type.
+     */
+    public function getServerTypeFields($id)
+    {
+        $fields = \Illuminate\Support\Facades\DB::table('email_server_configuration_fields')
+            ->where('server_type_id', $id)
+            ->orderBy('sort_order')
+            ->get();
+            
+        // decode options json
+        foreach ($fields as $field) {
+            if ($field->options) {
+                $field->options = json_decode($field->options, true);
+            }
+        }
+            
+        return response()->json([
+            'status' => true,
+            'message' => 'Server type fields fetched successfully',
+            'data' => $fields
+        ]);
+    }
+
+    /**
      * Store a newly created email server in storage.
      */
     public function store(Request $request)
