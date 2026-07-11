@@ -222,31 +222,49 @@ class SystemEmailServerController extends Controller
     public function testConnection($id)
     {
         try {
-            $server = $this->emailServerService->find($id);
+            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
         } catch (Exception $e) {
             return $this->error('Email server not found', 404);
         }
 
         try {
-            // Simplified connection testing simulation
-            // In a real-world scenario, you would attempt to connect to SMTP using Symfony Mailer transport
+            $tester = \App\Services\EmailServerTesting\EmailServerTesterFactory::make($server->serverType?->type_code);
+            $result = $tester->test($server);
+
+            $healthStatus = $result['status'] === 'success' ? 'Success' : 'Failed';
+            $status = $result['status'] === 'success' ? 'active' : 'failing';
 
             $this->emailServerService->update($id, [
                 'health_check_at' => now(),
-                'health_check_status' => 'Success'
+                'health_check_status' => $healthStatus,
+                'status' => $status,
+                'last_error' => $result['status'] === 'error' ? end($result['logs']) : null
             ]);
 
-            return $this->success('Connection successful', [
-                'last_tested' => now()
-            ]);
+            if ($result['status'] === 'success') {
+                return $this->success('Connection successful', [
+                    'last_tested' => now(),
+                    'logs' => $result['logs'],
+                    'status' => 'success'
+                ]);
+            } else {
+                return $this->error('Connection failed', 500, [
+                    'logs' => $result['logs'],
+                    'status' => 'error'
+                ]);
+            }
         } catch (Exception $e) {
             $this->emailServerService->update($id, [
                 'health_check_at' => now(),
                 'health_check_status' => 'Failed',
+                'status' => 'failing',
                 'last_error' => $e->getMessage()
             ]);
 
-            return $this->error('Connection failed: ' . $e->getMessage(), 500);
+            return $this->error('Connection failed: ' . $e->getMessage(), 500, [
+                'logs' => ["[ERROR] An unexpected error occurred: " . $e->getMessage()],
+                'status' => 'error'
+            ]);
         }
     }
 }
