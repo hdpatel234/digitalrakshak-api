@@ -28,6 +28,8 @@ class SystemEmailQueueController extends Controller
             'id',
             'to_email as recipient',
             'subject',
+            'body_text',
+            'body_html',
             'status',
             'priority',
             'created_at as scheduledFor',
@@ -38,6 +40,8 @@ class SystemEmailQueueController extends Controller
             'id',
             'to_email as recipient',
             'subject',
+            DB::raw("'' as body_text"),
+            DB::raw("'' as body_html"),
             'status',
             DB::raw("'Normal' as priority"), // EmailLog might not have priority
             'sent_at as scheduledFor',
