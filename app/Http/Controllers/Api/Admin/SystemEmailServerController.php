@@ -28,9 +28,31 @@ class SystemEmailServerController extends Controller
     /**
      * Display a listing of the email servers.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $servers = $this->emailServerService->query()->with('serverType')->orderBy('id', 'desc')->get();
+        $query = $this->emailServerService->query()->with('serverType');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('server_name', 'like', "%{$search}%");
+        }
+
+        if ($request->has('type') && !empty($request->type) && $request->type !== 'all') {
+            $query->where('server_type_id', $request->type);
+        }
+
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $query->orderBy('id', 'desc');
+
+        if ($request->has('limit')) {
+            $servers = $query->paginate($request->limit);
+        } else {
+            $servers = $query->get();
+        }
+
         return $this->success('Email servers fetched successfully', $servers);
     }
 
@@ -41,6 +63,19 @@ class SystemEmailServerController extends Controller
     {
         $types = EmailServerType::where('is_active', true)->get();
         return $this->success('Server types fetched successfully', $types);
+    }
+
+    /**
+     * Fetch available email server statuses.
+     */
+    public function statuses()
+    {
+        $statuses = [
+            ['status' => 'active'],
+            ['status' => 'inactive'],
+            ['status' => 'failing']
+        ];
+        return $this->success('Server statuses fetched successfully', $statuses);
     }
 
     /**

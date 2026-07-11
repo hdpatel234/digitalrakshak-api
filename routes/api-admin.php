@@ -230,6 +230,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/email/templates', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'templates']);
         Route::get('/email/server-types', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'types']);
         Route::get('/email/server-types/{id}/fields', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'getServerTypeFields']);
+        Route::get('/email/servers/statuses', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'statuses']);
         Route::apiResource('/email/servers', \App\Http\Controllers\Api\Admin\SystemEmailServerController::class);
         Route::post('/email/servers/{server}/test', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'testConnection']);
         Route::post('/email/servers/{server}/send-test', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'sendTestEmail']);
