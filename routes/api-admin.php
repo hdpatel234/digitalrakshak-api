@@ -175,7 +175,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::post('/test', [App\Http\Controllers\Controller::class, 'test']);
     });
 
-    Route::apiResource('email-templates', Controller::class);
+    Route::apiResource('email-templates', App\Http\Controllers\Controller::class);
 
     // Reports
     Route::prefix('reports')->group(function () {
@@ -199,7 +199,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::post('/costs', [App\Http\Controllers\Controller::class, 'store']);
     });
 
-    Route::apiResource('providers', Controller::class);
+    Route::apiResource('providers', App\Http\Controllers\Controller::class);
 
     // Provider standalone routes
     Route::prefix('providers')->group(function () {
