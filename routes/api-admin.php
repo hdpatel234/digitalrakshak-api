@@ -234,6 +234,9 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::apiResource('/email/servers', \App\Http\Controllers\Api\Admin\SystemEmailServerController::class);
         Route::post('/email/servers/{server}/test', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'testConnection']);
         Route::post('/email/servers/{server}/send-test', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'sendTestEmail']);
+        
+        Route::get('/email/queue/stats', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'stats']);
+        Route::get('/email/queue', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'index']);
     });
 
     // Audit Logs
