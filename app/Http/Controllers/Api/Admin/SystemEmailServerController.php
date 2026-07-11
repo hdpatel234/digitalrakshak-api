@@ -11,6 +11,9 @@ use App\Http\Requests\Api\Admin\SystemEmailServer\StoreRequest;
 use App\Http\Requests\Api\Admin\SystemEmailServer\UpdateRequest;
 use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use App\Models\EmailServerConfigurationField;
+use App\Models\EmailServerConfigurationValue;
 use Exception;
 
 class SystemEmailServerController extends Controller
@@ -66,10 +69,39 @@ class SystemEmailServerController extends Controller
     public function store(StoreRequest $request)
     {
         try {
-            $server = $this->emailServerService->create($request->validated());
+            DB::beginTransaction();
+            $validated = $request->validated();
+            unset($validated['dynamic_values']);
+            $server = $this->emailServerService->create($validated);
 
+            if ($request->has('dynamic_values') && is_array($request->dynamic_values)) {
+                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+                $valuesToInsert = [];
+                foreach ($request->dynamic_values as $key => $value) {
+                    $field = $fields->where('field_name', $key)->first();
+                    if ($field) {
+                        $val = $value;
+                        if ($field->is_encrypted) {
+                            $val = encrypt($value);
+                        }
+                        $valuesToInsert[] = [
+                            'email_server_id' => $server->id,
+                            'configuration_field_id' => $field->id,
+                            'field_value' => $val,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+                if (!empty($valuesToInsert)) {
+                    EmailServerConfigurationValue::insert($valuesToInsert);
+                }
+            }
+
+            DB::commit();
             return $this->success('Email server created successfully', $server);
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->error('Failed to create email server: ' . $e->getMessage(), 500);
         }
     }

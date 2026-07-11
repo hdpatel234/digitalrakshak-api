@@ -24,11 +24,9 @@ class StoreRequest extends FormRequest
         return [
             'server_name' => 'required|string|max:255',
             'server_type_id' => 'required|exists:email_server_types,id',
-            'host' => 'required|string|max:255',
-            'port' => 'required|integer',
-            'encryption' => 'nullable|in:none,ssl,tls,starttls',
-            'username' => 'nullable|string|max:255',
-            'password' => 'nullable|string',
+            'default_from_name' => 'nullable|string|max:255',
+            'default_from_email' => 'nullable|email|max:255',
+            'dynamic_values' => 'nullable|array',
             'status' => 'nullable|in:active,inactive,maintenance,failing',
         ];
     }
