@@ -41,6 +41,11 @@ class ClientController extends BaseController
         $perPage = $request->get('limit', 10);
         $clients = $query->paginate($perPage);
 
+        $totalClients = Client::count();
+        $activeClients = Client::where('status', 'active')->count();
+        $inactiveClients = Client::where('status', 'inactive')->count();
+        $suspendedClients = Client::where('status', 'suspended')->count();
+
         return response()->json([
             'status' => true,
             'message' => 'Clients retrieved successfully.',
@@ -51,6 +56,12 @@ class ClientController extends BaseController
                     'per_page' => $clients->perPage(),
                     'current_page' => $clients->currentPage(),
                     'last_page' => $clients->lastPage(),
+                ],
+                'statistics' => [
+                    'total' => $totalClients,
+                    'active' => $activeClients,
+                    'inactive' => $inactiveClients,
+                    'suspended' => $suspendedClients,
                 ],
                 'status_list' => [
                     ['key' => 'active', 'name' => 'Active'],
