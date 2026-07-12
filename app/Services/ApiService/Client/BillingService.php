@@ -44,12 +44,12 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigService->isActive(),
                         $this->paymentGatewayConfigService->isDefault(),
                         $this->paymentGatewayConfigService->isSandbox(),
-                    ])->where($this->paymentGatewayConfigService->isActive(), 1);
+                    ])->where($this->paymentGatewayConfigService->isActive(), 'active');
                 },
             ])
             ->where($this->paymentGatewayService->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigService->isActive(), 1);
+                $query->where($this->paymentGatewayConfigService->isActive(), 'active');
             })
             ->orderBy($this->paymentGatewayService->displayOrder(), 'asc')
             ->get();
@@ -158,12 +158,12 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigService->minAmount(),
                         $this->paymentGatewayConfigService->maxAmount(),
                         $this->paymentGatewayConfigService->isActive(),
-                    ])->where($this->paymentGatewayConfigService->isActive(), 1);
+                    ])->where($this->paymentGatewayConfigService->isActive(), 'active');
                 },
             ])
             ->where($this->paymentGatewayService->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigService->isActive(), 1);
+                $query->where($this->paymentGatewayConfigService->isActive(), 'active');
             })
             ->get();
 
@@ -285,12 +285,12 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigService->isActive(),
                         $this->paymentGatewayConfigService->isDefault(),
                         $this->paymentGatewayConfigService->isSandbox(),
-                    ])->where($this->paymentGatewayConfigService->isActive(), 1);
+                    ])->where($this->paymentGatewayConfigService->isActive(), 'active');
                 },
             ])
             ->where($this->paymentGatewayService->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigService->isActive(), 1);
+                $query->where($this->paymentGatewayConfigService->isActive(), 'active');
             })
             ->orderBy($this->paymentGatewayService->displayOrder(), 'asc')
             ->get();
