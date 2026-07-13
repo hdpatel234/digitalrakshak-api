@@ -246,6 +246,8 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         
         Route::get('/admin-users', [\App\Http\Controllers\Api\Admin\SystemAdminUserController::class, 'index']);
         Route::post('/admin-users', [\App\Http\Controllers\Api\Admin\SystemAdminUserController::class, 'store']);
+        Route::get('/admin-users/{user}', [\App\Http\Controllers\Api\Admin\SystemAdminUserController::class, 'show']);
+        Route::put('/admin-users/{user}', [\App\Http\Controllers\Api\Admin\SystemAdminUserController::class, 'update']);
         
         Route::get('/roles/stats', [\App\Http\Controllers\Api\Admin\SystemRoleController::class, 'stats']);
         Route::get('/roles/permissions', [\App\Http\Controllers\Api\Admin\SystemRoleController::class, 'permissions']);

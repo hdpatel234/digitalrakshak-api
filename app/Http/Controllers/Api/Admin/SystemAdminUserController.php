@@ -97,4 +97,53 @@ class SystemAdminUserController extends Controller
             'data' => $user
         ]);
     }
+
+    public function show(User $user)
+    {
+        if (!in_array($user->user_type->value ?? $user->user_type, ['super_admin', 'admin_user'])) {
+            return response()->json(['message' => 'Not an admin user'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id' => $user->id,
+                'firstName' => $user->first_name,
+                'lastName' => $user->last_name,
+                'email' => $user->email,
+                'role' => $user->roles->first() ? $user->roles->first()->name : '',
+                'status' => $user->status->value ?? $user->status,
+            ]
+        ]);
+    }
+
+    public function update(Request $request, User $user)
+    {
+        if (!in_array($user->user_type->value ?? $user->user_type, ['super_admin', 'admin_user'])) {
+            return response()->json(['message' => 'Not an admin user'], 404);
+        }
+
+        $validated = $request->validate([
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'role' => 'required|string|exists:roles,name',
+            'status' => 'required|string|in:active,inactive,suspended',
+        ]);
+
+        $user->update([
+            User::FIRST_NAME => $validated['firstName'],
+            User::LAST_NAME => $validated['lastName'],
+            User::EMAIL => $validated['email'],
+            User::STATUS => $validated['status'],
+        ]);
+
+        $user->syncRoles([$validated['role']]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Admin user updated successfully',
+            'data' => $user
+        ]);
+    }
 }
