@@ -5,9 +5,9 @@ namespace App\Enums;
 enum UserType: string
 {
     case SUPER_ADMIN = 'super_admin';
-    case ADMIN = 'admin';
     case CLIENT_ADMIN = 'client_admin';
     case CLIENT_USER = 'client_user';
+    case ADMIN_USER = 'admin_user';
 
     /**
      * @return array<int, string>

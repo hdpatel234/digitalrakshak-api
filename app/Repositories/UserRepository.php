@@ -89,15 +89,10 @@ class UserRepository extends BaseRepository
         return User::LAST_LOGIN_PROVIDER_ID;
     }
 
-    public function isActive()
+    public function status()
     {
-        return User::IS_ACTIVE;
+        return User::STATUS;
     }
-    public function isAdmin()
-    {
-        return User::IS_ADMIN;
-    }
-
     // functions
     public function getByEmail(string $email): ?User
     {

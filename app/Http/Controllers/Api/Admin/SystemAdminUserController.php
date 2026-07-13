@@ -16,7 +16,7 @@ class SystemAdminUserController extends Controller
         $status = $request->get('status');
 
         $query = User::with('roles')
-            ->whereIn('user_type', ['super_admin', 'admin_user', 'admin']);
+            ->whereIn('user_type', ['super_admin', 'admin_user']);
 
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -33,11 +33,7 @@ class SystemAdminUserController extends Controller
         }
 
         if ($status && $status !== 'all') {
-            if (in_array(strtolower($status), ['active'])) {
-                $query->where('is_active', 1);
-            } elseif (in_array(strtolower($status), ['inactive', 'suspended'])) {
-                $query->where('is_active', 0);
-            }
+            $query->where('status', strtolower($status));
         }
 
         $users = $query->paginate($limit);
@@ -49,7 +45,7 @@ class SystemAdminUserController extends Controller
                 'name' => trim($user->first_name . ' ' . $user->last_name),
                 'email' => $user->email,
                 'role' => ucwords(str_replace('_', ' ', $user->roles->first() ? $user->roles->first()->name : $user->user_type)),
-                'status' => $user->is_active ? 'Active' : 'Suspended',
+                'status' => ucfirst($user->status->value ?? $user->status),
                 'lastLogin' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('Y-m-d H:i') : 'Never',
                 'createdAt' => $user->created_at ? \Carbon\Carbon::parse($user->created_at)->format('Y-m-d H:i') : null,
             ];
@@ -59,9 +55,9 @@ class SystemAdminUserController extends Controller
         $users->setCollection($mappedUsers);
 
         $stats = [
-            'total_admins' => User::whereIn('user_type', ['super_admin', 'admin_user', 'admin'])->count(),
-            'active_admins' => User::whereIn('user_type', ['super_admin', 'admin_user', 'admin'])->where('is_active', 1)->count(),
-            'suspended_admins' => User::whereIn('user_type', ['super_admin', 'admin_user', 'admin'])->where('is_active', 0)->count(),
+            'total_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->count(),
+            'active_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->where('status', 'active')->count(),
+            'suspended_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->where('status', 'suspended')->count(),
             'super_admins' => User::where('user_type', 'super_admin')->count(),
         ];
 
@@ -88,9 +84,8 @@ class SystemAdminUserController extends Controller
             User::FIRST_NAME => $validated['firstName'],
             User::LAST_NAME => $validated['lastName'],
             User::EMAIL => $validated['email'],
-            User::USER_TYPE => 'admin',
-            User::IS_ACTIVE => 1,
-            User::IS_ADMIN => 1,
+            User::USER_TYPE => 'admin_user',
+            User::STATUS => 'active',
             User::PASSWORD => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)), // Random password initially
         ]);
 

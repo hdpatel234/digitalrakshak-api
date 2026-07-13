@@ -128,13 +128,12 @@ class SyncRolesAndPermissions extends Command
             return 0;
         }
 
-        $hasIsAdmin = Schema::hasColumn('users', 'is_admin');
         $hasUserType = Schema::hasColumn('users', 'user_type');
         $count = 0;
 
-        User::query()->chunkById(200, function ($users) use (&$count, $roles, $hasIsAdmin, $hasUserType): void {
+        User::query()->chunkById(200, function ($users) use (&$count, $roles, $hasUserType): void {
             foreach ($users as $user) {
-                $targetRole = $this->resolveRoleName($user, $hasIsAdmin, $hasUserType);
+                $targetRole = $this->resolveRoleName($user, $hasUserType);
                 $user->syncRoles([$roles[$targetRole]]);
                 $count++;
             }
@@ -143,7 +142,7 @@ class SyncRolesAndPermissions extends Command
         return $count;
     }
 
-    private function resolveRoleName(User $user, bool $hasIsAdmin, bool $hasUserType): string
+    private function resolveRoleName(User $user, bool $hasUserType): string
     {
         if ($hasUserType) {
             $userTypeAttribute = $user->getAttribute(User::USER_TYPE);
@@ -155,17 +154,13 @@ class SyncRolesAndPermissions extends Command
                 return $userType;
             }
 
-            if (in_array($userType, ['administrator'], true)) {
-                return UserType::ADMIN->value;
+            if (in_array($userType, ['administrator', 'admin'], true)) {
+                return UserType::ADMIN_USER->value;
             }
 
             if (in_array($userType, ['client'], true)) {
                 return UserType::CLIENT_USER->value;
             }
-        }
-
-        if ($hasIsAdmin && (bool) $user->getAttribute('is_admin')) {
-            return UserType::ADMIN->value;
         }
 
         return UserType::CLIENT_USER->value;

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserType;
+use App\Enums\UserStatus;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,8 +37,7 @@ class User extends BaseAuthenticatable
     const LAST_LOGIN_OS = 'last_login_os';
     const LAST_LOGIN_PROVIDER = 'last_login_provider';
     const LAST_LOGIN_PROVIDER_ID = 'last_login_provider_id';
-    const IS_ACTIVE = 'is_active';
-    const IS_ADMIN = 'is_admin';
+
 
     /**
      * The attributes that are mass assignable.
@@ -55,8 +55,7 @@ class User extends BaseAuthenticatable
         self::PHONE_CODE,
         self::PASSWORD,
         self::AVATAR,
-        self::IS_ACTIVE,
-        self::IS_ADMIN,
+        self::STATUS,
         self::LAST_LOGIN_AT,
         self::LAST_LOGIN_IP,
         self::LAST_LOGIN_BROWSER,
@@ -92,6 +91,7 @@ class User extends BaseAuthenticatable
             self::EMAIL_VERIFIED_AT => 'datetime',
             self::PASSWORD => 'hashed',
             self::USER_TYPE => UserType::class,
+            self::STATUS => UserStatus::class,
         ];
     }
 
