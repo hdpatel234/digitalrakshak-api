@@ -146,4 +146,25 @@ class SystemAdminUserController extends Controller
             'data' => $user
         ]);
     }
+
+    public function updateStatus(Request $request, User $user)
+    {
+        if (!in_array($user->user_type->value ?? $user->user_type, ['super_admin', 'admin_user'])) {
+            return response()->json(['message' => 'Not an admin user'], 404);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:active,inactive,suspended',
+        ]);
+
+        $user->update([
+            User::STATUS => $validated['status'],
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Status updated successfully',
+            'data' => $user
+        ]);
+    }
 }
