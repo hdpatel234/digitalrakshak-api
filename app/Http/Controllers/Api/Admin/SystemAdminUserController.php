@@ -12,6 +12,8 @@ class SystemAdminUserController extends Controller
     {
         $limit = $request->get('limit', 10);
         $search = $request->get('search');
+        $role = $request->get('role');
+        $status = $request->get('status');
 
         $query = User::with('roles')
             ->whereIn('user_type', ['super_admin', 'admin_user', 'admin']);
@@ -22,6 +24,20 @@ class SystemAdminUserController extends Controller
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
+        }
+
+        if ($role && $role !== 'all') {
+            $query->whereHas('roles', function($q) use ($role) {
+                $q->where('id', $role);
+            });
+        }
+
+        if ($status && $status !== 'all') {
+            if (in_array(strtolower($status), ['active'])) {
+                $query->where('is_active', 1);
+            } elseif (in_array(strtolower($status), ['inactive', 'suspended'])) {
+                $query->where('is_active', 0);
+            }
         }
 
         $users = $query->paginate($limit);
