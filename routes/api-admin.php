@@ -243,6 +243,8 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/email/logs/statuses', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'statuses']);
         Route::get('/email/logs', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'index']);
         Route::get('/email/logs/{id}', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'show']);
+        
+        Route::get('/admin-users', [\App\Http\Controllers\Api\Admin\SystemAdminUserController::class, 'index']);
     });
 
     // Audit Logs
