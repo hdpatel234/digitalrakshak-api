@@ -74,4 +74,32 @@ class SystemAdminUserController extends Controller
             ]
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $user = User::create([
+            User::FIRST_NAME => $validated['firstName'],
+            User::LAST_NAME => $validated['lastName'],
+            User::EMAIL => $validated['email'],
+            User::USER_TYPE => 'admin',
+            User::IS_ACTIVE => 1,
+            User::IS_ADMIN => 1,
+            User::PASSWORD => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(12)), // Random password initially
+        ]);
+
+        $user->assignRole($validated['role']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Admin user created successfully',
+            'data' => $user
+        ]);
+    }
 }
