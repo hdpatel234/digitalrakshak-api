@@ -16,35 +16,25 @@ class AdminPermissionsSeeder extends Seeder
     public function up(): void
     {
         $permissions = [
-            'admin_dashboard_view',
-            
-            // Operations
-            'admin_operations_client_management',
-            'admin_operations_service_management',
-            'admin_operations_service_providers',
-            'admin_operations_package_management',
-            'admin_operations_order_management',
-            'admin_operations_candidate_overview',
-
-            // Billing, Reports, Support
-            'admin_billing_view',
-            'admin_reports_view',
-            'admin_support_view',
-
-            // System Admin
-            'admin_system_admin_users',
-            'admin_system_roles_permissions',
-            'admin_system_email_management',
-            'admin_system_audit_logs',
-            'admin_system_queue_monitor',
-            'admin_system_failed_jobs',
-            'admin_system_cron_jobs',
-            'admin_system_webhook_logs',
-            'admin_system_api_logs',
-
-            // Settings
-            'admin_settings_api_keys',
-            'admin_settings_webhooks',
+            'admin.dashboard.view',
+            'admin.operations.clients.view',
+            'admin.operations.clients.create',
+            'admin.operations.clients.edit',
+            'admin.operations.clients.delete',
+            'admin.operations.clients.pricing',
+            'admin.operations.services.view',
+            'admin.operations.services.create',
+            'admin.operations.services.edit',
+            'admin.operations.services.delete',
+            'admin.operations.services_fields.view',
+            'admin.operations.processing_rules.view',
+            'admin.operations.service_dependencies.view',
+            'admin.operations.service_provider.view',
+            'admin.operations.service_provider.create',
+            'admin.operations.service_provider.edit',
+            'admin.billing.invoices.view',
+            'admin.billing.payment_gateways.view',
+            'admin.billing.transactions.view',
         ];
 
         DB::beginTransaction();
