@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Activitylog extends BaseModel
 {
-    
-    protected $table = "activitylog";
-    
+
+    protected $table = "activity_log";
+
     const DESCRIPTION = "description";
     const USER_ID = "user_id";
     const DATE = "date";
