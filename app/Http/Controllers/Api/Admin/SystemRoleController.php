@@ -205,6 +205,13 @@ class SystemRoleController extends Controller
             ], 403);
         }
 
+        if ($role->users()->count() > 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cannot delete this role because users are assigned to it.'
+            ], 400);
+        }
+
         try {
             $role->delete();
             return response()->json([
