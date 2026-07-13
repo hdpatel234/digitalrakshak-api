@@ -14,7 +14,7 @@ class SystemRoleController extends Controller
     {
         $search = $request->get('search');
 
-        $query = Role::withCount('users');
+        $query = Role::withCount('users')->where('is_admin_role', true);
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%")
@@ -45,9 +45,9 @@ class SystemRoleController extends Controller
     public function stats()
     {
         $stats = [
-            'total_roles' => Role::count(),
-            'system_roles' => Role::where('is_system', true)->count(),
-            'custom_roles' => Role::where('is_system', false)->count(),
+            'total_roles' => Role::where('is_admin_role', true)->count(),
+            'system_roles' => Role::where('is_admin_role', true)->where('is_system', true)->count(),
+            'custom_roles' => Role::where('is_admin_role', true)->where('is_system', false)->count(),
         ];
 
         return response()->json([
@@ -94,6 +94,7 @@ class SystemRoleController extends Controller
                 'name' => strtolower(str_replace(' ', '_', $request->name)),
                 'description' => $request->description,
                 'is_system' => false,
+                'is_admin_role' => true,
                 'guard_name' => 'api'
             ]);
 
