@@ -52,7 +52,7 @@ class LoginService extends BaseService
                 return $return_array;
             }
 
-            if ($user->{$this->userRepository->isActive()} == false) {
+            if ($user->{$this->userRepository->isActive()} !== \App\Enums\UserStatus::ACTIVE) {
                 $return_array['status'] = false;
                 $return_array['message'] = 'auth.login.response_messages.account_inactive';
                 return $return_array;
@@ -151,7 +151,7 @@ class LoginService extends BaseService
         $return_array['data'] = [];
 
         try {
-            if ($user->{$this->userRepository->isActive()} == false) {
+            if ($user->{$this->userRepository->isActive()} !== \App\Enums\UserStatus::ACTIVE) {
                 $return_array['status'] = false;
                 $return_array['message'] = 'auth.login.response_messages.account_inactive';
                 return $return_array;

@@ -178,4 +178,12 @@ class User extends BaseAuthenticatable
         }
         return $array;
     }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return in_array($this->user_type, [
+            UserType::SUPER_ADMIN,
+            UserType::ADMIN_USER
+        ], true);
+    }
 }

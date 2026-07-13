@@ -93,6 +93,16 @@ class UserRepository extends BaseRepository
     {
         return User::STATUS;
     }
+
+    public function isActive()
+    {
+        return User::STATUS;
+    }
+
+    public function isAdmin()
+    {
+        return 'is_admin';
+    }
     // functions
     public function getByEmail(string $email): ?User
     {
