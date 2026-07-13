@@ -42,6 +42,34 @@ class SystemRoleController extends Controller
         ]);
     }
 
+    public function show($id)
+    {
+        try {
+            $role = Role::withCount('users')->where('is_admin_role', true)->findOrFail($id);
+            
+            $formattedRole = [
+                'id' => $role->id,
+                'name' => ucwords(str_replace('_', ' ', $role->name)),
+                'description' => $role->description ?? 'No description provided',
+                'type' => $role->is_system ? 'System' : 'Custom',
+                'usersCount' => $role->users_count,
+                'permissions' => $role->permissions->pluck('name'),
+                'createdAt' => $role->created_at ? $role->created_at->format('Y-m-d H:i') : null,
+            ];
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Role fetched successfully',
+                'data' => $formattedRole
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Role not found'
+            ], 404);
+        }
+    }
+
     public function stats()
     {
         $stats = [
