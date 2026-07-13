@@ -13,12 +13,23 @@ class SystemRoleController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $type = $request->get('type');
 
         $query = Role::withCount('users')->where('is_admin_role', true);
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($type && $type !== 'all') {
+            if ($type === 'system') {
+                $query->where('is_system', true);
+            } elseif ($type === 'custom') {
+                $query->where('is_system', false);
+            }
         }
 
         $roles = $query->get()->map(function ($role) {
