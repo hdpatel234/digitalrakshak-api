@@ -32,7 +32,7 @@ class SystemAdminUserController extends Controller
                 'id' => $user->id,
                 'name' => trim($user->first_name . ' ' . $user->last_name),
                 'email' => $user->email,
-                'role' => $user->roles->first() ? $user->roles->first()->name : ($user->user_type === 'super_admin' ? 'Super Admin' : 'Admin'),
+                'role' => ucwords(str_replace('_', ' ', $user->roles->first() ? $user->roles->first()->name : $user->user_type)),
                 'status' => $user->is_active ? 'Active' : 'Suspended',
                 'lastLogin' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('Y-m-d H:i') : 'Never',
                 'createdAt' => $user->created_at ? \Carbon\Carbon::parse($user->created_at)->format('Y-m-d H:i') : null,
