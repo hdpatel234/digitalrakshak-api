@@ -332,7 +332,7 @@ class BillingService extends BaseService
                         'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeType()},
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
-                        'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
+                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigService->isActive()} === 'active' ? 1 : 0,
 
                     ],
                     'gateway' => [

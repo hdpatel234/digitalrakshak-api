@@ -35,7 +35,7 @@ class StoreOrderRequest extends BaseRequest
                 'integer',
                 'min:1',
                 Rule::exists('payment_gateway_configs', 'id')->where(function ($query) {
-                    $query->where('is_active', 1);
+                    $query->where('status', 'active');
                 }),
             ],
         ];
