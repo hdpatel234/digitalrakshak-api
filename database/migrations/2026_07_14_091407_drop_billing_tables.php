@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->dropForeign('tblclients_ibfk_1');
-            $table->dropColumn('default_billing_config_id');
+            try {
+                $table->dropForeign('tblclients_ibfk_1');
+            } catch (\Exception $e) {
+                // Ignore missing foreign key
+            }
+            
+            if (Schema::hasColumn('clients', 'default_billing_config_id')) {
+                $table->dropColumn('default_billing_config_id');
+            }
         });
 
         Schema::dropIfExists('billing_service_mappings');
