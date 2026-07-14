@@ -17,11 +17,6 @@ class ClientRepository extends BaseRepository
         return Client::COMPANY_NAME;
     }
 
-    public function contactPerson()
-    {
-        return Client::CONTACT_PERSON;
-    }
-
     public function email()
     {
         return Client::EMAIL;
@@ -62,24 +57,9 @@ class ClientRepository extends BaseRepository
         return Client::CITY_ID;
     }
 
-    public function city()
-    {
-        return Client::CITY;
-    }
-
-    public function state()
-    {
-        return Client::STATE;
-    }
-
     public function pincode()
     {
         return Client::PINCODE;
-    }
-
-    public function country()
-    {
-        return Client::COUNTRY;
     }
 
     public function currency()

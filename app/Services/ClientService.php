@@ -21,11 +21,6 @@ class ClientService extends BaseService
         return $this->repository->companyName();
     }
 
-    public function contactPerson()
-    {
-        return $this->repository->contactPerson();
-    }
-
     public function email()
     {
         return $this->repository->email();
@@ -66,24 +61,9 @@ class ClientService extends BaseService
         return $this->repository->cityID();
     }
 
-    public function city()
-    {
-        return $this->repository->city();
-    }
-
-    public function state()
-    {
-        return $this->repository->state();
-    }
-
     public function pincode()
     {
         return $this->repository->pincode();
-    }
-
-    public function country()
-    {
-        return $this->repository->country();
     }
 
     public function currency()
@@ -108,11 +88,6 @@ class ClientService extends BaseService
     public function defaultSupportConfigId()
     {
         return $this->repository->defaultSupportConfigId();
-    }
-
-    public function defualtDocumentConfigId()
-    {
-        return $this->repository->defaultDocumentConfigId();
     }
 
     public function status()
