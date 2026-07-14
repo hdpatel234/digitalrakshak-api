@@ -317,7 +317,7 @@ class BillingService extends BaseService
                     'gateway_config_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
                     'gateway_id' => (int) $gateway->{$this->paymentGatewayService->id()},
                     'display_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
-                    'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+                    'is_default' => (int) ($gateway->{$this->paymentGatewayService->isDefault()} ?? 0),
                     'display_order' => (int) ($gateway->{$this->paymentGatewayService->displayOrder()} ?? 0),
                     'gateway_config' => [
                         'id' => (int) $gatewayConfig->{$this->paymentGatewayConfigService->id()},
