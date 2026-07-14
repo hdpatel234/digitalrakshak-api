@@ -42,8 +42,7 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigService->environment(),
                         $this->paymentGatewayConfigService->baseUrl(),
                         $this->paymentGatewayConfigService->isActive(),
-                        $this->paymentGatewayConfigService->isDefault(),
-                        $this->paymentGatewayConfigService->isSandbox(),
+
                     ])->where($this->paymentGatewayConfigService->isActive(), 'active');
                 },
             ])
@@ -132,7 +131,7 @@ class BillingService extends BaseService
                     'provider_company' => $gateway->{$this->paymentGatewayService->providerCompany()},
                     'logo' => $gateway->{$this->paymentGatewayService->logo()},
                     'website' => $gateway->{$this->paymentGatewayService->website()},
-                    'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
+
                     'display_order' => (int) ($gateway->{$this->paymentGatewayService->displayOrder()} ?? 0),
                     'supported_methods' => $supportedMethods,
                 ]);
@@ -283,8 +282,7 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigService->transactionFeeFixed(),
                         $this->paymentGatewayConfigService->transactionFeePercentage(),
                         $this->paymentGatewayConfigService->isActive(),
-                        $this->paymentGatewayConfigService->isDefault(),
-                        $this->paymentGatewayConfigService->isSandbox(),
+
                     ])->where($this->paymentGatewayConfigService->isActive(), 'active');
                 },
             ])
@@ -335,8 +333,7 @@ class BillingService extends BaseService
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
                         'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
-                        'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
-                        'is_sandbox' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isSandbox()} ?? 0),
+
                     ],
                     'gateway' => [
                         'id' => (int) $gateway->{$this->paymentGatewayService->id()},

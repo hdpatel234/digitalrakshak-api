@@ -142,15 +142,6 @@ class PaymentGatewayConfigRepository extends BaseRepository
         return PaymentGatewayConfig::STATUS;
     }
 
-    public function isDefault()
-    {
-        return 'is_default';
-    }
-
-    public function isSandbox()
-    {
-        return 'is_sandbox';
-    }
 
     public function lastUsedAt()
     {

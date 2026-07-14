@@ -192,8 +192,7 @@ class OrderService extends BaseService
                     $this->paymentGatewayConfigService->transactionFeeFixed(),
                     $this->paymentGatewayConfigService->transactionFeePercentage(),
                     $this->paymentGatewayConfigService->isActive(),
-                    $this->paymentGatewayConfigService->isDefault(),
-                    $this->paymentGatewayConfigService->isSandbox(),
+
                 ])
                 ->with([
                     'gateway' => function ($query) {
@@ -248,8 +247,7 @@ class OrderService extends BaseService
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
                         'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
-                        'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
-                        'is_sandbox' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isSandbox()} ?? 0),
+
                         'gateway' => $gateway ? [
                             'id' => (int) ($gateway->{$this->paymentGatewayService->id()} ?? 0),
                             'gateway_name' => $gateway->{$this->paymentGatewayService->gatewayName()},
@@ -714,8 +712,7 @@ class OrderService extends BaseService
                     $this->paymentGatewayConfigService->transactionFeeFixed(),
                     $this->paymentGatewayConfigService->transactionFeePercentage(),
                     $this->paymentGatewayConfigService->isActive(),
-                    $this->paymentGatewayConfigService->isDefault(),
-                    $this->paymentGatewayConfigService->isSandbox(),
+
                 ])
                 ->with([
                     'gateway' => function ($query) {
@@ -752,8 +749,7 @@ class OrderService extends BaseService
                     'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                     'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
                     'is_active' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isActive()} ?? 0),
-                    'is_default' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isDefault()} ?? 0),
-                    'is_sandbox' => (int) ($gatewayConfig->{$this->paymentGatewayConfigService->isSandbox()} ?? 0),
+
                     'gateway' => $gateway ? [
                         'id' => (int) ($gateway->{$this->paymentGatewayService->id()} ?? 0),
                         'gateway_name' => $gateway->{$this->paymentGatewayService->gatewayName()},

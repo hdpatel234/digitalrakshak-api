@@ -139,20 +139,9 @@ class PaymentGatewayConfigService extends BaseService
     {
         return $this->repository->settlementAccount();
     }
-
     public function isActive()
     {
         return $this->repository->isActive();
-    }
-
-    public function isDefault()
-    {
-        return $this->repository->isDefault();
-    }
-
-    public function isSandbox()
-    {
-        return $this->repository->isSandbox();
     }
 
     public function lastUsedAt()
