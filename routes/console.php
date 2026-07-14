@@ -23,9 +23,6 @@ Schedule::command('orders:process-verifications')->everyMinute();
 // Process email queue
 Schedule::command('emails:process-queue --limit=100')->everyMinute();
 
-// Reset AI accounts daily usage
-Schedule::command('ai:reset-daily-usage')->dailyAt('01:00')->timezone(config('app.timezone', 'Asia/Kolkata'));
-
 // Sync CountryStateCity API data
 Schedule::command('csc:sync countries')->weekly();
 Schedule::command('csc:sync states')->weekly();
