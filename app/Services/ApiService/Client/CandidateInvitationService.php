@@ -756,6 +756,110 @@ class CandidateInvitationService extends BaseService
         });
     }
 
+    public function resendInvitation(int $invitationId, int $clientId, ?object $user, string $ip, string $userAgent): void
+    {
+        $invitation = $this->invitationService->query()
+            ->where($this->invitationService->id(), $invitationId)
+            ->where($this->invitationService->clientId(), $clientId)
+            ->with(['candidate'])
+            ->first();
+
+        if (!$invitation) {
+            throw new \Exception('Invitation not found.', 404);
+        }
+
+        if ((string) ($invitation->{$this->invitationService->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
+            throw new \Exception('Invitation has already been completed.', 422);
+        }
+
+        $candidate = $invitation->candidate;
+        if (!$candidate) {
+            throw new \Exception('Candidate not found for this invitation.', 404);
+        }
+
+        $client = $this->clientService->query()
+            ->where($this->clientService->id(), $clientId)
+            ->first();
+
+        $invitationTemplate = $this->emailTemplateService->findActiveByCode(
+            EmailTemplateCode::CANDIDATE_INVITATION_FORM->value
+        );
+
+        if (!$invitationTemplate) {
+            throw new \Exception('Candidate invitation template not found.', 404);
+        }
+
+        $candidateEmail = strtolower(trim((string) ($candidate->{$this->candidateService->email()} ?? '')));
+        if ($candidateEmail === '') {
+            throw new \Exception('Candidate does not have an email address.', 422);
+        }
+
+        $clientAppUrl = $this->configurationService->getStringValue(
+            ConfigurationKey::CLIENT_APP_URL,
+            (string) config('app.client_url', env('CLIENT_URL', ''))
+        );
+        $baseUrl = rtrim($clientAppUrl, '/');
+        $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+        $inviteLink = $baseUrl !== ''
+            ? $baseUrl . '/' . ltrim($relativeLink, '/')
+            : '/' . ltrim($relativeLink, '/');
+
+        $candidateFirstName = trim((string) ($candidate->{$this->candidateService->firstName()} ?? ''));
+        $candidateLastName = trim((string) ($candidate->{$this->candidateService->lastName()} ?? ''));
+        $candidateFullName = trim($candidateFirstName . ' ' . $candidateLastName) ?? $candidateEmail;
+
+        DB::transaction(function () use ($invitation, $candidate, $client, $invitationTemplate, $candidateEmail, $candidateFullName, $candidateFirstName, $candidateLastName, $inviteLink, $user, $ip, $userAgent, $clientId) {
+            $rendered = $this->emailTemplateService->renderTemplate($invitationTemplate, [
+                'candidate_full_name' => $candidateFullName,
+                'candidate_first_name' => $candidateFirstName,
+                'candidate_last_name' => $candidateLastName,
+                'candidate_email' => $candidateEmail,
+                'candidate_invite_link' => $inviteLink,
+                'company_name' => (string) ($client?->{$this->clientService->companyName()} ?? config('app.name')),
+                'client_email' => (string) ($client?->{$this->clientService->email()} ?? ''),
+                'invitation_token' => (string) ($invitation->{$this->invitationService->invitationToken()} ?? ''),
+                'invitation_expires_at' => (string) ($invitation->{$this->invitationService->expiresAt()} ?? ''),
+            ]);
+
+            $this->emailQueueService->create([
+                $this->emailQueueService->emailUid() => 'email_' . Str::uuid(),
+                $this->emailQueueService->toEmail() => $candidateEmail,
+                $this->emailQueueService->toName() => $candidateFullName !== '' ? $candidateFullName : null,
+                $this->emailQueueService->subject() => (string) ($rendered['subject'] ?? ''),
+                $this->emailQueueService->bodyHtml() => $rendered['body_html'] ?? null,
+                $this->emailQueueService->bodyText() => $rendered['body_text'] ?? null,
+                $this->emailQueueService->templateId() => $invitationTemplate->{$this->emailTemplateService->id()},
+                $this->emailQueueService->emailType() => (string) ($invitationTemplate->{$this->emailTemplateService->emailType()} ?? 'candidate_invitation'),
+                $this->emailQueueService->priority() => (string) ($invitationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
+                $this->emailQueueService->clientId() => $clientId,
+                $this->emailQueueService->candidateId() => $invitation->{$this->invitationService->candidateId()},
+                $this->emailQueueService->userId() => $user?->id,
+                $this->emailQueueService->assignedServerId() => $invitationTemplate->{$this->emailTemplateService->serverId()},
+                $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
+                $this->emailQueueService->attempts() => 0,
+                $this->emailQueueService->maxAttempts() => 3,
+                $this->emailQueueService->scheduledAt() => now(),
+                $this->emailQueueService->expiresAt() => $invitation->{$this->invitationService->expiresAt()},
+            ]);
+
+            $this->invitationService->update(
+                $invitation->{$this->invitationService->id()},
+                [
+                    $this->invitationService->reminderCount() => ((int) ($invitation->{$this->invitationService->reminderCount()} ?? 0)) + 1,
+                    $this->invitationService->updatedAt() => now(),
+                ]
+            );
+
+            $this->candidateInvitationsLogService->create([
+                $this->candidateInvitationsLogService->invitationId() => $invitation->{$this->invitationService->id()},
+                $this->candidateInvitationsLogService->action() => 'resent',
+                $this->candidateInvitationsLogService->ipAddress() => $ip,
+                $this->candidateInvitationsLogService->userAgent() => $userAgent,
+                $this->candidateInvitationsLogService->status() => $invitation->{$this->invitationService->status()},
+            ]);
+        });
+    }
+
     public function parseResume(string $tempPath, string $extension, string $originalName, string $promptCode): array
     {
         try {

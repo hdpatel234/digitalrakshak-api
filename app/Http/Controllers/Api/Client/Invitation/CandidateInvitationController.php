@@ -67,8 +67,8 @@ class CandidateInvitationController extends BaseController
                 $payload,
                 $clientId,
                 $user,
-                $request->ip(),
-                $request->userAgent()
+                (string) $request->ip(),
+                (string) $request->userAgent()
             );
 
             return $this->success('Candidate invitations created successfully.', $result, 201);
@@ -103,8 +103,8 @@ class CandidateInvitationController extends BaseController
             $this->candidateInvitationService->updateInvitationByToken(
                 (string) $token,
                 $request->validated(),
-                $request->ip(),
-                $request->userAgent()
+                (string) $request->ip(),
+                (string) $request->userAgent()
             );
 
             return $this->success('Invitation updated successfully.');
@@ -133,6 +133,36 @@ class CandidateInvitationController extends BaseController
 
             return $this->success('Resume parsed successfully.', $data);
         } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+    public function resend(Request $request, $invitationId)
+    {
+        addInfoLog("Candidate Invitation resend request");
+
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
+        }
+
+        try {
+            $this->candidateInvitationService->resendInvitation(
+                (int) $invitationId,
+                $clientId,
+                $user,
+                (string) $request->ip(),
+                (string) $request->userAgent()
+            );
+
+            return $this->success('Invitation resent successfully.');
+        } catch (\Exception $e) {
+            Log::error('Invitation resend failed', [
+                'error' => $e->getMessage(),
+                'invitation_id' => $invitationId,
+            ]);
+
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }
     }
