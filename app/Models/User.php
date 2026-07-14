@@ -173,7 +173,7 @@ class User extends BaseAuthenticatable
     public function toArray()
     {
         $array = parent::toArray();
-        if (!empty($array[self::AVATAR])) {
+        if (!empty($array[self::AVATAR]) && !str_starts_with((string) $array[self::AVATAR], 'http')) {
             $array[self::AVATAR] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $array[self::AVATAR], '/');
         }
         return $array;

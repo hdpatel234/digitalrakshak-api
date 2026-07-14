@@ -15,14 +15,12 @@ class ProfileController extends BaseController
         $this->userServcice = $userServcice;
     }
 
-    public function me()
+    public function me(\Illuminate\Http\Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
         $response = $user->toArray();
 
-        if (!empty($response['avatar'])) {
-            $response['avatar'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $response['avatar'], '/');
-        }
+        // Avatar is already prefixed in User::toArray()
 
         $userConfigService = app(\App\Services\UserConfigService::class);
         $resolvedConfigs = $userConfigService->getResolvedConfigs($user->id);
@@ -40,9 +38,9 @@ class ProfileController extends BaseController
         return $this->success('auth.get_profile.response_messages.profile_success', $response);
     }
 
-    public function getPermissions()
+    public function getPermissions(\Illuminate\Http\Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
         $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
 
         return $this->success('Permissions retrieved successfully', $permissions);
@@ -51,7 +49,7 @@ class ProfileController extends BaseController
     public function updateProfile(UpdateProfileRequest $request)
     {
         try {
-            $user = auth()->user();
+            $user = $request->user();
             $response = $this->userServcice->updateProfile(
                 $user,
                 $request->validated(),
@@ -59,9 +57,7 @@ class ProfileController extends BaseController
             );
 
             $responseData = $response->toArray();
-            if (!empty($responseData['avatar'])) {
-                $responseData['avatar'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $responseData['avatar'], '/');
-            }
+            // Avatar is already prefixed in User::toArray()
 
             return $this->success('auth.update_profile.response_messages.profile_updated_success', $responseData);
         } catch (\Exception $e) {
