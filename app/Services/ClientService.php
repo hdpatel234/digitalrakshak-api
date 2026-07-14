@@ -100,15 +100,9 @@ class ClientService extends BaseService
     {
         return $this->repository->creditBalance();
     }
-
     public function paymentTerms()
     {
         return $this->repository->paymentTerms();
-    }
-
-    public function defaultBillingConfigId()
-    {
-        return $this->repository->defaultBillingConfigId();
     }
 
     public function defaultSupportConfigId()
