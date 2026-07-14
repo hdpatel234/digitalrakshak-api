@@ -27,13 +27,13 @@ class SmtpDriver
 
         $smtpConfig = [
             'transport' => 'smtp',
-            'host' => $this->server->host,
-            'port' => $this->server->port,
-            'encryption' => $this->server->encryption,
-            'username' => $this->server->username,
-            'password' => $this->resolveSecret($this->server->password),
-            'timeout' => $this->server->timeout,
-            'verify_ssl' => $this->server->verify_ssl,
+            'host' => $this->server->getConfig('host'),
+            'port' => $this->server->getConfig('port'),
+            'encryption' => $this->server->getConfig('encryption', 'tls'),
+            'username' => $this->server->getConfig('username'),
+            'password' => $this->resolveSecret($this->server->getConfig('password')),
+            'timeout' => $this->server->getConfig('timeout', 30),
+            'verify_ssl' => $this->server->getConfig('verify_ssl', true),
         ];
 
         $mailConfig = [
@@ -64,7 +64,7 @@ class SmtpDriver
             ];
         }
 
-        $messageId = time() . '.' . uniqid() . '@' . parse_url($this->server->host, PHP_URL_HOST);
+        $messageId = time() . '.' . uniqid() . '@' . parse_url($this->server->getConfig('host'), PHP_URL_HOST);
         
         Mail::mailer('smtp')->send(new DynamicEmail($data));
         
@@ -93,7 +93,7 @@ class SmtpDriver
     {
         $candidates = [
             $this->server->default_from_email,
-            filter_var((string) $this->server->username, FILTER_VALIDATE_EMAIL) ?: null,
+            filter_var((string) $this->server->getConfig('username'), FILTER_VALIDATE_EMAIL) ?: null,
             config('mail.from.address'),
         ];
 

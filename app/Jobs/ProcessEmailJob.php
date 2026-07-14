@@ -31,7 +31,7 @@ class ProcessEmailJob implements ShouldQueue
     public function handle(EmailDriverFactory $driverFactory)
     {
         $emailQueue = EmailQueue::query()
-            ->with(['assignedServer.serverType', 'attachments'])
+            ->with(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments'])
             ->find($this->emailQueueId);
 
         if (!$emailQueue) {
@@ -55,7 +55,7 @@ class ProcessEmailJob implements ShouldQueue
 
         try {
             $emailQueue->refresh();
-            $emailQueue->loadMissing(['assignedServer.serverType', 'attachments']);
+            $emailQueue->loadMissing(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments']);
 
             if (empty($emailQueue->to_email)) {
                 throw new \RuntimeException('Queue email is missing to_email.');

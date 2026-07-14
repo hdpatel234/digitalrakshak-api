@@ -16,7 +16,7 @@ class SendGridDriver
     public function __construct(EmailServer $server)
     {
         $this->server = $server;
-        $this->sendgrid = new SendGrid($this->resolveSecret($server->api_key));
+        $this->sendgrid = new SendGrid($this->resolveSecret($server->getConfig('api_key')));
     }
 
     public function send(array $data)

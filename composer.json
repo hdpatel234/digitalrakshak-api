@@ -19,6 +19,7 @@
         "opcodesio/log-viewer": "^3.23",
         "phpseclib/phpseclib": "^3.0",
         "razorpay/razorpay": "^2.9",
+        "sendgrid/sendgrid": "*",
         "sentry/sentry": "^4.29",
         "sentry/sentry-laravel": "^4.26",
         "smalot/pdfparser": "^2.12",

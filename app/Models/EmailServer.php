@@ -58,4 +58,22 @@ class EmailServer extends BaseModel
     {
         return $this->belongsTo(EmailServerType::class, 'server_type_id', 'id');
     }
+
+    public function configurationValues()
+    {
+        return $this->hasMany(EmailServerConfigurationValue::class, 'email_server_id');
+    }
+
+    public function getConfig(string $key, $default = null)
+    {
+        if (!$this->relationLoaded('configurationValues')) {
+            $this->load('configurationValues.field');
+        }
+
+        $config = $this->configurationValues->first(function ($value) use ($key) {
+            return $value->field && $value->field->field_name === $key;
+        });
+
+        return $config ? $config->field_value : $default;
+    }
 }

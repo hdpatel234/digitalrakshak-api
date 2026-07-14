@@ -18,4 +18,9 @@ class EmailServerConfigurationValue extends BaseModel
         self::CONFIGURATION_FIELD_ID,
         self::FIELD_VALUE,
     ];
+
+    public function field()
+    {
+        return $this->belongsTo(EmailServerConfigurationField::class, 'configuration_field_id', 'id');
+    }
 }
