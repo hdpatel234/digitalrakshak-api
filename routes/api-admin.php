@@ -218,6 +218,8 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::post('/cron-jobs/{cron_job}/run', [\App\Http\Controllers\Admin\CronJobController::class, 'run']);
         Route::get('/email/overview', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'overview']);
         Route::get('/email/templates', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'templates']);
+        Route::post('/email/templates', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'storeTemplate']);
+        Route::put('/email/templates/{id}', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'updateTemplate']);
         Route::get('/email/server-types', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'types']);
         Route::get('/email/server-types/{id}/fields', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'getServerTypeFields']);
         Route::get('/email/servers/statuses', [\App\Http\Controllers\Api\Admin\SystemEmailServerController::class, 'statuses']);
@@ -227,6 +229,7 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         
         Route::get('/email/queue/stats', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'stats']);
         Route::get('/email/queue', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'index']);
+        Route::post('/email/queue', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'store']);
         Route::post('/email/queue/{source}/{id}/retry', [\App\Http\Controllers\Api\Admin\SystemEmailQueueController::class, 'retry']);
 
         Route::get('/email/logs/stats', [\App\Http\Controllers\Api\Admin\SystemEmailLogController::class, 'stats']);

@@ -79,4 +79,54 @@ class SystemEmailController extends Controller
             ]
         ]);
     }
+
+    public function storeTemplate(Request $request)
+    {
+        $validated = $request->validate([
+            'template_name' => 'required|string|max:255',
+            'template_code' => 'required|string|unique:email_templates,template_code',
+            'email_type' => 'required|string|max:50',
+            'subject' => 'required|string|max:255',
+            'body_html' => 'required|string',
+            'body_text' => 'nullable|string',
+            'server_id' => 'required|exists:email_servers,id',
+            'default_priority' => 'nullable|string|in:low,normal,high,critical',
+            'variables' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        $template = EmailTemplate::create($validated);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Email template created successfully',
+            'data' => $template
+        ], 201);
+    }
+
+    public function updateTemplate(Request $request, $id)
+    {
+        $template = EmailTemplate::findOrFail($id);
+
+        $validated = $request->validate([
+            'template_name' => 'sometimes|required|string|max:255',
+            'template_code' => 'sometimes|required|string|unique:email_templates,template_code,' . $template->id,
+            'email_type' => 'sometimes|required|string|max:50',
+            'subject' => 'sometimes|required|string|max:255',
+            'body_html' => 'sometimes|required|string',
+            'body_text' => 'nullable|string',
+            'server_id' => 'required|exists:email_servers,id',
+            'default_priority' => 'nullable|string|in:low,normal,high,critical',
+            'variables' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        $template->update($validated);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Email template updated successfully',
+            'data' => $template
+        ]);
+    }
 }

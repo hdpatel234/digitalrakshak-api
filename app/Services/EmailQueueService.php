@@ -9,10 +9,21 @@ use App\Repositories\EmailQueueRepository;
  */
 class EmailQueueService extends BaseService
 {
-    
     public function __construct(EmailQueueRepository $repository)
     {
         $this->repository = $repository;
+    }
+
+    public function create(array $data)
+    {
+        if (isset($data['template_id'])) {
+            $template = \App\Models\EmailTemplate::find($data['template_id']);
+            if ($template) {
+                $data['assigned_server_id'] = $data['assigned_server_id'] ?? $template->server_id;
+                $data['email_type'] = $data['email_type'] ?? $template->email_type;
+            }
+        }
+        return parent::create($data);
     }
 
     // column constants

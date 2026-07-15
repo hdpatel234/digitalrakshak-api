@@ -18,6 +18,7 @@ class EmailQueue extends BaseModel
         self::EXPIRES_AT => 'datetime',
         self::LAST_ATTEMPT_AT => 'datetime',
         self::SENT_AT => 'datetime',
+        self::VARIABLES => 'array',
     ];
     
     const EMAIL_UID = "email_uid";
@@ -30,6 +31,7 @@ class EmailQueue extends BaseModel
     const BODY_HTML = "body_html";
     const BODY_TEXT = "body_text";
     const TEMPLATE_ID = "template_id";
+    const VARIABLES = "variables";
     const EMAIL_TYPE = "email_type";
     const PRIORITY = "priority";
     const CLIENT_ID = "client_id";
@@ -64,6 +66,7 @@ class EmailQueue extends BaseModel
         self::BODY_HTML,
         self::BODY_TEXT,
         self::TEMPLATE_ID,
+        self::VARIABLES,
         self::EMAIL_TYPE,
         self::PRIORITY,
         self::CLIENT_ID,
@@ -102,5 +105,10 @@ class EmailQueue extends BaseModel
     public function attachments(): HasMany
     {
         return $this->hasMany(EmailAttachment::class, EmailAttachment::EMAIL_QUEUE_ID);
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(EmailTemplate::class, self::TEMPLATE_ID);
     }
 }

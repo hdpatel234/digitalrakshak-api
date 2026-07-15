@@ -17,6 +17,28 @@ class SystemEmailQueueController extends Controller
     /**
      * Fetch unified list of email queue and logs based on filters.
      */
+    public function store(Request $request, \App\Services\EmailQueueService $emailQueueService)
+    {
+        $validated = $request->validate([
+            'to_email' => 'required|email',
+            'template_id' => 'required|exists:email_templates,id',
+            'variables' => 'nullable|array',
+            'subject' => 'nullable|string',
+            'body_html' => 'nullable|string',
+        ]);
+
+        $validated['email_uid'] = 'email_' . (string) \Illuminate\Support\Str::uuid();
+        $validated['status'] = 'pending';
+        $validated['attempts'] = 0;
+        
+        $queue = $emailQueueService->create($validated);
+
+        return $this->success('Email queued successfully', $queue);
+    }
+
+    /**
+     * Fetch unified list of email queue and logs based on filters.
+     */
     public function index(Request $request)
     {
         $limit = $request->get('limit', 10);

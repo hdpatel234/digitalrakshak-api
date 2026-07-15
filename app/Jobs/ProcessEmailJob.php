@@ -8,6 +8,7 @@ use App\Models\EmailQueue;
 use App\Models\EmailServer;
 use App\Models\EmailLog;
 use App\Services\Email\EmailDriverFactory;
+use App\Services\Email\TemplateVariableRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,7 +32,7 @@ class ProcessEmailJob implements ShouldQueue
     public function handle(EmailDriverFactory $driverFactory)
     {
         $emailQueue = EmailQueue::query()
-            ->with(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments'])
+            ->with(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments', 'template'])
             ->find($this->emailQueueId);
 
         if (!$emailQueue) {
@@ -55,10 +56,31 @@ class ProcessEmailJob implements ShouldQueue
 
         try {
             $emailQueue->refresh();
-            $emailQueue->loadMissing(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments']);
+            $emailQueue->loadMissing(['assignedServer.serverType', 'assignedServer.configurationValues.field', 'attachments', 'template']);
 
             if (empty($emailQueue->to_email)) {
                 throw new \RuntimeException('Queue email is missing to_email.');
+            }
+
+            if ($emailQueue->template_id && $emailQueue->template) {
+                $variables = is_array($emailQueue->variables) ? $emailQueue->variables : [];
+                $renderer = app(TemplateVariableRenderer::class);
+                $systemVars = [
+                    'app_name' => config('app.name'),
+                    'app_url' => rtrim((string) config('app.url'), '/'),
+                    'current_year' => now()->year,
+                    'current_date' => now()->format('Y-m-d'),
+                ];
+                
+                if ($emailQueue->template->subject) {
+                    $emailQueue->subject = (string) $renderer->render($emailQueue->template->subject, $variables, $systemVars);
+                }
+                if ($emailQueue->template->body_html) {
+                    $emailQueue->body_html = (string) $renderer->render($emailQueue->template->body_html, $variables, $systemVars);
+                }
+                if ($emailQueue->template->body_text) {
+                    $emailQueue->body_text = (string) $renderer->render($emailQueue->template->body_text, $variables, $systemVars);
+                }
             }
 
             $server = $emailQueue->assignedServer;
