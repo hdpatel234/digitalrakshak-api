@@ -4,7 +4,6 @@ namespace App\Services\ApiService\Client;
 
 use App\Models\Client;
 use App\Services\BaseService;
-use App\Services\Billing\BillingManager;
 use App\Services\ClientService;
 use App\Services\InvoiceService as CoreInvoiceService;
 use App\Models\InvoiceItem;
@@ -15,8 +14,7 @@ class InvoiceService extends BaseService
 {
     public function __construct(
         protected CoreInvoiceService $invoiceService,
-        protected ClientService $clientService,
-        protected BillingManager $billingManager
+        protected ClientService $clientService
     ) {}
 
     public function getInvoices(array $params, int $clientId): array
@@ -160,16 +158,6 @@ class InvoiceService extends BaseService
             }
         }
 
-        try {
-            $pdfContent = $this->billingManager->downloadInvoice($client, $invoice->external_invoice_id);
-
-            return [
-                'content' => $pdfContent,
-                'filename' => 'invoice_' . ($invoice->invoice_number ?? $invoice->id) . '.pdf',
-            ];
-        } catch (\Throwable $e) {
-            Log::error("Failed to download invoice pdf: " . $e->getMessage());
-            throw new \Exception('Failed to download invoice from billing provider.', 400);
-        }
+        throw new \Exception('Failed to download external invoice because BillingManager is not implemented.', 501);
     }
 }
