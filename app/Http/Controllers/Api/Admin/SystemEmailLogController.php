@@ -21,21 +21,23 @@ class SystemEmailLogController extends Controller
         $search = $request->get('search', '');
         $status = $request->get('status', 'all');
 
-        $query = EmailLog::query();
+        $query = EmailLog::query()
+            ->join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
+            ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('to_email', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhere('email_uid', 'like', "%{$search}%");
+                $q->where('email_queue.to_email', 'like', "%{$search}%")
+                  ->orWhere('email_queue.subject', 'like', "%{$search}%")
+                  ->orWhere('email_queue.email_uid', 'like', "%{$search}%");
             });
         }
         
         if ($status !== 'all' && !empty($status)) {
-            $query->where('status', $status);
+            $query->where('email_logs.status', $status);
         }
 
-        $paginated = $query->orderBy('sent_at', 'desc')->paginate($limit);
+        $paginated = $query->orderBy('email_logs.created_at', 'desc')->paginate($limit);
 
         // Format for frontend
         $paginated->getCollection()->transform(function ($item) {
@@ -92,7 +94,9 @@ class SystemEmailLogController extends Controller
      */
     public function show($id)
     {
-        $log = EmailLog::find($id);
+        $log = EmailLog::join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
+            ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at')
+            ->find($id);
 
         if (!$log) {
             return $this->error('Email log not found', 404);

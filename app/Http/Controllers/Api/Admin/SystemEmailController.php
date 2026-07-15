@@ -20,7 +20,12 @@ class SystemEmailController extends Controller
             'total_queued' => EmailQueue::where('status', 'pending')->count(),
         ];
 
-        $recent_logs = EmailLog::latest()->take(5)->get()->map(function($log) {
+        $recent_logs = EmailLog::join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
+            ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject')
+            ->latest('email_logs.created_at')
+            ->take(5)
+            ->get()
+            ->map(function($log) {
             return [
                 'id' => $log->id,
                 'recipient_name' => '', // Using empty string as there's no name field

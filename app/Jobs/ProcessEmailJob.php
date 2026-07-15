@@ -141,21 +141,13 @@ class ProcessEmailJob implements ShouldQueue
 
             EmailLog::create([
                 'email_queue_id' => $emailQueue->id,
-                'email_uid' => $emailQueue->email_uid,
-                'to_email' => $emailQueue->to_email,
-                'subject' => $emailQueue->subject,
                 'server_id' => $server->id,
-                'message_id' => $result['message_id'] ?? null,
                 'status' => EmailQueueStatus::SENT->value,
                 'provider_response' => $result,
-                'sent_at' => $sentAt,
             ]);
 
             $server->increment('success_count');
             $server->update(['last_used_at' => now()]);
-
-            $emailQueue->attachments()->delete();
-            $emailQueue->delete();
         } catch (\Exception $e) {
             Log::error('Email processing failed', [
                 'email_queue_id' => $emailQueue->id,
@@ -175,9 +167,6 @@ class ProcessEmailJob implements ShouldQueue
 
             EmailLog::create([
                 'email_queue_id' => $emailQueue->id,
-                'email_uid' => $emailQueue->email_uid,
-                'to_email' => $emailQueue->to_email,
-                'subject' => $emailQueue->subject,
                 'server_id' => $emailQueue->assigned_server_id,
                 'status' => EmailQueueStatus::FAILED->value,
                 'error_message' => $e->getMessage(),
