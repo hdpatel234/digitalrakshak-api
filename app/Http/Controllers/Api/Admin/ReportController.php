@@ -14,13 +14,21 @@ class ReportController extends BaseController
 
     public function revenue(Request $request)
     {
-        // Default to last 30 days if dates are not provided
-        $startDate = $request->input('start_date') 
-            ? Carbon::parse($request->input('start_date'))->startOfDay() 
+        // Validate date inputs to prevent malicious date injection
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'transaction_type' => 'nullable|string|in:subscriptions,one_time,all',
+            'status' => 'nullable|string|in:completed,failed,pending,all',
+            'platform' => 'nullable|string|max:50',
+        ]);
+
+        $startDate = $validated['start_date']
+            ? Carbon::parse($validated['start_date'])->startOfDay()
             : Carbon::now()->subDays(30)->startOfDay();
-            
-        $endDate = $request->input('end_date') 
-            ? Carbon::parse($request->input('end_date'))->endOfDay() 
+
+        $endDate = $validated['end_date']
+            ? Carbon::parse($validated['end_date'])->endOfDay()
             : Carbon::now()->endOfDay();
 
         $transactionType = $request->input('transaction_type', 'all');

@@ -28,8 +28,10 @@ class ProteanService
 
         $config = DB::table('provider_api_configs')
             ->join('service_providers', 'provider_api_configs.provider_id', '=', 'service_providers.id')
-            ->where('service_providers.provider_code', 'protean')
-            ->where('provider_api_configs.environment', $this->environment)
+            ->where([
+                ['service_providers.provider_code', 'protean'],
+                ['provider_api_configs.environment', $this->environment],
+            ])
             ->select('provider_api_configs.*')
             ->first();
 
@@ -37,8 +39,7 @@ class ProteanService
         if (!$config) {
             $config = DB::table('provider_api_configs')
                 ->join('service_providers', 'provider_api_configs.provider_id', '=', 'service_providers.id')
-                ->where('service_providers.provider_code', 'protean')
-                ->where('provider_api_configs.is_active', 1)
+                ->where(['service_providers.provider_code' => 'protean', 'provider_api_configs.is_active' => 1])
                 ->select('provider_api_configs.*')
                 ->first();
         }
