@@ -15,7 +15,7 @@ class ProcessEmailQueueCommand extends Command
 
     public function handle(): int
     {
-        $limit = max(1, (int) $this->option('limit'));
+        $limit = max(1, (int) $this->option('limit')) ?? 100;
 
         // Use parameterized raw query to prevent SQL injection
         // Bind enum values instead of string concatenation
