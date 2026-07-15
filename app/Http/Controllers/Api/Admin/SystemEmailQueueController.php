@@ -23,14 +23,14 @@ class SystemEmailQueueController extends Controller
             'to_email' => 'required|email',
             'template_id' => 'required|exists:email_templates,id',
             'variables' => 'nullable|array',
-            'subject' => 'nullable|string',
+            'subject' => 'nullable|string|max:255',
             'body_html' => 'nullable|string',
         ]);
 
         $validated['email_uid'] = 'email_' . (string) \Illuminate\Support\Str::uuid();
         $validated['status'] = 'pending';
         $validated['attempts'] = 0;
-        
+
         $queue = $emailQueueService->create($validated);
 
         return $this->success('Email queued successfully', $queue);
@@ -41,12 +41,12 @@ class SystemEmailQueueController extends Controller
      */
     public function index(Request $request)
     {
-        $limit = $request->get('limit', 10);
-        $search = $request->get('search', '');
-        $status = $request->get('status', 'all');
-        $priority = $request->get('priority', 'all');
-        $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
+        $limit = $request->input('limit', 10);
+        $search = $request->input('search', '');
+        $status = $request->input('status', 'all');
+        $priority = $request->input('priority', 'all');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         $query = EmailQueue::select(
             'id',
@@ -63,8 +63,8 @@ class SystemEmailQueueController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('to_email', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%");
+                $q->where('to_email', 'like', '%' . $search . '%')
+                  ->orWhere('subject', 'like', '%' . $search . '%');
             });
         }
         if ($status !== 'all') {
@@ -115,7 +115,7 @@ class SystemEmailQueueController extends Controller
     /**
      * Retry a failed email by recreating it in the queue.
      */
-    public function retry($source, $id)
+    public function retry(string $source, int $id)
     {
         if ($source === 'queue' || $source === 'log') {
             // Since queue contains everything now, source doesn't strictly matter

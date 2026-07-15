@@ -17,6 +17,22 @@ class ProcessEmailQueueCommand extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
+        // Use parameterized raw query to prevent SQL injection
+        // Bind enum values instead of string concatenation
+        $priorityCase = "CASE " . EmailQueue::PRIORITY .
+            " WHEN ? THEN 1" .
+            " WHEN ? THEN 2" .
+            " WHEN ? THEN 3" .
+            " WHEN ? THEN 4" .
+            " ELSE 5 END";
+
+        $priorityValues = [
+            EmailPriority::CRITICAL->value,
+            EmailPriority::HIGH->value,
+            EmailPriority::NORMAL->value,
+            EmailPriority::LOW->value,
+        ];
+
         $pendingEmails = EmailQueue::query()
             ->where(EmailQueue::STATUS, EmailQueueStatus::PENDING->value)
             ->where(function ($query) {
@@ -31,14 +47,7 @@ class ProcessEmailQueueCommand extends Command
                 EmailQueue::ATTEMPTS . ' < COALESCE(' . EmailQueue::MAX_ATTEMPTS . ', ?)',
                 [3]
             )
-            ->orderByRaw(
-                "CASE " . EmailQueue::PRIORITY .
-                    " WHEN '" . EmailPriority::CRITICAL->value . "' THEN 1" .
-                    " WHEN '" . EmailPriority::HIGH->value . "' THEN 2" .
-                    " WHEN '" . EmailPriority::NORMAL->value . "' THEN 3" .
-                    " WHEN '" . EmailPriority::LOW->value . "' THEN 4" .
-                    " ELSE 5 END"
-            )
+            ->orderByRaw($priorityCase, $priorityValues)
             ->orderBy(EmailQueue::ID)
             ->limit($limit)
             ->get();
