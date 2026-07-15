@@ -35,8 +35,8 @@ define('FASTTAG_LAST_LOCATION_URL', '/api/v1/protean/vehicle/fastag-history-deta
 define('ELECTRICITY_BILL_URL', '/api/v1/protean/electricity-bill-authe');
 
 // Default credentials
-define('DEFAULT_API_KEY', 'gfgfdgfdgfd');
-define('DEFAULT_SECRET_KEY', 'gfgfdgfdgfdgdfgdf');
+define('DEFAULT_API_KEY', 'f5iIy1xTuyEoGbE8GNHvcVBcz4vb6MUzEMo8jUOd3siOfnZg');
+define('DEFAULT_SECRET_KEY', 'IGRHkqgEpGjtvtABjxZahIDur92FB76YhhqoixF1zSVKWMdAQzGOhqV1jkIA3KXV');
 define('API_VERSION', '1.0.0');
 
 // Key file paths
@@ -107,8 +107,9 @@ kIdYNPZpO67dDz+obwFyIlS8ZwR5WhiGS5IM0uu5qjMfjJvRoouJcjFsjVyjBYsu
 function getProteanPublicKey()
 {
     return "-----BEGIN PUBLIC KEY-----
-MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBw7Zq8McjphWnzjTN8T/0HukitNqWKSTIu6RWQP7OcuEuNQKTLE4Y5Cv+6gPoQslixD1KxHehJ7rqrm0lgGfL3DVv5ljzNSzp+mYHwRaBghplXqjasE2BrI5uHwNMXgaZXbL8UZbNUrTjsdsSjcFrI5XUhrsUPimlgO+4p2lh6w5vvlmSAZKCddOwCxvRrZ3IG7/aVPfftSTsLCU8LkeztcrqSwTTq3MrO46kRsW9vX/VJLr9VShfbdV1VHPPDXKIhut2jlNmDpXWczssWQ311h13+ZAVs9uKH/O7t88hwloSZDI77avbF2X4HmRYgRDfXBDe7JW6c0eeF8S8AGCSZAgMBAAE=
------END PUBLIC KEY-----";
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2qRdDtt6qc4UMI+5V0y0ZkWuusnPO/OC92nNjBVQB0Lcv8NrzHZEEh3yfKybz9BJCExciSzUNfEJkC6fy3ZrwaJfvpZ2PsKU87vUyZjzyw1ZYWLHKf+7azLEFtByxTYfbm4gxA8VAj9uEcyNKqPZ6r5JK92K6ig3RRsGL0i+Htowj0T0YBVOz83JpsfG6SUZYe6VP6X9FppgbhpxDG3oC4veHcad6N+FmTo8y1MPtgb5ZfuNgr8z/Nmg/mDH9Lq/NQ5V8empx/uWPwVvr+zU2qk8N9fs/A/XbQM2GzD5HiDyIZl7C1wPsCp/+9gZEJeql8fORGxfmKuhCzt4UEx9LwIDAQAB
+-----END PUBLIC KEY-----
+";
 }
 
 function getServerPublicKeyFromPrivate($privateKey)

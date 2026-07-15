@@ -9,24 +9,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Schedules
+// Dynamic jobs from database are now handled by App\Providers\CronServiceProvider
 
-// Delete expired tokens
-Schedule::command('passport:delete-expired')->dailyAt('02:00');
+// Static jobs that must always run
+Schedule::command('cron:run')->everyMinute();
+Schedule::command('queue:work --stop-when-empty')->everyFiveMinutes();
 
-// Process candidate imports
-Schedule::command('candidates:process-imports')->everyMinute();
-
-// Process order verifications
-Schedule::command('orders:process-verifications')->everyMinute();
-
-// Process email queue
-Schedule::command('emails:process-queue --limit=100')->everyMinute();
-
-// Sync CountryStateCity API data
-Schedule::command('csc:sync countries')->weekly();
-Schedule::command('csc:sync states')->weekly();
-Schedule::command('csc:sync cities')->dailyAt('03:00');
-
-// Process candidate services for orders in processing state
-Schedule::command('app:process-candidate-services')->everyFiveMinutes();
+// Health check
+Schedule::command('cron:health-check')->hourly();
