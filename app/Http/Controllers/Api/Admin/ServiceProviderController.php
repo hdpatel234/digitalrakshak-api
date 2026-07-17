@@ -3,87 +3,44 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Models\ServiceProvider;
+use App\Http\Requests\Api\Admin\StoreServiceProviderRequest;
+use App\Http\Requests\Api\Admin\UpdateServiceProviderRequest;
+use App\Http\Requests\Api\Admin\ToggleServiceProviderStatusRequest;
+use App\Services\ApiService\Admin\ServiceProviderService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class ServiceProviderController extends BaseController
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected ServiceProviderService $serviceProviderService
+    ) {}
+
     /**
      * Display a listing of the service providers.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ServiceProvider::query();
+        addInfoLog("Admin service provider list request");
 
-        // Search filtering
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('provider_name', 'LIKE', "%{$search}%")
-                  ->orWhere('provider_code', 'LIKE', "%{$search}%");
-            });
-        }
+        $data = $this->serviceProviderService->getProviders($request->all());
 
-        // Status filtering
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDirection = $request->get('sort_direction', 'desc');
-        $query->orderBy($sortBy, $sortDirection);
-
-        // Pagination
-        $perPage = $request->get('limit', 10);
-        $providers = $query->paginate($perPage);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Service providers retrieved successfully.',
-            'data' => [
-                'list' => $providers->items(),
-                'pagination' => [
-                    'total' => $providers->total(),
-                    'per_page' => $providers->perPage(),
-                    'current_page' => $providers->currentPage(),
-                    'last_page' => $providers->lastPage(),
-                ],
-                'status_list' => [
-                    ['key' => 'active', 'name' => 'Active'],
-                    ['key' => 'inactive', 'name' => 'Inactive'],
-                    ['key' => 'maintenance', 'name' => 'Maintenance'],
-                    ['key' => 'deprecated', 'name' => 'Deprecated'],
-                ]
-            ]
-        ]);
+        return $this->success('Service providers retrieved successfully.', $data);
     }
 
     /**
      * Store a newly created service provider in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreServiceProviderRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'provider_name' => 'required|string|max:255',
-            'provider_code' => 'required|string|max:100|unique:service_providers',
-            'provider_type' => 'nullable|in:api,webhook,manual',
-            'logo' => 'nullable|string',
-            'description' => 'nullable|string',
-            'website' => 'nullable|string|max:500',
-            'documentation_url' => 'nullable|string|max:500',
-            'status' => 'nullable|in:active,inactive,maintenance,deprecated',
-            'is_default' => 'nullable|boolean',
-            'priority' => 'nullable|integer',
-        ]);
+        addInfoLog("Admin service provider create request");
 
-        $provider = ServiceProvider::create($validated);
+        $provider = $this->serviceProviderService->storeProvider($request->validated());
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Service provider created successfully.',
-            'data' => $provider
-        ], 201);
+        return $this->success('Service provider created successfully.', $provider, 201);
     }
 
     /**
@@ -91,57 +48,35 @@ class ServiceProviderController extends BaseController
      */
     public function show(ServiceProvider $serviceProvider): JsonResponse
     {
-        return response()->json([
-            'status' => true,
-            'message' => 'Service provider retrieved successfully.',
-            'data' => $serviceProvider
-        ]);
+        addInfoLog("Admin service provider show request");
+
+        $provider = $this->serviceProviderService->showProvider($serviceProvider);
+
+        return $this->success('Service provider retrieved successfully.', $provider);
     }
 
     /**
      * Update the specified service provider in storage.
      */
-    public function update(Request $request, ServiceProvider $serviceProvider): JsonResponse
+    public function update(UpdateServiceProviderRequest $request, ServiceProvider $serviceProvider): JsonResponse
     {
-        $validated = $request->validate([
-            'provider_name' => 'required|string|max:255',
-            'provider_code' => 'required|string|max:100|unique:service_providers,provider_code,' . $serviceProvider->id,
-            'provider_type' => 'nullable|in:api,webhook,manual',
-            'logo' => 'nullable|string',
-            'description' => 'nullable|string',
-            'website' => 'nullable|string|max:500',
-            'documentation_url' => 'nullable|string|max:500',
-            'status' => 'nullable|in:active,inactive,maintenance,deprecated',
-            'is_default' => 'nullable|boolean',
-            'priority' => 'nullable|integer',
-        ]);
+        addInfoLog("Admin service provider update request");
 
-        $serviceProvider->update($validated);
+        $provider = $this->serviceProviderService->updateProvider($serviceProvider, $request->validated());
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Service provider updated successfully.',
-            'data' => $serviceProvider
-        ]);
+        return $this->success('Service provider updated successfully.', $provider);
     }
 
     /**
      * Toggle the status of the specified service provider.
      */
-    public function toggleStatus(Request $request, ServiceProvider $serviceProvider): JsonResponse
+    public function toggleStatus(ToggleServiceProviderStatusRequest $request, ServiceProvider $serviceProvider): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => 'required|in:active,inactive,maintenance,deprecated'
-        ]);
+        addInfoLog("Admin service provider toggle status request");
 
-        $serviceProvider->status = $validated['status'];
-        $serviceProvider->save();
+        $provider = $this->serviceProviderService->toggleProviderStatus($serviceProvider, $request->validated()['status']);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Service provider status updated successfully.',
-            'data' => $serviceProvider
-        ]);
+        return $this->success('Service provider status updated successfully.', $provider);
     }
 
     /**
@@ -149,11 +84,10 @@ class ServiceProviderController extends BaseController
      */
     public function destroy(ServiceProvider $serviceProvider): JsonResponse
     {
-        $serviceProvider->delete();
+        addInfoLog("Admin service provider delete request");
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Service provider deleted successfully.'
-        ]);
+        $this->serviceProviderService->deleteProvider($serviceProvider);
+
+        return $this->success('Service provider deleted successfully.');
     }
 }
