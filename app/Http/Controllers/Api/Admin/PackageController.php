@@ -2,364 +2,100 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Models\Package;
+use App\Http\Requests\Api\Admin\StorePackageRequest;
+use App\Http\Requests\Api\Admin\UpdatePackageRequest;
+use App\Services\ApiService\Admin\PackageService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class PackageController extends BaseController
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected PackageService $packageService
+    ) {}
+
     /**
      * Display a listing of the packages.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Package::query()->where('type', 'admin');
+        addInfoLog("Admin package list request");
 
-        // Search filtering
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('package_name', 'LIKE', "%{$search}%")
-                  ->orWhere('package_code', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
-            });
-        }
+        $data = $this->packageService->getPackages($request->all());
 
-        // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDirection = $request->get('sort_direction', 'desc');
-        $query->orderBy($sortBy, $sortDirection);
-
-        // Pagination
-        $perPage = $request->get('limit', 10);
-        $packages = $query->paginate($perPage);
-        
-        $packageIds = collect($packages->items())->pluck('id')->toArray();
-        
-        $packageServices = \App\Models\PackageService::whereIn('package_id', $packageIds)
-            ->whereIn('status', ['active', 1])
-            ->get();
-            
-        $serviceIds = $packageServices->pluck('service_id')->unique()->toArray();
-        $services = \App\Models\Service::whereIn('id', $serviceIds)->get()->keyBy('id');
-        
-        $servicesByPackageId = [];
-        foreach ($packageServices as $ps) {
-            $service = $services->get($ps->service_id);
-            if ($service) {
-                if (!isset($servicesByPackageId[$ps->package_id])) {
-                    $servicesByPackageId[$ps->package_id] = [];
-                }
-                $servicesByPackageId[$ps->package_id][] = [
-                    'service_id' => $service->id,
-                    'service_name' => $service->service_name,
-                    'service_code' => $service->service_code,
-                    'base_price' => $service->base_price,
-                ];
-            }
-        }
-        
-        $mappedPackages = collect($packages->items())->map(function ($package) use ($servicesByPackageId) {
-            $data = $package->toArray();
-            $data['services'] = $servicesByPackageId[$package->id] ?? [];
-            $data['available_candidates'] = 0;
-            return $data;
-        });
-
-        // Stats
-        $totalPackages = Package::where('type', 'admin')->count();
-        $activePackages = Package::where('type', 'admin')->where('status', 'active')->count();
-        $inactivePackages = Package::where('type', 'admin')->where('status', 'inactive')->count();
-        $packageCategories = Package::where('type', 'admin')->distinct('type')->count('type');
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Packages retrieved successfully.',
-            'data' => [
-                'list' => $mappedPackages,
-                'pagination' => [
-                    'total' => $packages->total(),
-                    'per_page' => $packages->perPage(),
-                    'current_page' => $packages->currentPage(),
-                    'last_page' => $packages->lastPage(),
-                ],
-                'stats' => [
-                    'total' => $totalPackages,
-                    'active' => $activePackages,
-                    'inactive' => $inactivePackages,
-                    'categories' => $packageCategories,
-                ]
-            ]
-        ]);
+        return $this->success('Packages retrieved successfully.', $data);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StorePackageRequest $request): JsonResponse
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'package_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon' => 'nullable|string',
-            'service_ids' => 'required|array',
-            'service_ids.*' => 'exists:services,id',
-            'status' => 'nullable|in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $validator->validated();
-        $serviceIds = array_values(array_unique($data['service_ids']));
-
-        // Calculate total price based on services
-        $services = \App\Models\Service::whereIn('id', $serviceIds)->get();
-        if ($services->count() !== count($serviceIds)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => ['service_ids' => ['Some services are invalid.']]
-            ], 422);
-        }
-
-        $totalPrice = $services->sum('base_price');
-        
-        $packageCode = 'AP-' . strtoupper(\Illuminate\Support\Str::random(5));
-        while (\App\Models\Package::where('package_code', $packageCode)->exists()) {
-            $packageCode = 'AP-' . strtoupper(\Illuminate\Support\Str::random(5));
-        }
+        addInfoLog("Admin package create request");
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            $package = $this->packageService->storePackage($request->validated(), $request->user('api')?->id);
 
-            $package = Package::create([
-                'package_name' => $data['package_name'],
-                'package_code' => $packageCode,
-                'description' => $data['description'] ?? null,
-                'icon' => $data['icon'] ?? null,
-                'total_price' => $totalPrice,
-                'final_price' => $totalPrice,
-                'type' => 'admin',
-                'client_id' => 0,
-                'is_active' => 1,
-                'status' => $data['status'] ?? 'active',
-                'created_by' => $request->user('api')?->id,
-            ]);
-
-            foreach ($serviceIds as $index => $serviceId) {
-                \App\Models\PackageService::create([
-                    'package_id' => $package->id,
-                    'service_id' => $serviceId,
-                    'is_mandatory' => 1,
-                    'display_order' => $index + 1,
-                    'status' => 'active',
-                    'created_by' => $request->user('api')?->id,
-                ]);
-            }
-
-            \Illuminate\Support\Facades\DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Package created successfully.',
-                'data' => $package
-            ], 201);
+            return $this->success('Package created successfully.', $package, 201);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to create package.',
-                'error' => $e->getMessage()
-            ], 500);
+            $code = $e->getCode() === 422 ? 422 : 500;
+            return $this->error($e->getMessage() ?: 'Failed to create package.', $code, ['error' => $e->getMessage()]);
         }
     }
 
     public function show(int $id): JsonResponse
     {
-        $package = \App\Models\Package::where('type', 'admin')->find($id);
+        addInfoLog("Admin package show request");
 
-        if (!$package) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Package not found.'
-            ], 404);
-        }
-
-        $packageData = $package->toArray();
-        $packageData['price'] = $package->final_price ?? $package->total_price;
-
-        $services = \App\Models\PackageService::where('package_id', $id)
-            ->whereIn('status', ['active', 1])
-            ->orderBy('display_order', 'asc')
-            ->get();
-            
-        $packageData['services'] = $services->map(function ($row) {
-            return [
-                'id' => $row->id,
-                'package_id' => $row->package_id,
-                'service_id' => $row->service_id,
-            ];
-        });
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Package retrieved successfully.',
-            'data' => $packageData
-        ]);
-    }
-
-    public function update(Request $request, int $id): JsonResponse
-    {
-        $package = \App\Models\Package::where('type', 'admin')->find($id);
-
-        if (!$package) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Package not found.'
-            ], 404);
-        }
-
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'package_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon' => 'nullable|string',
-            'service_ids' => 'required|array',
-            'service_ids.*' => 'exists:services,id',
-            'status' => 'nullable|in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $validator->validated();
-        $serviceIds = array_values(array_unique($data['service_ids']));
-
-        // Calculate total price based on services
-        $services = \App\Models\Service::whereIn('id', $serviceIds)->get();
-        if ($services->count() !== count($serviceIds)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => ['service_ids' => ['Some services are invalid.']]
-            ], 422);
-        }
-
-        $totalPrice = $services->sum('base_price');
-        
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            $packageData = $this->packageService->showPackage($id);
 
-            $package->update([
-                'package_name' => $data['package_name'],
-                'description' => $data['description'] ?? null,
-                'icon' => $data['icon'] ?? $package->icon,
-                'total_price' => $totalPrice,
-                'final_price' => $totalPrice,
-                'status' => $data['status'] ?? $package->status,
-                'updated_by' => $request->user('api')?->id,
-            ]);
-
-            \App\Models\PackageService::where('package_id', $package->id)->delete();
-
-            foreach ($serviceIds as $index => $serviceId) {
-                \App\Models\PackageService::create([
-                    'package_id' => $package->id,
-                    'service_id' => $serviceId,
-                    'is_mandatory' => 1,
-                    'display_order' => $index + 1,
-                    'status' => 'active',
-                    'created_by' => $package->created_by,
-                    'updated_by' => $request->user('api')?->id,
-                ]);
-            }
-
-            \Illuminate\Support\Facades\DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Package updated successfully.',
-                'data' => $package
-            ]);
+            return $this->success('Package retrieved successfully.', $packageData);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to update package.',
-                'error' => $e->getMessage()
-            ], 500);
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage() ?: 'Package not found.', $code, ['error' => $e->getMessage()]);
         }
     }
+
+    public function update(UpdatePackageRequest $request, int $id): JsonResponse
+    {
+        addInfoLog("Admin package update request");
+
+        try {
+            $package = $this->packageService->updatePackage($id, $request->validated(), $request->user('api')?->id);
+
+            return $this->success('Package updated successfully.', $package);
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 422 ? 422 : 500;
+            return $this->error($e->getMessage() ?: 'Failed to update package.', $code, ['error' => $e->getMessage()]);
+        }
+    }
+
     public function destroy(int $id): JsonResponse
     {
-        $package = \App\Models\Package::where('type', 'admin')->find($id);
-
-        if (!$package) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Package not found.'
-            ], 404);
-        }
+        addInfoLog("Admin package delete request");
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            $this->packageService->deletePackage($id);
 
-            \App\Models\PackageService::where('package_id', $package->id)->delete();
-            $package->delete();
-
-            \Illuminate\Support\Facades\DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Package deleted successfully.'
-            ]);
+            return $this->success('Package deleted successfully.');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to delete package.',
-                'error' => $e->getMessage()
-            ], 500);
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage() ?: 'Failed to delete package.', $code, ['error' => $e->getMessage()]);
         }
     }
 
     public function toggleStatus(Request $request, int $id): JsonResponse
     {
-        $package = \App\Models\Package::where('type', 'admin')->find($id);
-
-        if (!$package) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Package not found.'
-            ], 404);
-        }
+        addInfoLog("Admin package toggle status request");
 
         try {
-            $newStatus = $package->status === 'active' ? 'inactive' : 'active';
-            $package->update([
-                'status' => $newStatus,
-                'is_active' => $newStatus === 'active' ? 1 : 0,
-                'updated_by' => $request->user('api')?->id,
-            ]);
+            $package = $this->packageService->togglePackageStatus($id, $request->user('api')?->id);
 
-            return response()->json([
-                'status' => true,
-                'message' => "Package status updated to {$newStatus}.",
-                'data' => $package
-            ]);
+            return $this->success("Package status updated to {$package->status}.", $package);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to update package status.',
-                'error' => $e->getMessage()
-            ], 500);
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage() ?: 'Failed to update package status.', $code, ['error' => $e->getMessage()]);
         }
     }
 }
