@@ -60,8 +60,20 @@ class EmploymentVerificationService extends BaseVerificationService
 
             $candidateName = $candidateService->candidate->first_name . ' ' . $candidateService->candidate->last_name;
 
-            // Send email
-            Mail::to($companyEmail)->send(new EmploymentVerificationMail($verificationUrl, $candidateName));
+            $subject = 'Employment Verification Request - ' . $candidateName;
+            $bodyHtml = view('emails.employment_verification', [
+                'verificationUrl' => $verificationUrl,
+                'candidateName' => $candidateName,
+            ])->render();
+
+            $emailManager = app(\App\Services\Email\EmailManager::class);
+            $emailManager->send([
+                'to_email' => $companyEmail,
+                'subject' => $subject,
+                'body_html' => $bodyHtml,
+                'candidate_id' => $candidateService->candidate_id,
+                'email_type' => 'verification'
+            ]);
 
             // Mark service as ON_HOLD while waiting for response
             $candidateService->status = 'ON_HOLD'; // Assuming ON_HOLD is a valid status, if not we can use something else or keep it as PROCESSING. Let's use ON_HOLD.
