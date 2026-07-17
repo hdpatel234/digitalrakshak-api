@@ -12,11 +12,7 @@ use App\Http\Requests\Api\Client\Members\UpdateMemberRequest;
 class MemberController extends Controller
 {
     use ApiResponse;
-    protected MemberService $memberService;
-    public function __construct(MemberService $memberService)
-    {
-        $this->memberService = $memberService;
-    }
+    public function __construct(protected MemberService $memberService) {}
 
     public function index(Request $request)
     {

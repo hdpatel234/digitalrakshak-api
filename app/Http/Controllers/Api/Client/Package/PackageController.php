@@ -13,12 +13,12 @@ class PackageController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected PackageService $packageService
-    ) {}
+    public function __construct(protected PackageService $packageService) {}
 
     public function index(Request $request): JsonResponse
     {
+        addInfoLog("Client package list request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -33,6 +33,8 @@ class PackageController extends BaseController
 
     public function store(StorePackageRequest $request): JsonResponse
     {
+        addInfoLog("Client package create request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -51,6 +53,8 @@ class PackageController extends BaseController
 
     public function update(StorePackageRequest $request, int $package): JsonResponse
     {
+        addInfoLog("Client package update request");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -69,6 +73,8 @@ class PackageController extends BaseController
 
     public function show(Request $request, int $package): JsonResponse
     {
+        addInfoLog("Client package show request, ID: {$package}");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -87,6 +93,8 @@ class PackageController extends BaseController
 
     public function services(Request $request, int $package): JsonResponse
     {
+        addInfoLog("Client package services request, ID: {$package}");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -105,6 +113,8 @@ class PackageController extends BaseController
 
     public function candidates(Request $request, int $package): JsonResponse
     {
+        addInfoLog("Client package candidates request, ID: {$package}");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 
@@ -123,6 +133,8 @@ class PackageController extends BaseController
 
     public function destroy(Request $request, int $package): JsonResponse
     {
+        addInfoLog("Client package delete request, ID: {$package}");
+
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
 

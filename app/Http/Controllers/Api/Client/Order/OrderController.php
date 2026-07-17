@@ -15,9 +15,7 @@ class OrderController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected OrderService $orderService
-    ) {}
+    public function __construct(protected OrderService $orderService) {}
 
     public function index(Request $request)
     {
@@ -83,20 +81,20 @@ class OrderController extends BaseController
                     $candidatesMap = \App\Models\Candidate::whereIn('id', $candidateIds)
                         ->get()
                         ->keyBy('id');
-                        
+
                     $candidateServices = \App\Models\CandidateService::whereIn('candidate_id', $candidateIds)
                         ->get();
                     $candidateServiceIds = $candidateServices->pluck('id')->toArray();
-                    
+
                     $candidateServiceData = [];
                     if (!empty($candidateServiceIds)) {
                         $candidateServiceData = \App\Models\CandidateServiceData::whereIn('candidate_service_id', $candidateServiceIds)
                             ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
                             ->join('services', 'services_fields.service_id', '=', 'services.id')
                             ->select(
-                                'candidate_service_data.*', 
-                                'services_fields.field_name', 
-                                'services_fields.field_label', 
+                                'candidate_service_data.*',
+                                'services_fields.field_name',
+                                'services_fields.field_label',
                                 'services_fields.field_type',
                                 'services.service_name',
                                 'services.service_code',
@@ -112,7 +110,7 @@ class OrderController extends BaseController
                         $candidateDetails = $candidateId && isset($candidatesMap[$candidateId])
                             ? $candidatesMap[$candidateId]->toArray()
                             : null;
-                            
+
                         if ($candidateDetails && isset($candidateServiceData[$candidateId])) {
                             $candidateDetails['service_data'] = $candidateServiceData[$candidateId]->toArray();
                         } else if ($candidateDetails) {

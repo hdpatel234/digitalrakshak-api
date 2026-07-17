@@ -30,7 +30,7 @@ class CompanyController extends BaseController
     {
         addInfoLog("Company details update request");
         
-        $id = auth()->user()->client_id;
+        $id = $request->user()->client_id;
         $data = $request->except(['logo', 'remove_logo']);
         
         if ($request->has('remove_logo') && $request->remove_logo === 'true') {
