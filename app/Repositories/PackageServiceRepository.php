@@ -56,5 +56,13 @@ class PackageServiceRepository extends BaseRepository
     {
         return PackageService::DELETED_BY;
     }
+
     // functions
+    public function getActiveServicesByPackageIds(array $packageIds)
+    {
+        return $this->query()
+            ->whereIn($this->packageId(), $packageIds)
+            ->whereIn($this->status(), ['active', 1])
+            ->get();
+    }
 }

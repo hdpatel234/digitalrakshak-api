@@ -57,4 +57,11 @@ class ServiceRepository extends BaseRepository
         return Service::DELETED_BY;
     }
     // functions
+    public function getServicesByIds(array $serviceIds)
+    {
+        return $this->query()
+            ->whereIn($this->id(), $serviceIds)
+            ->get()
+            ->keyBy($this->id());
+    }
 }

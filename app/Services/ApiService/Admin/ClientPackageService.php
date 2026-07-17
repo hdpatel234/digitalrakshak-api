@@ -2,76 +2,52 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\Package;
-use App\Models\PackageService;
-use App\Models\Service;
+use App\Repositories\PackageRepository;
+use App\Repositories\PackageServiceRepository;
+use App\Repositories\ServiceRepository;
 use Illuminate\Support\Facades\DB;
 
 class ClientPackageService
 {
+    public function __construct(
+        protected PackageRepository $repo,
+        protected PackageServiceRepository $packageServiceRepo,
+        protected ServiceRepository $serviceRepo,
+    ) {}
+
     public function getClientPackages(array $data)
     {
-        $query = Package::with('client')->where('type', 'client');
+        $query = $this->repo->getClientPackagesQuery($data);
 
-        // Search filtering
-        if (isset($data['search']) && !empty($data['search'])) {
-            $search = $data['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('package_name', 'LIKE', "%{$search}%")
-                  ->orWhere('package_code', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%")
-                  ->orWhereHas('client', function($q) use ($search) {
-                      $q->where('name', 'LIKE', "%{$search}%")
-                        ->orWhere('company_name', 'LIKE', "%{$search}%");
-                  });
-            });
-        }
-
-        // Sorting
-        $sortBy = $data['sort_by'] ?? 'created_at';
-        $sortDirection = $data['sort_direction'] ?? 'desc';
-        
-        // Handle sorting by client name
-        if ($sortBy === 'client_name') {
-            $query->join('clients', 'packages.client_id', '=', 'clients.id')
-                  ->select('packages.*')
-                  ->orderBy('clients.name', $sortDirection);
-        } else {
-            $query->orderBy($sortBy, $sortDirection);
-        }
-
-        // Pagination
         $perPage = $data['limit'] ?? 10;
         $packages = $query->paginate($perPage);
         
-        $packageIds = collect($packages->items())->pluck('id')->toArray();
+        $packageIds = collect($packages->items())->pluck($this->repo->id())->toArray();
         
-        $packageServices = PackageService::whereIn('package_id', $packageIds)
-            ->whereIn('status', ['active', 1])
-            ->get();
+        $packageServices = $this->packageServiceRepo->getActiveServicesByPackageIds($packageIds);
             
-        $serviceIds = $packageServices->pluck('service_id')->unique()->toArray();
-        $services = Service::whereIn('id', $serviceIds)->get()->keyBy('id');
+        $serviceIds = $packageServices->pluck($this->packageServiceRepo->serviceId())->unique()->toArray();
+        $services = $this->serviceRepo->getServicesByIds($serviceIds);
         
         $servicesByPackageId = [];
         foreach ($packageServices as $ps) {
-            $service = $services->get($ps->service_id);
+            $service = $services->get($ps->{$this->packageServiceRepo->serviceId()});
             if ($service) {
-                if (!isset($servicesByPackageId[$ps->package_id])) {
-                    $servicesByPackageId[$ps->package_id] = [];
+                if (!isset($servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}])) {
+                    $servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}] = [];
                 }
-                $servicesByPackageId[$ps->package_id][] = [
-                    'service_id' => $service->id,
-                    'service_name' => $service->service_name,
-                    'service_code' => $service->service_code,
-                    'base_price' => $service->base_price,
+                $servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}][] = [
+                    'service_id' => $service->{$this->serviceRepo->id()},
+                    'service_name' => $service->{$this->serviceRepo->serviceName()},
+                    'service_code' => $service->{$this->serviceRepo->serviceCode()},
+                    'base_price' => $service->{$this->serviceRepo->basePrice()},
                 ];
             }
         }
         
         $mappedPackages = collect($packages->items())->map(function ($package) use ($servicesByPackageId) {
             $data = $package->toArray();
-            $data['services'] = $servicesByPackageId[$package->id] ?? [];
+            $data['services'] = $servicesByPackageId[$package->{$this->repo->id()}] ?? [];
             $data['available_candidates'] = 0; // This can be updated if we need actual logic
             return $data;
         });
@@ -89,7 +65,7 @@ class ClientPackageService
 
     public function deleteClientPackage(int $id)
     {
-        $package = Package::where('type', 'client')->find($id);
+        $package = $this->repo->query()->where($this->repo->type(), 'client')->find($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
@@ -97,7 +73,7 @@ class ClientPackageService
 
         DB::beginTransaction();
         try {
-            PackageService::where('package_id', $package->id)->delete();
+            $this->packageServiceRepo->query()->where($this->packageServiceRepo->packageId(), $package->{$this->repo->id()})->delete();
             $package->delete();
             DB::commit();
             return true;
@@ -109,14 +85,14 @@ class ClientPackageService
 
     public function toggleClientPackageStatus(int $id)
     {
-        $package = Package::where('type', 'client')->find($id);
+        $package = $this->repo->query()->where($this->repo->type(), 'client')->find($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
         }
 
-        $package->status = $package->status === 'active' ? 'inactive' : 'active';
-        $package->is_active = $package->status === 'active' ? 1 : 0;
+        $package->{$this->repo->status()} = $package->{$this->repo->status()} === 'active' ? 'inactive' : 'active';
+        $package->{$this->repo->isActive()} = $package->{$this->repo->status()} === 'active' ? 1 : 0;
         $package->save();
 
         return $package;
