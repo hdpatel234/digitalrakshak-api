@@ -8,7 +8,7 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
     Route::get('search', [\App\Http\Controllers\Api\Client\SearchController::class, 'index']);
     // Dashboard
     Route::prefix('dashboard')->group(function () {
-        Route::get('data', [App\Http\Controllers\Api\DashboardController::class, 'index']);
+        Route::get('data', [App\Http\Controllers\Api\Client\DashboardController::class, 'index']);
         Route::get('stats', [App\Http\Controllers\Controller::class, 'stats']);
         Route::get('recent-orders', [App\Http\Controllers\Controller::class, 'recentOrders']);
         Route::get('recent-candidates', [App\Http\Controllers\Controller::class, 'recentCandidates']);
@@ -195,6 +195,6 @@ Route::prefix('v1/client')->middleware(['auth:api', 'role:client_admin|client_us
 
 // Public Verification Routes
 Route::prefix('v1/verifications')->group(function () {
-    Route::get('employment/{token}', [\App\Http\Controllers\Api\EmploymentVerificationController::class, 'show']);
-    Route::post('employment/{token}', [\App\Http\Controllers\Api\EmploymentVerificationController::class, 'verify']);
+    Route::get('employment/{token}', [\App\Http\Controllers\Api\Client\EmploymentVerificationController::class, 'show']);
+    Route::post('employment/{token}', [\App\Http\Controllers\Api\Client\EmploymentVerificationController::class, 'verify']);
 });

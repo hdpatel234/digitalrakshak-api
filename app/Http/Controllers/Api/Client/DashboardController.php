@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ class DashboardController extends Controller
     {
         // For demonstration, we'll return structured data that the Next.js frontend expects.
         // In a real scenario, you would calculate these metrics using actual Models and queries.
-        
+
         $totalCandidates = Candidate::count() ?? 1250;
         $activePackagesCount = Package::where('is_active', true)->count() ?? 12;
 
@@ -70,12 +70,12 @@ class DashboardController extends Controller
                     ]
                 ],
                 'active_packages' => Package::where('is_active', true)
-                    ->where(function($query) {
+                    ->where(function ($query) {
                         $query->where('type', 'admin')
-                              ->orWhereNotNull('client_id'); // Assuming client created packages have client_id
+                            ->orWhereNotNull('client_id'); // Assuming client created packages have client_id
                     })
                     ->get()
-                    ->map(function($pkg) {
+                    ->map(function ($pkg) {
                         $servicesCount = \App\Models\PackageService::where('package_id', $pkg->id)->count();
                         return [
                             'id' => $pkg->id,
@@ -85,8 +85,8 @@ class DashboardController extends Controller
                             'type' => $pkg->type,
                             'expires_at' => '2026-12-31' // Placeholder
                         ];
-                }),
-                'latest_candidates' => Candidate::withCount('packages')->latest()->take(5)->get()->map(function($cand) {
+                    }),
+                'latest_candidates' => Candidate::withCount('packages')->latest()->take(5)->get()->map(function ($cand) {
                     return [
                         'id' => $cand->id,
                         'name' => $cand->first_name . ' ' . $cand->last_name,
