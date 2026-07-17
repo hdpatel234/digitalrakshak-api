@@ -2,73 +2,67 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\Admin\UpdateCronJobRequest;
+use App\Services\ApiService\Admin\CronJobService;
+use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class CronJobController extends BaseController
 {
-    public function index()
+    use ApiResponse;
+
+    public function __construct(
+        protected CronJobService $cronJobService
+    ) {}
+
+    public function index(): JsonResponse
     {
-        $crons = \App\Models\CronJob::orderBy('id', 'desc')->get();
-        return response()->json(['data' => $crons]);
+        addInfoLog("Admin cron job list request");
+
+        $crons = $this->cronJobService->getCronJobs();
+
+        return $this->success('Cron jobs retrieved successfully.', $crons);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateCronJobRequest $request, string $id): JsonResponse
     {
-        $request->validate([
-            'schedule' => 'required|string',
-            'is_active' => 'boolean',
-        ]);
-
-        $cronJob = \App\Models\CronJob::findOrFail($id);
-
-        $cronJob->update($request->only(['schedule', 'is_active']));
-
-        return response()->json([
-            'message' => 'Cron job updated successfully',
-            'data' => $cronJob
-        ]);
-    }
-
-    public function toggle(string $id)
-    {
-        $cronJob = \App\Models\CronJob::findOrFail($id);
-        $cronJob->is_active = !$cronJob->is_active;
-        $cronJob->save();
-
-        return response()->json([
-            'message' => 'Cron job status toggled successfully',
-            'data' => $cronJob
-        ]);
-    }
-
-    public function run(string $id)
-    {
-        $cronJob = \App\Models\CronJob::findOrFail($id);
+        addInfoLog("Admin cron job update request");
 
         try {
-            \Illuminate\Support\Facades\Artisan::call($cronJob->command);
+            $cronJob = $this->cronJobService->updateCronJob($id, $request->validated());
 
-            $cronJob->update([
-                'last_run_at' => now(),
-                'status' => 'completed',
-            ]);
-
-            return response()->json([
-                'message' => 'Cron job executed successfully',
-                'output' => \Illuminate\Support\Facades\Artisan::output()
-            ]);
+            return $this->success('Cron job updated successfully', $cronJob);
         } catch (\Exception $e) {
-            $cronJob->update([
-                'last_run_at' => now(),
-                'status' => 'failed',
-                'error_message' => $e->getMessage()
-            ]);
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage() ?: 'Failed to update cron job.', $code, ['error' => $e->getMessage()]);
+        }
+    }
 
-            return response()->json([
-                'message' => 'Cron job execution failed',
-                'error' => $e->getMessage()
-            ], 500);
+    public function toggle(string $id): JsonResponse
+    {
+        addInfoLog("Admin cron job toggle status request");
+
+        try {
+            $cronJob = $this->cronJobService->toggleCronJob($id);
+
+            return $this->success('Cron job status toggled successfully', $cronJob);
+        } catch (\Exception $e) {
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage() ?: 'Failed to toggle cron job.', $code, ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function run(string $id): JsonResponse
+    {
+        addInfoLog("Admin cron job run request");
+
+        try {
+            $result = $this->cronJobService->runCronJob($id);
+
+            return $this->success('Cron job executed successfully', $result);
+        } catch (\Exception $e) {
+            $code = $e->getCode() ?: 500;
+            return $this->error('Cron job execution failed', $code, ['error' => $e->getMessage()]);
         }
     }
 }
