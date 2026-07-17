@@ -41,7 +41,7 @@ define('API_VERSION', '1.0.0');
 
 // Key file paths
 $publicKeyPath = __DIR__ . '/protean-public-key-2048.pem';
-$privateKeyPath = __DIR__ . '/server-key-2048.pem';
+$privateKeyPath = __DIR__ . '/server-key-2048.pem'; // Changed to match generated key
 $serverPublicKeyPath = __DIR__ . '/server-public-key-2048.pem';
 
 // Function to generate new key pair
@@ -49,12 +49,17 @@ function generateKeyPair()
 {
     try {
         $rsa = new RSA();
+        // Use sha256 for OAEP padding - must match encryptRSA/decryptRSA functions
         $rsa->setHash('sha256');
         $rsa->setMGFHash('sha256');
+        // Do NOT set PKCS1 public key format - use default PKCS8 (-----BEGIN PUBLIC KEY-----)
+        // PKCS8 is universally compatible; PKCS1 causes decrypt failures with external APIs
 
         $keys = $rsa->createKey(2048);
 
+        // Save private key
         file_put_contents(__DIR__ . '/server-key-2048.pem', $keys['privatekey']);
+        // Save public key (for reference)
         file_put_contents(__DIR__ . '/server-public-key-2048.pem', $keys['publickey']);
 
         return [
@@ -71,7 +76,7 @@ function generateKeyPair()
     }
 }
 
-// Function to get private key
+// Function to check and load or generate private key
 function getPrivateKey()
 {
     return "-----BEGIN PRIVATE KEY-----
@@ -107,9 +112,8 @@ kIdYNPZpO67dDz+obwFyIlS8ZwR5WhiGS5IM0uu5qjMfjJvRoouJcjFsjVyjBYsu
 function getProteanPublicKey()
 {
     return "-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2qRdDtt6qc4UMI+5V0y0ZkWuusnPO/OC92nNjBVQB0Lcv8NrzHZEEh3yfKybz9BJCExciSzUNfEJkC6fy3ZrwaJfvpZ2PsKU87vUyZjzyw1ZYWLHKf+7azLEFtByxTYfbm4gxA8VAj9uEcyNKqPZ6r5JK92K6ig3RRsGL0i+Htowj0T0YBVOz83JpsfG6SUZYe6VP6X9FppgbhpxDG3oC4veHcad6N+FmTo8y1MPtgb5ZfuNgr8z/Nmg/mDH9Lq/NQ5V8empx/uWPwVvr+zU2qk8N9fs/A/XbQM2GzD5HiDyIZl7C1wPsCp/+9gZEJeql8fORGxfmKuhCzt4UEx9LwIDAQAB
------END PUBLIC KEY-----
-";
+MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBw7Zq8McjphWnzjTN8T/0HukitNqWKSTIu6RWQP7OcuEuNQKTLE4Y5Cv+6gPoQslixD1KxHehJ7rqrm0lgGfL3DVv5ljzNSzp+mYHwRaBghplXqjasE2BrI5uHwNMXgaZXbL8UZbNUrTjsdsSjcFrI5XUhrsUPimlgO+4p2lh6w5vvlmSAZKCddOwCxvRrZ3IG7/aVPfftSTsLCU8LkeztcrqSwTTq3MrO46kRsW9vX/VJLr9VShfbdV1VHPPDXKIhut2jlNmDpXWczssWQ311h13+ZAVs9uKH/O7t88hwloSZDI77avbF2X4HmRYgRDfXBDe7JW6c0eeF8S8AGCSZAgMBAAE=
+-----END PUBLIC KEY-----";
 }
 
 function getServerPublicKeyFromPrivate($privateKey)
@@ -138,6 +142,7 @@ $accessToken = '';
 $apiResponse = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if this is a key regeneration request
     if (isset($_POST['regenerate_keys'])) {
         $genResult = generateKeyPair();
         if ($genResult['success']) {
@@ -147,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $keyStatus['private_content'] = true;
             $keyStatus['server_public_exists'] = true;
             $result .= "<div class='success'>✓ " . $genResult['message'] . "</div>";
+            // Refresh the page to show new keys
             echo "<meta http-equiv='refresh' content='2'>";
         } else {
             $error = $genResult['message'];
@@ -154,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $selectedApi = $_POST['selected_api'] ?? 'epfo_employee_search';
         try {
-            // Step 1: Get OAuth Access Token
+            // Mobile API Flow: First get OAuth Access Token
             $apiKey = DEFAULT_API_KEY;
             $secretKey = DEFAULT_SECRET_KEY;
 
@@ -170,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $result .= "</div>";
 
-            // Step 2: Prepare request body based on selected API
+            // Step 2: Prepare the plain request body based on the selected API
             $plainRequest = [];
             $apiUrl = "";
             $apiName = "";
@@ -270,14 +276,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
             }
 
-            $result .= "<div class='step'><h3>Step 2: Sending Request to $apiName</h3>";
-            $result .= "<div class='details'><strong>Request Body:</strong><br><pre>" . htmlspecialchars(json_encode($plainRequest, JSON_PRETTY_PRINT)) . "</pre></div>";
+            $result .= "<div class='step'><h3>Step 2: Preparing Request Body for $apiName</h3>";
+            $result .= "<div class='details'><strong>Plain Request Body:</strong><br><pre>" . htmlspecialchars(json_encode($plainRequest, JSON_PRETTY_PRINT)) . "</pre></div>";
 
-            // Make API call
-            $callResponse = callProteanRestAPI($apiUrl, $accessToken, $apiKey, $plainRequest);
+            // Step 3: Create encrypted request payload
+            $result .= "<div class='step'><h3>Step 3: Creating Encrypted Request Payload</h3>";
 
-            // Render response
-            $result .= renderApiResponse($callResponse);
+            // Generate symmetric key
+            $symmetricKey = '1234567890123456'; // Use fixed key as in current implementation
+            $result .= "<div class='details'><strong>Symmetric Key (Base64):</strong> " . base64_encode($symmetricKey) . "</div>";
+
+            // Encrypt symmetric key with RSA public key
+            $encryptedKey = encryptRSA($symmetricKey, $publicKeyString);
+            if (!$encryptedKey) throw new Exception("RSA encryption failed. Check if public key is valid.");
+            $result .= "<div class='details'><strong>Encrypted Symmetric Key (Base64):</strong> " . $encryptedKey . "</div>";
+
+            // Encrypt the actual data with AES-256-GCM
+            $plainTextJson = json_encode($plainRequest);
+            $encryptedData = encrypt($plainTextJson, $symmetricKey);
+            $result .= "<div class='details'><strong>Encrypted Data (Base64):</strong> " . $encryptedData . "</div>";
+
+            // Calculate HMAC
+            $hmac = calculateHmacSHA256($symmetricKey, $plainTextJson);
+            $result .= "<div class='details'><strong>HMAC:</strong> " . $hmac . "</div>";
+
+            // Create final payload
+            $encryptedRequest = [
+                'data' => $encryptedData,
+                'version' => API_VERSION,
+                'symmetricKey' => $encryptedKey,
+                'hash' => $hmac,
+                'timestamp' => date('Y-m-d\TH:i:s.v'),
+                'requestId' => generateUUID()
+            ];
+
+            $result .= "<div class='details'><strong>Final Request Payload:</strong><br><pre>" . htmlspecialchars(json_encode($encryptedRequest, JSON_PRETTY_PRINT)) . "</pre></div>";
+            $result .= "</div>";
+
+            // Step 4: Send encrypted request to API
+            $result .= "<div class='step'><h3>Step 4: Sending Encrypted Request to $apiName</h3>";
+
+            // Unified API call function
+            $callResponse = (function ($url, $accessToken, $apiKey, $payload) {
+                $jsonData = json_encode($payload);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Bearer ' . $accessToken,
+                    'apikey: ' . $apiKey,
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen($jsonData)
+                ]);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+
+                if ($curlError) return ['http_code' => 500, 'response_data' => ['error' => 'CURL Error: ' . $curlError]];
+                return ['http_code' => $httpCode, 'response_data' => json_decode($response, true) ?: ['raw_response' => $response]];
+            })($apiUrl, $accessToken, $apiKey, $encryptedRequest);
+
+            // Step 5: Handle and Render Response
+            $result .= renderApiResponse($callResponse, $privateKeyString, $keyStatus);
             $result .= "</div>";
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -285,38 +351,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-function callProteanRestAPI($url, $accessToken, $apiKey, $payload)
+// Updated encryption/decryption functions matching the first script
+
+function getRandomBytes($length)
 {
-    $jsonData = json_encode($payload);
+    return openssl_random_pseudo_bytes($length);
+}
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $accessToken,
-        'apikey: ' . $apiKey,
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($jsonData)
-    ]);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+function getAESKeyFromPassword($password, $salt)
+{
+    return openssl_pbkdf2($password, $salt, 32, 65536, 'sha256');
+}
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
+function encrypt($plainText, $plainSymmetricKey)
+{
+    $salt = getRandomBytes(16);
+    $iv = getRandomBytes(12);
+    $aesKeyFromPassword = getAESKeyFromPassword($plainSymmetricKey, $salt);
 
-    if ($curlError) {
-        return ['http_code' => 500, 'response_data' => ['error' => 'CURL Error: ' . $curlError]];
+    $tag = '';
+    $cipherText = openssl_encrypt($plainText, 'aes-256-gcm', $aesKeyFromPassword, OPENSSL_RAW_DATA, $iv, $tag);
+
+    // Note: Order is IV + Salt + CipherText + Tag
+    $cipherTextWithIvSalt = $iv . $salt . $cipherText . $tag;
+
+    return base64_encode($cipherTextWithIvSalt);
+}
+
+function decrypt($encodedData, $decryptedKey)
+{
+    $decodedData = base64_decode($encodedData);
+
+    // Extract in correct order: IV (12) + Salt (16) + Ciphertext + Tag (16)
+    $iv = substr($decodedData, 0, 12);
+    $salt = substr($decodedData, 12, 16);
+    $tag = substr($decodedData, -16);
+    $ciphertext = substr($decodedData, 28, -16);
+
+    // Derive AES key using PBKDF2
+    $aesKey = openssl_pbkdf2($decryptedKey, $salt, 32, 65536, 'sha256');
+
+    // Decrypt using AES-256-GCM
+    $plaintext = openssl_decrypt($ciphertext, 'aes-256-gcm', $aesKey, OPENSSL_RAW_DATA, $iv, $tag);
+
+    return $plaintext;
+}
+
+function calculateHmacSHA256($plainSymmetricKeyReceived, $data)
+{
+    $hash = hash_hmac('sha256', $data, $plainSymmetricKeyReceived, true);
+    return base64_encode($hash);
+}
+
+function encryptRSA($data, $rsaPublicKey)
+{
+    if (empty($rsaPublicKey)) {
+        return false;
     }
 
-    $decodedResponse = json_decode($response, true);
-    return [
-        'http_code' => $httpCode,
-        'response_data' => $decodedResponse ?: ['raw_response' => $response]
-    ];
+    try {
+        $rsa = new RSA();
+        $rsa->setMGFHash('sha256');
+        $rsa->setHash('sha256');
+        $rsa->loadKey($rsaPublicKey);
+        $encrypted = $rsa->encrypt($data);
+
+        if ($encrypted === false) {
+            return false;
+        }
+
+        return base64_encode($encrypted);
+    } catch (Exception $e) {
+        error_log("RSA Encryption Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+function decryptRSA($data, $rsaPrivateKey)
+{
+    $rsa = new RSA();
+    $rsa->setMGFHash('sha256');
+    $rsa->setHash('sha256');
+    $rsa->loadKey($rsaPrivateKey);
+
+    $data = base64_decode($data);
+    $decrypted = $rsa->decrypt($data);
+
+    if ($decrypted === false) {
+        return false;
+    }
+
+    return $decrypted;
 }
 
 function getOAuthToken($apiKey, $secretKey)
@@ -354,15 +479,190 @@ function getOAuthToken($apiKey, $secretKey)
     return $decodedResponse;
 }
 
-function renderApiResponse($apiResponse)
+function decryptErrorResponse($errorResponse, $privateKey)
+{
+    try {
+        if (!isset($errorResponse['symmetricKey']) || !isset($errorResponse['data']) || !isset($errorResponse['hash'])) {
+            return ['error' => 'Response does not contain encrypted data fields', 'raw' => $errorResponse];
+        }
+
+        // Diagnose key size mismatch before attempting decryption
+        $encSymKeyBytes = strlen(base64_decode($errorResponse['symmetricKey']));
+        $privKeyInfo = openssl_pkey_get_private($privateKey);
+        $ourKeyBits = $privKeyInfo ? openssl_pkey_get_details($privKeyInfo)['bits'] : 0;
+        $expectedBytes = $ourKeyBits / 8;
+
+        if ($encSymKeyBytes !== $expectedBytes && $encSymKeyBytes > 0) {
+            return [
+                'error' => 'RSA key size mismatch',
+                'detail' => sprintf(
+                    'Response symmetric key is %d bytes (RSA-%d), but our private key is RSA-%d (%d bytes). '
+                        . 'Protean is NOT using our server public key to encrypt responses. '
+                        . 'You must share your server public key with Protean and ask them to register it.',
+                    $encSymKeyBytes,
+                    $encSymKeyBytes * 8,
+                    $ourKeyBits,
+                    $expectedBytes
+                )
+            ];
+        }
+
+        $decryptedKey = decryptRSA($errorResponse['symmetricKey'], $privateKey);
+        if ($decryptedKey === false) {
+            return ['error' => 'Failed to decrypt symmetric key. Check if private key is correct.'];
+        }
+
+        $decryptedData = decrypt($errorResponse['data'], $decryptedKey);
+        if ($decryptedData === false) {
+            return ['error' => 'Failed to decrypt error data using AES'];
+        }
+
+        $calculatedHmac = calculateHmacSHA256($decryptedKey, $decryptedData);
+        if ($calculatedHmac !== $errorResponse['hash']) {
+            return [
+                'error' => 'HMAC verification failed',
+                'decrypted_data' => $decryptedData,
+                'expected_hmac' => $errorResponse['hash'],
+                'calculated_hmac' => $calculatedHmac
+            ];
+        }
+
+        $decryptedJson = json_decode($decryptedData, true);
+        if ($decryptedJson === null) {
+            return [
+                'error' => 'Failed to parse decrypted data as JSON',
+                'raw_data' => $decryptedData
+            ];
+        }
+
+        return $decryptedJson;
+    } catch (Exception $e) {
+        return ['error' => 'Exception: ' . $e->getMessage()];
+    }
+}
+
+function decryptSuccessResponse($response, $privateKey)
+{
+    try {
+        if (!isset($response['symmetricKey']) || !isset($response['data']) || !isset($response['hash'])) {
+            return ['error' => 'Response does not contain encrypted data fields'];
+        }
+
+        // Diagnose key size mismatch before attempting decryption
+        $encSymKeyBytes = strlen(base64_decode($response['symmetricKey']));
+        $privKeyInfo = openssl_pkey_get_private($privateKey);
+        $ourKeyBits = $privKeyInfo ? openssl_pkey_get_details($privKeyInfo)['bits'] : 0;
+        $expectedBytes = $ourKeyBits / 8;
+
+        if ($encSymKeyBytes !== $expectedBytes && $encSymKeyBytes > 0) {
+            return [
+                'error' => 'RSA key size mismatch',
+                'detail' => sprintf(
+                    'Response symmetric key is %d bytes (RSA-%d), but our private key is RSA-%d (%d bytes). '
+                        . 'Protean is NOT using our server public key to encrypt responses. '
+                        . 'You must share your server public key with Protean and ask them to register it.',
+                    $encSymKeyBytes,
+                    $encSymKeyBytes * 8,
+                    $ourKeyBits,
+                    $expectedBytes
+                )
+            ];
+        }
+
+        // Decrypt the symmetric key from the response using your private key
+        $decryptedKey = decryptRSA($response['symmetricKey'], $privateKey);
+        if ($decryptedKey === false) {
+            return ['error' => 'Failed to decrypt symmetric key. Check if your private key matches what you shared with Protean.'];
+        }
+
+        $decryptedData = decrypt($response['data'], $decryptedKey);
+        if ($decryptedData === false) {
+            return ['error' => 'Failed to decrypt response data'];
+        }
+
+        $calculatedHmac = calculateHmacSHA256($decryptedKey, $decryptedData);
+        if ($calculatedHmac !== $response['hash']) {
+            return [
+                'error' => 'HMAC verification failed',
+                'expected' => $response['hash'],
+                'calculated' => $calculatedHmac
+            ];
+        }
+
+        $decryptedJson = json_decode($decryptedData, true);
+        if ($decryptedJson === null) {
+            return ['error' => 'Failed to parse decrypted data as JSON', 'raw_data' => $decryptedData];
+        }
+
+        return $decryptedJson;
+    } catch (Exception $e) {
+        return ['error' => 'Exception: ' . $e->getMessage()];
+    }
+}
+
+/**
+ * Renders the API response with decryption support
+ */
+function renderApiResponse($apiResponse, $privateKeyString, $keyStatus = [])
 {
     $result = "";
     if ($apiResponse['http_code'] >= 400) {
         $result .= "<div class='error'>✗ API Error: HTTP " . $apiResponse['http_code'] . "</div>";
-        $result .= "<div class='details'><strong>Error Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+
+        // Check if we have a valid response to decrypt
+        if (!empty($apiResponse['response_data']) && is_array($apiResponse['response_data'])) {
+            // Check if it's an encrypted response
+            if (isset($apiResponse['response_data']['data']) && isset($apiResponse['response_data']['symmetricKey'])) {
+                $result .= "<div class='info'>🔓 Attempting to decrypt error response...</div>";
+
+                if (empty($privateKeyString)) {
+                    $result .= "<div class='error-details'>";
+                    $result .= "<strong>❌ Private Key Error:</strong><br>";
+                    $result .= "Private key is not available or not loaded properly.<br>";
+                    if (!empty($keyStatus)) {
+                        $result .= "<strong>Key Status:</strong><br>";
+                        $result .= "- Protean Public key: " . ($keyStatus['protean_public_content'] ? '✓ Loaded' : '✗ Missing') . "<br>";
+                        $result .= "- Server Private key: " . ($keyStatus['private_content'] ? '✓ Loaded' : '✗ Missing') . "<br>";
+                    }
+                    $result .= "</div>";
+                    $result .= "<div class='details'><strong>Raw Error Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+                } else {
+                    $decryptedError = decryptErrorResponse($apiResponse['response_data'], $privateKeyString);
+                    if ($decryptedError && !isset($decryptedError['error'])) {
+                        $result .= "<div class='success'>✓ Error response decrypted successfully</div>";
+                        $result .= "<div class='error-details'><strong>📋 Decrypted Error Details:</strong><br><pre>" . htmlspecialchars(json_encode($decryptedError, JSON_PRETTY_PRINT)) . "</pre></div>";
+                    } else {
+                        $errorMsg = isset($decryptedError['error']) ? (is_scalar($decryptedError['error']) ? $decryptedError['error'] : json_encode($decryptedError['error'])) : 'Unknown error';
+                        $result .= "<div class='error'><strong>❌ " . htmlspecialchars((string)$errorMsg) . "</strong></div>";
+                        if (!empty($decryptedError['detail'])) {
+                            $result .= "<div class='error-details'><strong>🔍 Diagnosis:</strong><br>" . htmlspecialchars($decryptedError['detail']) . "</div>";
+                        }
+                        $result .= "<div class='details'><strong>Raw Error Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+                    }
+                }
+            } else {
+                $result .= "<div class='details'><strong>Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+            }
+        } else {
+            $result .= "<div class='error'>Invalid response format from API</div>";
+            $result .= "<div class='details'>Response: " . htmlspecialchars(print_r($apiResponse, true)) . "</div>";
+        }
     } else {
-        $result .= "<div class='success'>✓ API call successful (HTTP " . $apiResponse['http_code'] . ")</div>";
-        $result .= "<div class='response'><strong>Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+        $result .= "<div class='success'>✓ API call successful</div>";
+
+        // Decrypt successful response if encrypted
+        if (isset($apiResponse['response_data']['symmetricKey']) && isset($apiResponse['response_data']['data'])) {
+            $result .= "<div class='info'>🔓 Decrypting response...</div>";
+            $decryptedResponse = decryptSuccessResponse($apiResponse['response_data'], $privateKeyString);
+            if ($decryptedResponse && !isset($decryptedResponse['error'])) {
+                $result .= "<div class='response'><strong>Decrypted Response:</strong><br><pre>" . htmlspecialchars(json_encode($decryptedResponse, JSON_PRETTY_PRINT)) . "</pre></div>";
+            } else {
+                $result .= "<div class='error'>Failed to decrypt response: " . ($decryptedResponse['error'] ?? 'Unknown error') . "</div>";
+                $result .= "<div class='details'><strong>Raw Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+            }
+        } else {
+            $result .= "<div class='response'><strong>Response:</strong><br><pre>" . htmlspecialchars(json_encode($apiResponse['response_data'], JSON_PRETTY_PRINT)) . "</pre></div>";
+        }
     }
     return $result;
 }
