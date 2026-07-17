@@ -2,27 +2,19 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\EmailServerType;
-use App\Services\EmailServerService;
-use App\Services\EmailServerConfigurationFieldService;
 use App\Http\Requests\Api\Admin\SystemEmailServer\StoreRequest;
 use App\Http\Requests\Api\Admin\SystemEmailServer\UpdateRequest;
+use App\Http\Requests\Api\Admin\SendTestSystemEmailRequest;
+use App\Services\ApiService\Admin\SystemEmailServerService;
 use App\Traits\ApiResponse;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
-use App\Models\EmailServerConfigurationField;
-use App\Models\EmailServerConfigurationValue;
-use Exception;
 
-class SystemEmailServerController extends Controller
+class SystemEmailServerController extends BaseController
 {
     use ApiResponse;
 
     public function __construct(
-        protected EmailServerService $emailServerService,
-        protected EmailServerConfigurationFieldService $fieldService
+        protected SystemEmailServerService $systemEmailServerService
     ) {}
 
     /**
@@ -30,28 +22,9 @@ class SystemEmailServerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = $this->emailServerService->query()->with('serverType');
+        addInfoLog("Admin system email server list request");
 
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('server_name', 'like', "%{$search}%");
-        }
-
-        if ($request->has('type') && !empty($request->type) && $request->type !== 'all') {
-            $query->where('server_type_id', $request->type);
-        }
-
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        $query->orderBy('id', 'desc');
-
-        if ($request->has('limit')) {
-            $servers = $query->paginate($request->limit);
-        } else {
-            $servers = $query->get();
-        }
+        $servers = $this->systemEmailServerService->getServers($request->all());
 
         return $this->success('Email servers fetched successfully', $servers);
     }
@@ -61,7 +34,10 @@ class SystemEmailServerController extends Controller
      */
     public function types()
     {
-        $types = EmailServerType::where('is_active', true)->get();
+        addInfoLog("Admin system email server types request");
+
+        $types = $this->systemEmailServerService->getServerTypes();
+        
         return $this->success('Server types fetched successfully', $types);
     }
 
@@ -70,11 +46,10 @@ class SystemEmailServerController extends Controller
      */
     public function statuses()
     {
-        $statuses = [
-            ['status' => 'active'],
-            ['status' => 'inactive'],
-            ['status' => 'failing']
-        ];
+        addInfoLog("Admin system email server statuses request");
+
+        $statuses = $this->systemEmailServerService->getStatuses();
+        
         return $this->success('Server statuses fetched successfully', $statuses);
     }
 
@@ -83,17 +58,9 @@ class SystemEmailServerController extends Controller
      */
     public function getServerTypeFields($id)
     {
-        $fields = $this->fieldService->query()
-            ->where('server_type_id', $id)
-            ->orderBy('sort_order')
-            ->get();
+        addInfoLog("Admin system email server type fields request, ID: {$id}");
 
-        // decode options json
-        foreach ($fields as $field) {
-            if ($field->options && is_string($field->options)) {
-                $field->options = json_decode($field->options, true);
-            }
-        }
+        $fields = $this->systemEmailServerService->getServerTypeFields($id);
 
         return $this->success('Server type fields fetched successfully', $fields);
     }
@@ -103,32 +70,12 @@ class SystemEmailServerController extends Controller
      */
     public function show($id)
     {
+        addInfoLog("Admin system email server show request, ID: {$id}");
+
         try {
-            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
-            $configValues = EmailServerConfigurationValue::where('email_server_id', $id)->get();
-            $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-            
-            $dynamicValues = [];
-            foreach ($configValues as $val) {
-                $field = $fields->where('id', $val->configuration_field_id)->first();
-                if ($field) {
-                    $decryptedVal = $val->field_value;
-                    if ($field->is_encrypted) {
-                        try {
-                            $decryptedVal = decrypt($val->field_value);
-                        } catch (Exception $e) {
-                            $decryptedVal = '';
-                        }
-                    }
-                    $dynamicValues[$field->field_name] = $decryptedVal;
-                }
-            }
-
-            $serverArray = $server->toArray();
-            $serverArray['dynamic_values'] = $dynamicValues;
-
+            $serverArray = $this->systemEmailServerService->showServer($id);
             return $this->success('Email server fetched successfully', $serverArray);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->error('Email server not found', 404);
         }
     }
@@ -138,41 +85,13 @@ class SystemEmailServerController extends Controller
      */
     public function store(StoreRequest $request)
     {
+        addInfoLog("Admin system email server create request");
+
         try {
-            DB::beginTransaction();
-            $validated = $request->validated();
-            unset($validated['dynamic_values']);
-            $server = $this->emailServerService->create($validated);
-
-            if ($request->has('dynamic_values') && is_array($request->dynamic_values)) {
-                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-                $valuesToInsert = [];
-                foreach ($request->dynamic_values as $key => $value) {
-                    $field = $fields->where('field_name', $key)->first();
-                    if ($field) {
-                        $val = $value;
-                        if ($field->is_encrypted) {
-                            $val = encrypt($value);
-                        }
-                        $valuesToInsert[] = [
-                            'email_server_id' => $server->id,
-                            'configuration_field_id' => $field->id,
-                            'field_value' => $val,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-                }
-                if (!empty($valuesToInsert)) {
-                    EmailServerConfigurationValue::insert($valuesToInsert);
-                }
-            }
-
-            DB::commit();
+            $server = $this->systemEmailServerService->storeServer($request->validated() + ['dynamic_values' => $request->dynamic_values]);
             return $this->success('Email server created successfully', $server);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return $this->error('Failed to create email server: ' . $e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 500);
         }
     }
 
@@ -181,78 +100,27 @@ class SystemEmailServerController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
-        try {
-            $server = $this->emailServerService->find($id);
-        } catch (Exception $e) {
-            return $this->error('Email server not found', 404);
-        }
+        addInfoLog("Admin system email server update request");
 
         try {
-            DB::beginTransaction();
-            $validated = $request->validated();
-            unset($validated['dynamic_values']);
-            $this->emailServerService->update($id, $validated);
-
-            if ($request->has('dynamic_values') && is_array($request->dynamic_values)) {
-                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-                
-                // We can just delete old values and insert new ones, or update existing. Delete/Insert is easier.
-                EmailServerConfigurationValue::where('email_server_id', $id)->delete();
-                
-                $valuesToInsert = [];
-                foreach ($request->dynamic_values as $key => $value) {
-                    $field = $fields->where('field_name', $key)->first();
-                    if ($field) {
-                        $val = $value;
-                        if ($field->is_encrypted) {
-                            $val = encrypt($value);
-                        }
-                        $valuesToInsert[] = [
-                            'email_server_id' => $id,
-                            'configuration_field_id' => $field->id,
-                            'field_value' => $val,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-                }
-                if (!empty($valuesToInsert)) {
-                    EmailServerConfigurationValue::insert($valuesToInsert);
-                }
-            }
-            
-            DB::commit();
-
-            $server = $this->emailServerService->find($id);
+            $server = $this->systemEmailServerService->updateServer($id, $request->validated() + ['dynamic_values' => $request->dynamic_values]);
             return $this->success('Email server updated successfully', $server);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return $this->error('Failed to update email server: ' . $e->getMessage(), 500);
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 404 ? 404 : 500;
+            return $this->error($e->getMessage(), $code);
         }
     }
 
     public function destroy($id)
     {
-        try {
-            $server = $this->emailServerService->find($id);
-        } catch (Exception $e) {
-            return $this->error('Email server not found', 404);
-        }
+        addInfoLog("Admin system email server delete request");
 
         try {
-            DB::beginTransaction();
-            
-            // Soft delete configuration values
-            EmailServerConfigurationValue::where('email_server_id', $id)->delete();
-            
-            // Soft delete the server
-            $this->emailServerService->delete($id);
-
-            DB::commit();
+            $this->systemEmailServerService->deleteServer($id);
             return $this->success('Email server deleted successfully');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return $this->error('Failed to delete email server: ' . $e->getMessage(), 500);
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 404 ? 404 : 500;
+            return $this->error($e->getMessage(), $code);
         }
     }
 
@@ -261,25 +129,10 @@ class SystemEmailServerController extends Controller
      */
     public function testConnection($id)
     {
-        try {
-            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
-        } catch (Exception $e) {
-            return $this->error('Email server not found', 404);
-        }
+        addInfoLog("Admin system email server test connection request");
 
         try {
-            $tester = \App\Services\EmailServerTesting\EmailServerTesterFactory::make($server->serverType?->type_code);
-            $result = $tester->test($server);
-
-            $healthStatus = $result['status'] === 'success' ? 'Success' : 'Failed';
-            $status = $result['status'] === 'success' ? 'active' : 'failing';
-
-            $this->emailServerService->update($id, [
-                'health_check_at' => now(),
-                'health_check_status' => $healthStatus,
-                'status' => $status,
-                'last_error' => $result['status'] === 'error' ? end($result['logs']) : null
-            ]);
+            $result = $this->systemEmailServerService->testConnection($id);
 
             if ($result['status'] === 'success') {
                 return $this->success('Connection successful', [
@@ -293,83 +146,29 @@ class SystemEmailServerController extends Controller
                     'status' => 'error'
                 ]);
             }
-        } catch (Exception $e) {
-            $this->emailServerService->update($id, [
-                'health_check_at' => now(),
-                'health_check_status' => 'Failed',
-                'status' => 'failing',
-                'last_error' => $e->getMessage()
-            ]);
-
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error('Email server not found', 404);
+        } catch (\Exception $e) {
             return $this->error('Connection failed: ' . $e->getMessage(), 500, [
                 'logs' => ["[ERROR] An unexpected error occurred: " . $e->getMessage()],
                 'status' => 'error'
             ]);
         }
     }
+
     /**
      * Send a test email using the specified email server.
      */
-    public function sendTestEmail(Request $request, $id)
+    public function sendTestEmail(SendTestSystemEmailRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('Validation Error', 422, $validator->errors());
-        }
+        addInfoLog("Admin system email server send test email request");
 
         try {
-            $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
-        } catch (Exception $e) {
-            return $this->error('Email server not found', 404);
-        }
-
-        try {
-            $configValues = EmailServerConfigurationValue::where('email_server_id', $server->id)->get();
-            $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-            
-            $dynamicValues = [];
-            foreach ($configValues as $val) {
-                $field = $fields->where('id', $val->configuration_field_id)->first();
-                if ($field) {
-                    $decryptedVal = $val->field_value;
-                    if ($field->is_encrypted) {
-                        try {
-                            $decryptedVal = decrypt($val->field_value);
-                        } catch (Exception $e) {
-                            $decryptedVal = '';
-                        }
-                    }
-                    $dynamicValues[$field->field_name] = $decryptedVal;
-                }
-            }
-
-            // Temporarily configure the mailer
-            $mailerName = 'test_mailer_' . $server->id;
-            \Illuminate\Support\Facades\Config::set("mail.mailers.{$mailerName}", [
-                'transport' => 'smtp',
-                'host' => $dynamicValues['host'] ?? '',
-                'port' => $dynamicValues['port'] ?? 587,
-                'encryption' => $dynamicValues['encryption'] ?? 'tls',
-                'username' => $dynamicValues['username'] ?? '',
-                'password' => $dynamicValues['password'] ?? '',
-                'timeout' => null,
-                'auth_mode' => null,
-            ]);
-
-            $fromAddress = $dynamicValues['from_address'] ?? $dynamicValues['username'] ?? 'no-reply@digitalrakshak.com';
-            $fromName = $dynamicValues['from_name'] ?? 'Digital Rakshak';
-
-            \Illuminate\Support\Facades\Mail::mailer($mailerName)->raw('This is a test email to verify your email server configuration.', function ($message) use ($request, $fromAddress, $fromName) {
-                $message->from($fromAddress, $fromName);
-                $message->to($request->email);
-                $message->subject('Test Email - Digital Rakshak');
-            });
-
+            $this->systemEmailServerService->sendTestEmail($id, $request->validated()['email']);
             return $this->success('Test email sent successfully');
-        } catch (Exception $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error('Email server not found', 404);
+        } catch (\Exception $e) {
             return $this->error('Failed to send test email: ' . $e->getMessage(), 500);
         }
     }
