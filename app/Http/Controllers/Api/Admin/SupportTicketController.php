@@ -2,21 +2,17 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Admin\StoreSupportTicketRequest;
+use App\Http\Requests\Api\Admin\ReplySupportTicketRequest;
 use App\Services\ApiService\Admin\SupportTicketService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
-class SupportTicketController extends Controller
+class SupportTicketController extends BaseController
 {
     use ApiResponse;
 
-    protected SupportTicketService $service;
-
-    public function __construct(SupportTicketService $service)
-    {
-        $this->service = $service;
-    }
+    public function __construct(protected SupportTicketService $service) {}
 
     public function index(Request $request)
     {
@@ -45,6 +41,8 @@ class SupportTicketController extends Controller
 
     public function conversations(Request $request, $id)
     {
+        addInfoLog("Admin support ticket conversations request, ID: {$id}");
+
         try {
             $result = $this->service->getTicketConversations((int) $id);
             return $this->success('Support ticket conversations fetched successfully.', $result);
@@ -54,7 +52,7 @@ class SupportTicketController extends Controller
         }
     }
 
-    public function reply(Request $request, $id)
+    public function reply(ReplySupportTicketRequest $request, $id)
     {
         addInfoLog("Admin support ticket reply request");
 
@@ -74,6 +72,8 @@ class SupportTicketController extends Controller
 
     public function departments()
     {
+        addInfoLog("Admin support ticket departments list request");
+
         try {
             $result = $this->service->getDepartments();
             return $this->success('Departments fetched successfully.', $result);
@@ -84,6 +84,8 @@ class SupportTicketController extends Controller
 
     public function priorities()
     {
+        addInfoLog("Admin support ticket priorities list request");
+
         try {
             $result = $this->service->getPriorities();
             return $this->success('Priorities fetched successfully.', $result);
@@ -94,6 +96,8 @@ class SupportTicketController extends Controller
 
     public function orders(Request $request)
     {
+        addInfoLog("Admin support ticket client orders request");
+
         try {
             $clientId = $request->input('client_id');
             $result = $this->service->getClientOrders($clientId ? (int) $clientId : null);
@@ -103,20 +107,14 @@ class SupportTicketController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreSupportTicketRequest $request)
     {
-        $request->validate([
-            'client_id' => 'required|integer',
-            'title' => 'required|string',
-            'message' => 'required|string',
-            'department' => 'required|integer',
-            'priority' => 'required|integer',
-        ]);
+        addInfoLog("Admin support ticket create request");
 
         $user = $request->user('api') ?? $request->user();
 
         try {
-            $result = $this->service->createTicket($request->all(), (int) $request->input('client_id'), $user);
+            $result = $this->service->createTicket($request->validated(), (int) $request->input('client_id'), $user);
             return $this->success('Support ticket created successfully.', $result);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
