@@ -2,53 +2,26 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\EmailLog;
+use App\Services\ApiService\Admin\SystemEmailLogService;
 use App\Traits\ApiResponse;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 
-class SystemEmailLogController extends Controller
+class SystemEmailLogController extends BaseController
 {
     use ApiResponse;
+
+    public function __construct(
+        protected SystemEmailLogService $systemEmailLogService
+    ) {}
 
     /**
      * Fetch paginated email logs based on filters.
      */
     public function index(Request $request)
     {
-        $limit = $request->get('limit', 10);
-        $search = $request->get('search', '');
-        $status = $request->get('status', 'all');
+        addInfoLog("Admin system email log list request");
 
-        $query = EmailLog::query()
-            ->join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
-            ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at');
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('email_queue.to_email', 'like', "%{$search}%")
-                  ->orWhere('email_queue.subject', 'like', "%{$search}%")
-                  ->orWhere('email_queue.email_uid', 'like', "%{$search}%");
-            });
-        }
-        
-        if ($status !== 'all' && !empty($status)) {
-            $query->where('email_logs.status', $status);
-        }
-
-        $paginated = $query->orderBy('email_logs.created_at', 'desc')->paginate($limit);
-
-        // Format for frontend
-        $paginated->getCollection()->transform(function ($item) {
-            $item->recipient = $item->to_email;
-            $item->sentAt = $item->sent_at ? Carbon::parse($item->sent_at)->format('Y-m-d H:i A') : null;
-            $item->status = ucfirst(strtolower($item->status));
-            $item->template = $item->metadata['template_name'] ?? 'N/A';
-            $item->body_text = $item->metadata['body_text'] ?? '';
-            $item->body_html = $item->metadata['body_html'] ?? '';
-            return $item;
-        });
+        $paginated = $this->systemEmailLogService->getLogs($request->all());
 
         return $this->success('Email logs fetched successfully', $paginated);
     }
@@ -58,17 +31,11 @@ class SystemEmailLogController extends Controller
      */
     public function stats()
     {
-        $total = EmailLog::count();
-        $delivered = EmailLog::whereIn('status', ['delivered', 'opened', 'sent'])->count();
-        $bounced = EmailLog::where('status', 'bounced')->count();
-        $failed = EmailLog::where('status', 'failed')->count();
+        addInfoLog("Admin system email log stats request");
 
-        return $this->success('Log stats fetched successfully', [
-            'total' => $total,
-            'delivered' => $delivered,
-            'bounced' => $bounced,
-            'failed' => $failed,
-        ]);
+        $stats = $this->systemEmailLogService->getStats();
+
+        return $this->success('Log stats fetched successfully', $stats);
     }
 
     /**
@@ -76,15 +43,9 @@ class SystemEmailLogController extends Controller
      */
     public function statuses()
     {
-        $statuses = EmailLog::select('status')
-            ->distinct()
-            ->whereNotNull('status')
-            ->pluck('status')
-            ->map(function ($status) {
-                return ucfirst(strtolower($status));
-            })
-            ->unique()
-            ->values();
+        addInfoLog("Admin system email log statuses request");
+
+        $statuses = $this->systemEmailLogService->getStatuses();
 
         return $this->success('Log statuses fetched successfully', $statuses);
     }
@@ -94,19 +55,14 @@ class SystemEmailLogController extends Controller
      */
     public function show($id)
     {
-        $log = EmailLog::join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
-            ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at')
-            ->find($id);
+        addInfoLog("Admin system email log show request, ID: {$id}");
 
-        if (!$log) {
-            return $this->error('Email log not found', 404);
+        try {
+            $log = $this->systemEmailLogService->showLog($id);
+            return $this->success('Email log details fetched successfully', $log);
+        } catch (\Exception $e) {
+            $code = $e->getCode() ?: 500;
+            return $this->error($e->getMessage(), $code);
         }
-
-        $log->recipient = $log->to_email;
-        $log->sentAt = $log->sent_at ? Carbon::parse($log->sent_at)->format('Y-m-d H:i A') : null;
-        $log->status = ucfirst(strtolower($log->status));
-        $log->template = $log->metadata['template_name'] ?? 'N/A';
-
-        return $this->success('Email log details fetched successfully', $log);
     }
 }
