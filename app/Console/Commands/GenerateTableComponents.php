@@ -154,7 +154,7 @@ PHP;
 
     protected function getRepositoryTemplate($modelName, $columns)
     {
-        $getterMethods = $this->generateRepositoryGetters($columns);
+        $getterMethods = $this->generateRepositoryGetters($modelName, $columns);
 
         return <<<PHP
 <?php
@@ -163,7 +163,7 @@ namespace App\Repositories;
 
 use App\Models\\{$modelName};
 
-class {$modelName}Repository extends {$this->baseRepository}
+class {$modelName}Repository extends {\$this->baseRepository}
 {
     public function __construct({$modelName} \$model)
     {
@@ -171,22 +171,22 @@ class {$modelName}Repository extends {$this->baseRepository}
     }
 
     // column constants
-{$getterMethods}
+{\$getterMethods}
     // functions
 }
 PHP;
     }
 
-    protected function generateRepositoryGetters($columns)
+    protected function generateRepositoryGetters($modelName, $columns)
     {
         $methods = [];
         foreach ($columns as $column) {
             $methodName = Str::camel($column);
             $constantName = strtoupper($column);
             $methods[] = <<<PHP
-    public function {$methodName}()
+    public function {\$methodName}()
     {
-        return \$this->model::{$constantName};
+        return {$modelName}::{\$constantName};
     }
 PHP;
         }
@@ -204,7 +204,10 @@ namespace App\Services;
 
 use App\Repositories\\{$modelName}Repository;
 
-class {$modelName}Service extends {$this->baseService}
+/**
+ * @property {$modelName}Repository \$repository
+ */
+class {$modelName}Service extends {\$this->baseService}
 {
     protected \$repository;
     
