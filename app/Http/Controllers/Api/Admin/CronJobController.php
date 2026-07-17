@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class CronJobController extends Controller
+class CronJobController extends BaseController
 {
     public function index()
     {
@@ -21,7 +21,7 @@ class CronJobController extends Controller
         ]);
 
         $cronJob = \App\Models\CronJob::findOrFail($id);
-        
+
         $cronJob->update($request->only(['schedule', 'is_active']));
 
         return response()->json([
@@ -45,10 +45,10 @@ class CronJobController extends Controller
     public function run(string $id)
     {
         $cronJob = \App\Models\CronJob::findOrFail($id);
-        
+
         try {
             \Illuminate\Support\Facades\Artisan::call($cronJob->command);
-            
+
             $cronJob->update([
                 'last_run_at' => now(),
                 'status' => 'completed',
