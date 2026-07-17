@@ -2,22 +2,27 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Models\ServiceCategory;
+use App\Services\ApiService\Admin\ServiceCategoryService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class ServiceCategoryController extends BaseController
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected ServiceCategoryService $serviceCategoryService
+    ) {}
+
     /**
      * Display a listing of the service categories.
      */
     public function index(): JsonResponse
     {
-        $categories = ServiceCategory::select('id', 'category_name', 'category_code')->get();
+        addInfoLog("Admin service category list request");
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Service categories retrieved successfully.',
-            'data' => $categories
-        ]);
+        $categories = $this->serviceCategoryService->getServiceCategories();
+
+        return $this->success('Service categories retrieved successfully.', $categories);
     }
 }
