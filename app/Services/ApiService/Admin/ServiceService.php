@@ -2,32 +2,37 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Repositories\ServiceRepository;
 use App\Models\Service;
 
 class ServiceService
 {
+    public function __construct(
+        protected ServiceRepository $repo
+    ) {}
+
     public function getServices(array $data)
     {
-        $query = Service::query();
+        $query = $this->repo->query();
 
         // Search filtering
         if (isset($data['search']) && !empty($data['search'])) {
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('service_name', 'LIKE', "%{$search}%")
-                  ->orWhere('service_code', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+                $q->where($this->repo->serviceName(), 'LIKE', "%{$search}%")
+                  ->orWhere($this->repo->serviceCode(), 'LIKE', "%{$search}%")
+                  ->orWhere($this->repo->description(), 'LIKE', "%{$search}%");
             });
         }
 
         // Status filtering
         if (isset($data['status']) && $data['status'] !== 'all') {
-            $query->where('status', $data['status']);
+            $query->where($this->repo->status(), $data['status']);
         }
 
         // Category filtering (optional but good to have)
         if (isset($data['category']) && $data['category'] !== 'all') {
-            $query->where('service_category', $data['category']);
+            $query->where($this->repo->serviceCategory(), $data['category']);
         }
 
         // Sorting
@@ -54,10 +59,10 @@ class ServiceService
                 'last_page' => $services->lastPage(),
             ],
             'stats' => [
-                'total' => Service::count(),
-                'active' => Service::where('status', 'active')->count(),
-                'inactive' => Service::where('status', 'inactive')->count(),
-                'categories' => Service::whereNotNull('service_category')->distinct('service_category')->count('service_category'),
+                'total' => $this->repo->count(),
+                'active' => $this->repo->query()->where($this->repo->status(), 'active')->count(),
+                'inactive' => $this->repo->query()->where($this->repo->status(), 'inactive')->count(),
+                'categories' => $this->repo->query()->whereNotNull($this->repo->serviceCategory())->distinct($this->repo->serviceCategory())->count($this->repo->serviceCategory()),
             ]
         ];
     }
@@ -74,12 +79,11 @@ class ServiceService
 
     public function storeService(array $data)
     {
-        return Service::create($data);
+        return $this->repo->create($data);
     }
 
     public function updateService(Service $service, array $data)
     {
-        $service->update($data);
-        return $service;
+        return $this->repo->update($service->{$this->repo->id()}, $data);
     }
 }

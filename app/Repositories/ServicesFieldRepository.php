@@ -66,5 +66,10 @@ class ServicesFieldRepository extends BaseRepository
     {
         return ServicesField::DELETED_BY;
     }
+
+    public function section()
+    {
+        return ServicesField::SECTION;
+    }
     // functions
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Models\Client;
 use App\Repositories\ClientRepository;
 use App\Repositories\ClientServiceRepository;
 use App\Repositories\ClientServicePricingRepository;

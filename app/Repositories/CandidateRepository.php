@@ -148,4 +148,8 @@ class CandidateRepository extends BaseRepository
         return Candidate::DELETED_BY;
     }
     // functions
+    public function countBetweenDates($start, $end)
+    {
+        return $this->query()->whereBetween($this->createdAt(), [$start, $end])->count();
+    }
 }

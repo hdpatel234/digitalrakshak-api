@@ -3,17 +3,21 @@
 namespace App\Services\ApiService\Admin;
 
 use App\Models\EmailLog;
+use App\Repositories\EmailLogRepository;
 use Carbon\Carbon;
 
 class SystemEmailLogService
 {
+    public function __construct(
+        protected EmailLogRepository $repo
+    ) {}
     public function getLogs(array $data)
     {
         $limit = $data['limit'] ?? 10;
         $search = $data['search'] ?? '';
         $status = $data['status'] ?? 'all';
 
-        $query = EmailLog::query()
+        $query = $this->repo->query()
             ->join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
             ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at');
 
@@ -47,10 +51,10 @@ class SystemEmailLogService
 
     public function getStats()
     {
-        $total = EmailLog::count();
-        $delivered = EmailLog::whereIn('status', ['delivered', 'opened', 'sent'])->count();
-        $bounced = EmailLog::where('status', 'bounced')->count();
-        $failed = EmailLog::where('status', 'failed')->count();
+        $total = $this->repo->count();
+        $delivered = $this->repo->query()->whereIn($this->repo->status(), ['delivered', 'opened', 'sent'])->count();
+        $bounced = $this->repo->query()->where($this->repo->status(), 'bounced')->count();
+        $failed = $this->repo->query()->where($this->repo->status(), 'failed')->count();
 
         return [
             'total' => $total,
@@ -62,10 +66,10 @@ class SystemEmailLogService
 
     public function getStatuses()
     {
-        return EmailLog::select('status')
+        return $this->repo->query()->select($this->repo->status())
             ->distinct()
-            ->whereNotNull('status')
-            ->pluck('status')
+            ->whereNotNull($this->repo->status())
+            ->pluck($this->repo->status())
             ->map(function ($status) {
                 return ucfirst(strtolower($status));
             })
@@ -75,7 +79,7 @@ class SystemEmailLogService
 
     public function showLog($id)
     {
-        $log = EmailLog::join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
+        $log = $this->repo->query()->join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
             ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject', 'email_queue.email_uid', 'email_queue.sent_at')
             ->find($id);
 

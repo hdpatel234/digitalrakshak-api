@@ -2,25 +2,28 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\ServiceField;
+use App\Repositories\ServicesFieldRepository;
 
 class ServiceFieldService
 {
+    public function __construct(
+        protected ServicesFieldRepository $repo
+    ) {}
     public function getFields(array $data)
     {
-        $query = ServiceField::query();
+        $query = $this->repo->query();
 
         // Filter by service
         if (isset($data['service_id']) && !empty($data['service_id']) && $data['service_id'] !== 'all') {
-            $query->where('service_id', $data['service_id']);
+            $query->where($this->repo->serviceId(), $data['service_id']);
         }
 
         // Search filtering
         if (isset($data['search']) && !empty($data['search'])) {
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('field_name', 'LIKE', "%{$search}%")
-                    ->orWhere('field_label', 'LIKE', "%{$search}%");
+                $q->where($this->repo->fieldName(), 'LIKE', "%{$search}%")
+                    ->orWhere($this->repo->fieldLabel(), 'LIKE', "%{$search}%");
             });
         }
 
@@ -52,31 +55,31 @@ class ServiceFieldService
 
     public function getStats(array $data)
     {
-        $query = ServiceField::query();
+        $query = $this->repo->query();
 
         if (isset($data['service_id']) && !empty($data['service_id']) && $data['service_id'] !== 'all') {
-            $query->where('service_id', $data['service_id']);
+            $query->where($this->repo->serviceId(), $data['service_id']);
         }
 
         return [
             'total_fields' => (clone $query)->count(),
-            'active_fields' => (clone $query)->where('status', '!=', 'inactive')->count(),
-            'required_fields' => (clone $query)->where('is_required', true)->count(),
-            'text_inputs' => (clone $query)->whereIn('field_type', ['text', 'textarea', 'Text', 'Textarea'])->count(),
-            'number_inputs' => (clone $query)->whereIn('field_type', ['number', 'Number'])->count(),
-            'file_uploads' => (clone $query)->whereIn('field_type', ['file', 'File'])->count(),
-            'selections' => (clone $query)->whereIn('field_type', ['dropdown', 'Dropdown', 'select', 'Select'])->count(),
-            'email_fields' => (clone $query)->whereIn('field_type', ['email', 'Email'])->count(),
+            'active_fields' => (clone $query)->where($this->repo->status(), '!=', 'inactive')->count(),
+            'required_fields' => (clone $query)->where($this->repo->isRequired(), true)->count(),
+            'text_inputs' => (clone $query)->whereIn($this->repo->fieldType(), ['text', 'textarea', 'Text', 'Textarea'])->count(),
+            'number_inputs' => (clone $query)->whereIn($this->repo->fieldType(), ['number', 'Number'])->count(),
+            'file_uploads' => (clone $query)->whereIn($this->repo->fieldType(), ['file', 'File'])->count(),
+            'selections' => (clone $query)->whereIn($this->repo->fieldType(), ['dropdown', 'Dropdown', 'select', 'Select'])->count(),
+            'email_fields' => (clone $query)->whereIn($this->repo->fieldType(), ['email', 'Email'])->count(),
         ];
     }
 
     public function getSections()
     {
         $defaultSections = ['Employment', 'Identity', 'Address', 'Education'];
-        $dbSections = ServiceField::whereNotNull('section')
-            ->where('section', '!=', '')
+        $dbSections = $this->repo->query()->whereNotNull($this->repo->section())
+            ->where($this->repo->section(), '!=', '')
             ->distinct()
-            ->pluck('section')
+            ->pluck($this->repo->section())
             ->toArray();
 
         $allSections = array_values(array_unique(array_merge($defaultSections, $dbSections)));
@@ -95,26 +98,26 @@ class ServiceFieldService
         }
 
         // Ensure field_name is unique per service
-        $existing = ServiceField::where('service_id', $data['service_id'])->where('field_name', $data['field_name'])->first();
+        $existing = $this->repo->query()->where($this->repo->serviceId(), $data['service_id'])->where($this->repo->fieldName(), $data['field_name'])->first();
         if ($existing) {
             throw new \Exception(json_encode(['field_name' => ['Field name already exists for this service.']]), 422);
         }
 
-        return ServiceField::create($data);
+        return $this->repo->create($data);
     }
 
     public function updateField(int $id, array $data)
     {
-        $field = ServiceField::find($id);
+        $field = $this->repo->find($id);
 
         if (!$field) {
             throw new \Exception('Service field not found.', 404);
         }
 
         // Ensure field_name is unique per service (excluding current)
-        $existing = ServiceField::where('service_id', $data['service_id'])
-            ->where('field_name', $data['field_name'])
-            ->where('id', '!=', $id)
+        $existing = $this->repo->query()->where($this->repo->serviceId(), $data['service_id'])
+            ->where($this->repo->fieldName(), $data['field_name'])
+            ->where($this->repo->id(), '!=', $id)
             ->first();
 
         if ($existing) {
@@ -127,7 +130,7 @@ class ServiceFieldService
 
     public function deleteField(int $id)
     {
-        $field = ServiceField::find($id);
+        $field = $this->repo->find($id);
 
         if (!$field) {
             throw new \Exception('Service field not found.', 404);

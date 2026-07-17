@@ -143,4 +143,9 @@ class ClientRepository extends BaseRepository
     {
         return $this->query()->where($this->status(), $status)->count();
     }
+
+    public function countBetweenDates($start, $end)
+    {
+        return $this->query()->whereBetween($this->createdAt(), [$start, $end])->count();
+    }
 }

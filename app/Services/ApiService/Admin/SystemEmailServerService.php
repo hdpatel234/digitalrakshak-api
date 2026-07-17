@@ -2,9 +2,6 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\EmailServerType;
-use App\Models\EmailServerConfigurationField;
-use App\Models\EmailServerConfigurationValue;
 use App\Services\EmailServerService;
 use App\Services\EmailServerConfigurationFieldService;
 use Illuminate\Support\Facades\DB;
@@ -12,11 +9,16 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 
+use App\Repositories\EmailServerTypeRepository;
+use App\Repositories\EmailServerConfigurationValueRepository;
+
 class SystemEmailServerService
 {
     public function __construct(
         protected EmailServerService $emailServerService,
-        protected EmailServerConfigurationFieldService $fieldService
+        protected EmailServerConfigurationFieldService $fieldService,
+        protected EmailServerTypeRepository $typeRepo,
+        protected EmailServerConfigurationValueRepository $valueRepo
     ) {}
 
     public function getServers(array $data)
@@ -47,7 +49,7 @@ class SystemEmailServerService
 
     public function getServerTypes()
     {
-        return EmailServerType::where('is_active', true)->get();
+        return $this->typeRepo->query()->where($this->typeRepo->isActive(), true)->get();
     }
 
     public function getStatuses()
@@ -78,9 +80,9 @@ class SystemEmailServerService
     public function showServer($id)
     {
         $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
-        $configValues = EmailServerConfigurationValue::where('email_server_id', $id)->get();
-        $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-        
+        $configValues = $this->valueRepo->query()->where($this->valueRepo->emailServerId(), $id)->get();
+        $fields = $this->fieldService->query()->where($this->fieldService->serverTypeId(), $server->server_type_id)->get();
+
         $dynamicValues = [];
         foreach ($configValues as $val) {
             $field = $fields->where('id', $val->configuration_field_id)->first();
@@ -112,7 +114,7 @@ class SystemEmailServerService
             $server = $this->emailServerService->create($data);
 
             if (is_array($dynamicValues)) {
-                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+                $fields = $this->fieldService->query()->where($this->fieldService->serverTypeId(), $server->server_type_id)->get();
                 $valuesToInsert = [];
                 foreach ($dynamicValues as $key => $value) {
                     $field = $fields->where('field_name', $key)->first();
@@ -131,7 +133,7 @@ class SystemEmailServerService
                     }
                 }
                 if (!empty($valuesToInsert)) {
-                    EmailServerConfigurationValue::insert($valuesToInsert);
+                    $this->valueRepo->query()->insert($valuesToInsert);
                 }
             }
 
@@ -157,10 +159,10 @@ class SystemEmailServerService
             $this->emailServerService->update($id, $data);
 
             if (is_array($dynamicValues)) {
-                $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-                
-                EmailServerConfigurationValue::where('email_server_id', $id)->delete();
-                
+                $fields = $this->fieldService->query()->where($this->fieldService->serverTypeId(), $server->server_type_id)->get();
+
+                $this->valueRepo->query()->where($this->valueRepo->emailServerId(), $id)->delete();
+
                 $valuesToInsert = [];
                 foreach ($dynamicValues as $key => $value) {
                     $field = $fields->where('field_name', $key)->first();
@@ -179,10 +181,10 @@ class SystemEmailServerService
                     }
                 }
                 if (!empty($valuesToInsert)) {
-                    EmailServerConfigurationValue::insert($valuesToInsert);
+                    $this->valueRepo->query()->insert($valuesToInsert);
                 }
             }
-            
+
             DB::commit();
             return $this->emailServerService->find($id);
         } catch (Exception $e) {
@@ -200,7 +202,7 @@ class SystemEmailServerService
 
         DB::beginTransaction();
         try {
-            EmailServerConfigurationValue::where('email_server_id', $id)->delete();
+            $this->valueRepo->query()->where($this->valueRepo->emailServerId(), $id)->delete();
             $this->emailServerService->delete($id);
             DB::commit();
             return true;
@@ -245,9 +247,9 @@ class SystemEmailServerService
     {
         $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
 
-        $configValues = EmailServerConfigurationValue::where('email_server_id', $server->id)->get();
-        $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
-        
+        $configValues = $this->valueRepo->query()->where($this->valueRepo->emailServerId(), $server->id)->get();
+        $fields = $this->fieldService->query()->where($this->fieldService->serverTypeId(), $server->server_type_id)->get();
+
         $dynamicValues = [];
         foreach ($configValues as $val) {
             $field = $fields->where('id', $val->configuration_field_id)->first();

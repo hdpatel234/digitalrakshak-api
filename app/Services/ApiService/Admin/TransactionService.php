@@ -7,10 +7,13 @@ use App\Enums\PaymentStatus;
 use App\Enums\TransactionType;
 use App\Models\PaymentGateway;
 
+use App\Repositories\PaymentGatewayRepository;
+
 class TransactionService
 {
     public function __construct(
-        protected PaymentTransactionService $paymentTransactionService
+        protected PaymentTransactionService $paymentTransactionService,
+        protected PaymentGatewayRepository $paymentGatewayRepo
     ) {}
 
     public function getTransactions(array $params)
@@ -49,7 +52,7 @@ class TransactionService
             ...array_map(fn($type) => ['value' => $type->value, 'label' => $type->label()], TransactionType::cases())
         ];
 
-        $platforms = PaymentGateway::select('gateway_code as value', 'gateway_name as label')->get()->toArray();
+        $platforms = $this->paymentGatewayRepo->query()->select($this->paymentGatewayRepo->gatewayCode() . ' as value', $this->paymentGatewayRepo->gatewayName() . ' as label')->get()->toArray();
         array_unshift($platforms, ['value' => 'all', 'label' => 'All Platforms']);
 
         return [

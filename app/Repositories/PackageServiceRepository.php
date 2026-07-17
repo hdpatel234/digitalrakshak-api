@@ -65,4 +65,18 @@ class PackageServiceRepository extends BaseRepository
             ->whereIn($this->status(), ['active', 1])
             ->get();
     }
+
+    public function getActiveServicesByPackageId(int $packageId)
+    {
+        return $this->query()
+            ->where($this->packageId(), $packageId)
+            ->whereIn($this->status(), ['active', 1])
+            ->orderBy($this->displayOrder(), 'asc')
+            ->get();
+    }
+
+    public function deleteByPackageId(int $packageId)
+    {
+        return $this->query()->where($this->packageId(), $packageId)->delete();
+    }
 }

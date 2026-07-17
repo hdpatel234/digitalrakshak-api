@@ -2,26 +2,31 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Repositories\ServiceProviderRepository;
 use App\Models\ServiceProvider;
 
 class ServiceProviderService
 {
+    public function __construct(
+        protected ServiceProviderRepository $repo
+    ) {}
+
     public function getProviders(array $data)
     {
-        $query = ServiceProvider::query();
+        $query = $this->repo->query();
 
         // Search filtering
         if (isset($data['search']) && !empty($data['search'])) {
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('provider_name', 'LIKE', "%{$search}%")
-                  ->orWhere('provider_code', 'LIKE', "%{$search}%");
+                $q->where($this->repo->providerName(), 'LIKE', "%{$search}%")
+                  ->orWhere($this->repo->providerCode(), 'LIKE', "%{$search}%");
             });
         }
 
         // Status filtering
         if (isset($data['status']) && $data['status'] !== 'all') {
-            $query->where('status', $data['status']);
+            $query->where($this->repo->status(), $data['status']);
         }
 
         // Sorting
@@ -57,25 +62,22 @@ class ServiceProviderService
 
     public function storeProvider(array $data)
     {
-        return ServiceProvider::create($data);
+        return $this->repo->create($data);
     }
 
     public function updateProvider(ServiceProvider $serviceProvider, array $data)
     {
-        $serviceProvider->update($data);
-        return $serviceProvider;
+        return $this->repo->update($serviceProvider->{$this->repo->id()}, $data);
     }
 
     public function toggleProviderStatus(ServiceProvider $serviceProvider, string $status)
     {
-        $serviceProvider->status = $status;
-        $serviceProvider->save();
-        return $serviceProvider;
+        return $this->repo->update($serviceProvider->{$this->repo->id()}, [$this->repo->status() => $status]);
     }
 
     public function deleteProvider(ServiceProvider $serviceProvider)
     {
-        $serviceProvider->delete();
+        $this->repo->delete($serviceProvider->{$this->repo->id()});
         return true;
     }
 }

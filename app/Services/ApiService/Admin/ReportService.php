@@ -2,17 +2,26 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\PaymentTransaction;
+use App\Repositories\PaymentTransactionRepository;
+use App\Repositories\CandidateOrderRepository;
+use App\Repositories\ServiceCategoryRepository;
+use App\Repositories\OrderItemRepository;
+use App\Repositories\ClientRepository;
+use App\Repositories\CandidateRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Models\CandidateOrder;
-use App\Models\ServiceCategory;
-use App\Models\OrderItem;
-use App\Models\Client;
-use App\Models\Candidate;
 
 class ReportService
 {
+    public function __construct(
+        protected PaymentTransactionRepository $paymentTransactionRepo,
+        protected CandidateOrderRepository $candidateOrderRepo,
+        protected ServiceCategoryRepository $serviceCategoryRepo,
+        protected OrderItemRepository $orderItemRepo,
+        protected ClientRepository $clientRepo,
+        protected CandidateRepository $candidateRepo
+    ) {}
+
     public function getRevenueReport(array $data)
     {
         $startDate = isset($data['start_date']) && $data['start_date']
@@ -27,7 +36,7 @@ class ReportService
         $status = $data['status'] ?? 'all';
         $platform = $data['platform'] ?? 'all';
 
-        $query = PaymentTransaction::query()
+        $query = $this->paymentTransactionRepo->query()
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($status !== 'all') {
@@ -141,7 +150,7 @@ class ReportService
         $status = $data['status'] ?? 'all';
         $paymentStatus = $data['payment_status'] ?? 'all';
 
-        $query = CandidateOrder::query()
+        $query = $this->candidateOrderRepo->query()
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($status !== 'all') {
@@ -235,7 +244,7 @@ class ReportService
 
     public function getServiceFilters()
     {
-        $categories = ServiceCategory::where('status', 'active')->get()->map(function($cat) {
+        $categories = $this->serviceCategoryRepo->query()->where('status', 'active')->get()->map(function($cat) {
             return ['value' => $cat->id, 'label' => $cat->category_name];
         })->toArray();
         array_unshift($categories, ['value' => 'all', 'label' => 'All Categories']);
@@ -268,7 +277,7 @@ class ReportService
         $status = $data['status'] ?? 'all';
         $category = $data['category'] ?? 'all';
 
-        $query = OrderItem::query()
+        $query = $this->orderItemRepo->query()
             ->join('services', 'order_items.service_id', '=', 'services.id')
             ->select('order_items.*', 'services.service_category')
             ->whereBetween('order_items.created_at', [$startDate, $endDate]);
@@ -373,7 +382,7 @@ class ReportService
 
         $status = $data['status'] ?? 'all';
 
-        $query = Client::query()
+        $query = $this->clientRepo->query()
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($status !== 'all') {
@@ -386,7 +395,7 @@ class ReportService
 
         // Getting total candidates related to these clients
         $clientIds = (clone $cloneQuery)->pluck('id');
-        $totalCandidates = Candidate::whereIn('client_id', $clientIds)->count();
+        $totalCandidates = $this->candidateRepo->query()->whereIn('client_id', $clientIds)->count();
 
         $prefix = DB::connection()->getTablePrefix();
 
@@ -468,7 +477,7 @@ class ReportService
 
         $status = $data['status'] ?? 'all';
 
-        $query = Candidate::query()
+        $query = $this->candidateRepo->query()
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($status !== 'all') {

@@ -7,7 +7,8 @@ use App\Repositories\SupportPriorityRepository;
 use App\Repositories\SupportTicketRepository;
 use App\Services\BaseService;
 use App\Services\UserService;
-use App\Models\SupportTicketConversation;
+use App\Repositories\SupportTicketConversationRepository;
+use App\Repositories\CandidateOrderRepository;
 use Illuminate\Support\Str;
 
 /**
@@ -19,15 +20,22 @@ class SupportTicketService extends BaseService
     protected SupportPriorityRepository $priorityRepository;
     protected UserService $userService;
 
+    protected SupportTicketConversationRepository $conversationRepository;
+    protected CandidateOrderRepository $candidateOrderRepository;
+
     public function __construct(
         SupportTicketRepository $repository,
         SupportDepartmentRepository $departmentRepository,
         SupportPriorityRepository $priorityRepository,
-        UserService $userService
+        UserService $userService,
+        SupportTicketConversationRepository $conversationRepository,
+        CandidateOrderRepository $candidateOrderRepository
     ) {
         $this->departmentRepository = $departmentRepository;
         $this->priorityRepository = $priorityRepository;
         $this->userService = $userService;
+        $this->conversationRepository = $conversationRepository;
+        $this->candidateOrderRepository = $candidateOrderRepository;
         parent::__construct($repository);
     }
 
@@ -191,8 +199,8 @@ class SupportTicketService extends BaseService
 
         $threads = [];
 
-        $conversations = SupportTicketConversation::where('ticket_id', $ticket->id)
-            ->orderBy('created_at', 'asc')
+        $conversations = $this->conversationRepository->query()->where($this->conversationRepository->ticketId(), $ticket->id)
+            ->orderBy($this->conversationRepository->createdAt(), 'asc')
             ->get();
 
         foreach ($conversations as $conversation) {
@@ -260,14 +268,14 @@ class SupportTicketService extends BaseService
 
         $storedAttachments = $this->handleAttachments($attachments);
 
-        $conversation = SupportTicketConversation::create([
-            'ticket_id' => $ticket->id,
-            'message' => $message,
-            'sender_type' => 'agent',
-            'sender_name' => trim($name) ?: 'Admin Support',
-            'sender_email' => $email,
-            'is_internal' => false,
-            'attachments' => json_encode($storedAttachments),
+        $conversation = $this->conversationRepository->create([
+            $this->conversationRepository->ticketId() => $ticket->id,
+            $this->conversationRepository->message() => $message,
+            $this->conversationRepository->senderType() => 'agent',
+            $this->conversationRepository->senderName() => trim($name) ?: 'Admin Support',
+            $this->conversationRepository->senderEmail() => $email,
+            $this->conversationRepository->isInternal() => false,
+            $this->conversationRepository->attachments() => json_encode($storedAttachments),
         ]);
 
         return $conversation->toArray();
@@ -285,12 +293,12 @@ class SupportTicketService extends BaseService
 
     public function getClientOrders(?int $clientId = null)
     {
-        $query = \App\Models\CandidateOrder::query()
-            ->select('id', 'order_number')
-            ->orderBy('id', 'desc');
+        $query = $this->candidateOrderRepository->query()
+            ->select($this->candidateOrderRepository->id(), $this->candidateOrderRepository->orderNumber())
+            ->orderBy($this->candidateOrderRepository->id(), 'desc');
 
         if ($clientId) {
-            $query->where('client_id', $clientId);
+            $query->where($this->candidateOrderRepository->clientId(), $clientId);
         }
 
         return $query->get()->toArray();
@@ -318,14 +326,14 @@ class SupportTicketService extends BaseService
             $this->repository->createdBy() => $user?->id,
         ]);
 
-        SupportTicketConversation::create([
-            'ticket_id' => $ticket->id,
-            'message' => $payload['message'] ?? '',
-            'sender_type' => 'agent',
-            'sender_name' => trim($name) ?: 'Admin Support',
-            'sender_email' => $email,
-            'is_internal' => false,
-            'attachments' => json_encode($storedAttachments),
+        $this->conversationRepository->create([
+            $this->conversationRepository->ticketId() => $ticket->id,
+            $this->conversationRepository->message() => $payload['message'] ?? '',
+            $this->conversationRepository->senderType() => 'agent',
+            $this->conversationRepository->senderName() => trim($name) ?: 'Admin Support',
+            $this->conversationRepository->senderEmail() => $email,
+            $this->conversationRepository->isInternal() => false,
+            $this->conversationRepository->attachments() => json_encode($storedAttachments),
         ]);
 
         return $ticket->toArray();

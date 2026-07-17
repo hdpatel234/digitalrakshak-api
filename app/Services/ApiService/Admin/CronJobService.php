@@ -2,52 +2,54 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\CronJob;
+use App\Repositories\CronJobRepository;
 use Illuminate\Support\Facades\Artisan;
 
 class CronJobService
 {
+    public function __construct(
+        protected CronJobRepository $repo,
+    ) {}
+
     public function getCronJobs()
     {
-        return CronJob::orderBy('id', 'desc')->get();
+        return $this->repo->getAllOrderedDesc();
     }
 
     public function updateCronJob(string $id, array $data)
     {
-        $cronJob = CronJob::findOrFail($id);
-        $cronJob->update($data);
-        return $cronJob;
+        return $this->repo->update($id, $data);
     }
 
     public function toggleCronJob(string $id)
     {
-        $cronJob = CronJob::findOrFail($id);
-        $cronJob->is_active = !$cronJob->is_active;
+        $cronJob = $this->repo->find($id);
+        $cronJob->{$this->repo->isActive()} = !$cronJob->{$this->repo->isActive()};
         $cronJob->save();
         return $cronJob;
     }
 
     public function runCronJob(string $id)
     {
-        $cronJob = CronJob::findOrFail($id);
+        $cronJob = $this->repo->find($id);
 
         try {
-            Artisan::call($cronJob->command);
+            Artisan::call($cronJob->{$this->repo->command()});
 
-            $cronJob->update([
-                'last_run_at' => now(),
-                'status' => 'completed',
+            $this->repo->update($id, [
+                $this->repo->lastRunAt() => now(),
+                $this->repo->status() => 'completed',
             ]);
 
             return [
-                'cron_job' => $cronJob,
+                'cron_job' => $this->repo->find($id),
                 'output' => Artisan::output()
             ];
         } catch (\Exception $e) {
-            $cronJob->update([
-                'last_run_at' => now(),
-                'status' => 'failed',
-                'error_message' => $e->getMessage()
+            $this->repo->update($id, [
+                $this->repo->lastRunAt() => now(),
+                $this->repo->status() => 'failed',
+                $this->repo->errorMessage() => $e->getMessage()
             ]);
 
             throw $e;

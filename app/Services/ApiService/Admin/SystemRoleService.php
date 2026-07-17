@@ -6,27 +6,34 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
 
+use App\Repositories\RoleRepository;
+use App\Repositories\PermissionRepository;
+
 class SystemRoleService
 {
+    public function __construct(
+        protected RoleRepository $roleRepo,
+        protected PermissionRepository $permissionRepo
+    ) {}
     public function getRoles(array $data)
     {
         $search = $data['search'] ?? null;
         $type = $data['type'] ?? null;
 
-        $query = Role::withCount('users')->where('is_admin_role', true);
+        $query = $this->roleRepo->query()->withCount('users')->where($this->roleRepo->isAdminRole(), true);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                $q->where($this->roleRepo->name(), 'like', "%{$search}%")
+                  ->orWhere($this->roleRepo->description(), 'like', "%{$search}%");
             });
         }
 
         if ($type && $type !== 'all') {
             if ($type === 'system') {
-                $query->where('is_system', true);
+                $query->where($this->roleRepo->isSystem(), true);
             } elseif ($type === 'custom') {
-                $query->where('is_system', false);
+                $query->where($this->roleRepo->isSystem(), false);
             }
         }
 
@@ -49,7 +56,7 @@ class SystemRoleService
 
     public function showRole($id)
     {
-        $role = Role::withCount('users')->where('is_admin_role', true)->findOrFail($id);
+        $role = $this->roleRepo->query()->withCount('users')->where($this->roleRepo->isAdminRole(), true)->findOrFail($id);
         
         return [
             'id' => $role->id,
@@ -65,15 +72,15 @@ class SystemRoleService
     public function getStats()
     {
         return [
-            'total_roles' => Role::where('is_admin_role', true)->count(),
-            'system_roles' => Role::where('is_admin_role', true)->where('is_system', true)->count(),
-            'custom_roles' => Role::where('is_admin_role', true)->where('is_system', false)->count(),
+            'total_roles' => $this->roleRepo->query()->where($this->roleRepo->isAdminRole(), true)->count(),
+            'system_roles' => $this->roleRepo->query()->where($this->roleRepo->isAdminRole(), true)->where($this->roleRepo->isSystem(), true)->count(),
+            'custom_roles' => $this->roleRepo->query()->where($this->roleRepo->isAdminRole(), true)->where($this->roleRepo->isSystem(), false)->count(),
         ];
     }
     
     public function getPermissions()
     {
-        return Permission::all()->groupBy('group')->map(function ($group, $key) {
+        return $this->permissionRepo->all()->groupBy($this->permissionRepo->group())->map(function ($group, $key) {
             $groupName = $key ?: 'General';
             return [
                 $groupName => $group->map(function ($perm) {
@@ -91,12 +98,12 @@ class SystemRoleService
     {
         DB::beginTransaction();
         try {
-            $role = Role::create([
-                'name' => strtolower(str_replace(' ', '_', $data['name'])),
-                'description' => $data['description'] ?? null,
-                'is_system' => false,
-                'is_admin_role' => true,
-                'guard_name' => 'api'
+            $role = $this->roleRepo->create([
+                $this->roleRepo->name() => strtolower(str_replace(' ', '_', $data['name'])),
+                $this->roleRepo->description() => $data['description'] ?? null,
+                $this->roleRepo->isSystem() => false,
+                $this->roleRepo->isAdminRole() => true,
+                $this->roleRepo->guardName() => 'api'
             ]);
 
             if (isset($data['permissions'])) {
@@ -113,7 +120,7 @@ class SystemRoleService
 
     public function updateRole($id, array $data)
     {
-        $role = Role::findOrFail($id);
+        $role = $this->roleRepo->find($id);
         
         if ($role->is_system && isset($data['name']) && strtolower(str_replace(' ', '_', $data['name'])) !== $role->name) {
             throw new \Exception('Cannot rename a system role', 403);
@@ -145,7 +152,7 @@ class SystemRoleService
 
     public function deleteRole($id)
     {
-        $role = Role::findOrFail($id);
+        $role = $this->roleRepo->find($id);
 
         if ($role->is_system) {
             throw new \Exception('Cannot delete a system role', 403);

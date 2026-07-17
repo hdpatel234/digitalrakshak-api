@@ -2,25 +2,31 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\Client;
-use App\Models\Candidate;
-use App\Models\CandidateOrder;
+use App\Repositories\ClientRepository;
+use App\Repositories\CandidateRepository;
+use App\Repositories\CandidateOrderRepository;
 use Illuminate\Support\Carbon;
 
 class DashboardService
 {
+    public function __construct(
+        protected ClientRepository $clientRepo,
+        protected CandidateRepository $candidateRepo,
+        protected CandidateOrderRepository $candidateOrderRepo
+    ) {}
+
     public function getOverview()
     {
         $now = Carbon::now();
         $lastMonth = Carbon::now()->subMonth();
 
         // Basic Counts
-        $totalClients = Client::count();
-        $totalCandidates = Candidate::count();
-        $totalOrders = CandidateOrder::count();
+        $totalClients = $this->clientRepo->count();
+        $totalCandidates = $this->candidateRepo->count();
+        $totalOrders = $this->candidateOrderRepo->count();
         
         // Using total_amount for revenue
-        $totalRevenue = CandidateOrder::where('payment_status', \App\Enums\PaymentStatus::PAID->value)->sum('total_amount');
+        $totalRevenue = $this->candidateOrderRepo->getTotalRevenue(\App\Enums\PaymentStatus::PAID->value);
 
         // Basic comparison (mocked percentages for now, can be calculated dynamically based on created_at if needed)
         $statisticData = [
@@ -59,8 +65,8 @@ class DashboardService
             $start = $month->copy()->startOfMonth();
             $end = $month->copy()->endOfMonth();
             
-            $verificationData[] = CandidateOrder::whereBetween('created_at', [$start, $end])->count();
-            $clientGrowthData[] = Client::whereBetween('created_at', [$start, $end])->count();
+            $verificationData[] = $this->candidateOrderRepo->countBetweenDates($start, $end);
+            $clientGrowthData[] = $this->clientRepo->countBetweenDates($start, $end);
         }
 
         $verificationTrend = [
@@ -90,21 +96,18 @@ class DashboardService
         ];
 
         // Recent Orders
-        $recentOrdersRecords = CandidateOrder::with(['client', 'candidates'])
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+        $recentOrdersRecords = $this->candidateOrderRepo->getRecentOrders(5);
 
         $recentOrders = $recentOrdersRecords->map(function ($order) {
             $candidateName = $order->candidates->first() ? ($order->candidates->first()->first_name . ' ' . $order->candidates->first()->last_name) : 'Unknown';
             $clientName = $order->client ? ($order->client->company_name ?? $order->client->first_name) : 'Unknown';
             return [
-                'id' => $order->order_number ?? 'ORD-'.$order->id,
+                'id' => $order->{$this->candidateOrderRepo->orderNumber()} ?? 'ORD-'.$order->{$this->candidateOrderRepo->id()},
                 'client' => $clientName,
                 'candidate' => $candidateName,
-                'status' => $order->status ?? 'Processing',
-                'date' => $order->created_at->format('Y-m-d'),
-                'amount' => (float) $order->total_amount,
+                'status' => $order->{$this->candidateOrderRepo->status()} ?? 'Processing',
+                'date' => $order->{$this->candidateOrderRepo->createdAt()}->format('Y-m-d'),
+                'amount' => (float) $order->{$this->candidateOrderRepo->totalAmount()},
             ];
         });
 

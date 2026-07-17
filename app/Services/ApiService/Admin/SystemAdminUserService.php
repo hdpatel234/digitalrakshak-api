@@ -6,8 +6,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+use App\Repositories\UserRepository;
+
 class SystemAdminUserService
 {
+    public function __construct(
+        protected UserRepository $repo
+    ) {}
     public function getAdminUsers(array $data)
     {
         $limit = $data['limit'] ?? 10;
@@ -15,14 +20,14 @@ class SystemAdminUserService
         $role = $data['role'] ?? null;
         $status = $data['status'] ?? null;
 
-        $query = User::with('roles')
-            ->whereIn('user_type', ['super_admin', 'admin_user']);
+        $query = $this->repo->query()->with('roles')
+            ->whereIn($this->repo->userType(), ['super_admin', 'admin_user']);
 
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                $q->where($this->repo->firstName(), 'like', "%{$search}%")
+                  ->orWhere($this->repo->lastName(), 'like', "%{$search}%")
+                  ->orWhere($this->repo->email(), 'like', "%{$search}%");
             });
         }
 
@@ -33,7 +38,7 @@ class SystemAdminUserService
         }
 
         if ($status && $status !== 'all') {
-            $query->where('status', strtolower($status));
+            $query->where($this->repo->status(), strtolower($status));
         }
 
         $users = $query->paginate($limit);
@@ -55,10 +60,10 @@ class SystemAdminUserService
         $users->setCollection($mappedUsers);
 
         $stats = [
-            'total_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->count(),
-            'active_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->where('status', 'active')->count(),
-            'suspended_admins' => User::whereIn('user_type', ['super_admin', 'admin_user'])->where('status', 'suspended')->count(),
-            'super_admins' => User::where('user_type', 'super_admin')->count(),
+            'total_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->count(),
+            'active_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), 'active')->count(),
+            'suspended_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), 'suspended')->count(),
+            'super_admins' => $this->repo->query()->where($this->repo->userType(), 'super_admin')->count(),
         ];
 
         return [
@@ -85,13 +90,13 @@ class SystemAdminUserService
 
     public function storeAdminUser(array $data)
     {
-        $user = User::create([
-            User::FIRST_NAME => $data['firstName'],
-            User::LAST_NAME => $data['lastName'],
-            User::EMAIL => $data['email'],
-            User::USER_TYPE => 'admin_user',
-            User::STATUS => 'active',
-            User::PASSWORD => Hash::make(Str::random(12)), // Random password initially
+        $user = $this->repo->create([
+            $this->repo->firstName() => $data['firstName'],
+            $this->repo->lastName() => $data['lastName'],
+            $this->repo->email() => $data['email'],
+            $this->repo->userType() => 'admin_user',
+            $this->repo->status() => 'active',
+            $this->repo->password() => Hash::make(Str::random(12)), // Random password initially
         ]);
 
         $user->assignRole($data['role']);
@@ -105,11 +110,11 @@ class SystemAdminUserService
             throw new \Exception('Not an admin user', 404);
         }
 
-        $user->update([
-            User::FIRST_NAME => $data['firstName'],
-            User::LAST_NAME => $data['lastName'],
-            User::EMAIL => $data['email'],
-            User::STATUS => $data['status'],
+        $this->repo->update($user->{$this->repo->id()}, [
+            $this->repo->firstName() => $data['firstName'],
+            $this->repo->lastName() => $data['lastName'],
+            $this->repo->email() => $data['email'],
+            $this->repo->status() => $data['status'],
         ]);
 
         $user->syncRoles([$data['role']]);
@@ -123,8 +128,8 @@ class SystemAdminUserService
             throw new \Exception('Not an admin user', 404);
         }
 
-        $user->update([
-            User::STATUS => $status,
+        $this->repo->update($user->{$this->repo->id()}, [
+            $this->repo->status() => $status,
         ]);
 
         return $user;

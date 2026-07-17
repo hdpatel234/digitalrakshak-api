@@ -2,17 +2,23 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\Package;
-use App\Models\PackageService as ClientPackageService;
-use App\Models\Service;
+use App\Repositories\PackageRepository;
+use App\Repositories\PackageServiceRepository;
+use App\Repositories\ServiceRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PackageService
 {
+    public function __construct(
+        protected PackageRepository $repo,
+        protected PackageServiceRepository $packageServiceRepo,
+        protected ServiceRepository $serviceRepo
+    ) {}
+
     public function getPackages(array $data)
     {
-        $query = Package::query()->where('type', 'admin');
+        $query = $this->repo->getAdminPackagesQuery($data);
 
         // Search filtering
         if (isset($data['search']) && !empty($data['search'])) {
@@ -33,27 +39,25 @@ class PackageService
         $perPage = $data['limit'] ?? 10;
         $packages = $query->paginate($perPage);
 
-        $packageIds = collect($packages->items())->pluck('id')->toArray();
+        $packageIds = collect($packages->items())->pluck($this->repo->id())->toArray();
 
-        $packageServices = ClientPackageService::whereIn('package_id', $packageIds)
-            ->whereIn('status', ['active', 1])
-            ->get();
+        $packageServices = $this->packageServiceRepo->getActiveServicesByPackageIds($packageIds);
 
-        $serviceIds = $packageServices->pluck('service_id')->unique()->toArray();
-        $services = Service::whereIn('id', $serviceIds)->get()->keyBy('id');
+        $serviceIds = $packageServices->pluck($this->packageServiceRepo->serviceId())->unique()->toArray();
+        $services = $this->serviceRepo->getServicesByIds($serviceIds);
 
         $servicesByPackageId = [];
         foreach ($packageServices as $ps) {
-            $service = $services->get($ps->service_id);
+            $service = $services->get($ps->{$this->packageServiceRepo->serviceId()});
             if ($service) {
-                if (!isset($servicesByPackageId[$ps->package_id])) {
-                    $servicesByPackageId[$ps->package_id] = [];
+                if (!isset($servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}])) {
+                    $servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}] = [];
                 }
-                $servicesByPackageId[$ps->package_id][] = [
-                    'service_id' => $service->id,
-                    'service_name' => $service->service_name,
-                    'service_code' => $service->service_code,
-                    'base_price' => $service->base_price,
+                $servicesByPackageId[$ps->{$this->packageServiceRepo->packageId()}][] = [
+                    'service_id' => $service->{$this->serviceRepo->id()},
+                    'service_name' => $service->{$this->serviceRepo->serviceName()},
+                    'service_code' => $service->{$this->serviceRepo->serviceCode()},
+                    'base_price' => $service->{$this->serviceRepo->basePrice()},
                 ];
             }
         }
@@ -66,10 +70,10 @@ class PackageService
         });
 
         // Stats
-        $totalPackages = Package::where('type', 'admin')->count();
-        $activePackages = Package::where('type', 'admin')->where('status', 'active')->count();
-        $inactivePackages = Package::where('type', 'admin')->where('status', 'inactive')->count();
-        $packageCategories = Package::where('type', 'admin')->distinct('type')->count('type');
+        $totalPackages = $this->repo->countByType('admin');
+        $activePackages = $this->repo->countByTypeAndStatus('admin', 'active');
+        $inactivePackages = $this->repo->countByTypeAndStatus('admin', 'inactive');
+        $packageCategories = $this->repo->countDistinctTypes('admin');
 
         return [
             'list' => $mappedPackages,
@@ -93,42 +97,42 @@ class PackageService
         $serviceIds = array_values(array_unique($data['service_ids']));
 
         // Calculate total price based on services
-        $services = Service::whereIn('id', $serviceIds)->get();
+        $services = $this->serviceRepo->getServicesByIds($serviceIds);
         if ($services->count() !== count($serviceIds)) {
             throw new \Exception('Some services are invalid.', 422);
         }
 
-        $totalPrice = $services->sum('base_price');
+        $totalPrice = $services->sum($this->serviceRepo->basePrice());
 
         $packageCode = 'AP-' . strtoupper(Str::random(5));
-        while (Package::where('package_code', $packageCode)->exists()) {
+        while ($this->repo->codeExists($packageCode)) {
             $packageCode = 'AP-' . strtoupper(Str::random(5));
         }
 
         DB::beginTransaction();
         try {
-            $package = Package::create([
-                'package_name' => $data['package_name'],
-                'package_code' => $packageCode,
-                'description' => $data['description'] ?? null,
+            $package = $this->repo->create([
+                $this->repo->packageName() => $data['package_name'],
+                $this->repo->packageCode() => $packageCode,
+                $this->repo->description() => $data['description'] ?? null,
                 'icon' => $data['icon'] ?? null,
-                'total_price' => $totalPrice,
-                'final_price' => $totalPrice,
-                'type' => 'admin',
-                'client_id' => 0,
-                'is_active' => 1,
-                'status' => $data['status'] ?? 'active',
-                'created_by' => $userId,
+                $this->repo->totalPrice() => $totalPrice,
+                $this->repo->finalPrice() => $totalPrice,
+                $this->repo->type() => 'admin',
+                $this->repo->clientId() => 0,
+                $this->repo->isActive() => 1,
+                $this->repo->status() => $data['status'] ?? 'active',
+                $this->repo->createdBy() => $userId,
             ]);
 
             foreach ($serviceIds as $index => $serviceId) {
-                ClientPackageService::create([
-                    'package_id' => $package->id,
-                    'service_id' => $serviceId,
-                    'is_mandatory' => 1,
-                    'display_order' => $index + 1,
-                    'status' => 'active',
-                    'created_by' => $userId,
+                $this->packageServiceRepo->create([
+                    $this->packageServiceRepo->packageId() => $package->{$this->repo->id()},
+                    $this->packageServiceRepo->serviceId() => $serviceId,
+                    $this->packageServiceRepo->isMandatory() => 1,
+                    $this->packageServiceRepo->displayOrder() => $index + 1,
+                    $this->packageServiceRepo->status() => 'active',
+                    $this->packageServiceRepo->createdBy() => $userId,
                 ]);
             }
 
@@ -142,25 +146,22 @@ class PackageService
 
     public function showPackage(int $id)
     {
-        $package = Package::where('type', 'admin')->find($id);
+        $package = $this->repo->findAdminPackage($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
         }
 
         $packageData = $package->toArray();
-        $packageData['price'] = $package->final_price ?? $package->total_price;
+        $packageData['price'] = $package->{$this->repo->finalPrice()} ?? $package->{$this->repo->totalPrice()};
 
-        $services = ClientPackageService::where('package_id', $id)
-            ->whereIn('status', ['active', 1])
-            ->orderBy('display_order', 'asc')
-            ->get();
+        $services = $this->packageServiceRepo->getActiveServicesByPackageId($id);
 
         $packageData['services'] = $services->map(function ($row) {
             return [
-                'id' => $row->id,
-                'package_id' => $row->package_id,
-                'service_id' => $row->service_id,
+                'id' => $row->{$this->packageServiceRepo->id()},
+                'package_id' => $row->{$this->packageServiceRepo->packageId()},
+                'service_id' => $row->{$this->packageServiceRepo->serviceId()},
             ];
         });
 
@@ -169,7 +170,7 @@ class PackageService
 
     public function updatePackage(int $id, array $data, ?int $userId)
     {
-        $package = Package::where('type', 'admin')->find($id);
+        $package = $this->repo->findAdminPackage($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
@@ -178,36 +179,36 @@ class PackageService
         $serviceIds = array_values(array_unique($data['service_ids']));
 
         // Calculate total price based on services
-        $services = Service::whereIn('id', $serviceIds)->get();
+        $services = $this->serviceRepo->getServicesByIds($serviceIds);
         if ($services->count() !== count($serviceIds)) {
             throw new \Exception('Some services are invalid.', 422);
         }
 
-        $totalPrice = $services->sum('base_price');
+        $totalPrice = $services->sum($this->serviceRepo->basePrice());
 
         DB::beginTransaction();
         try {
             $package->update([
-                'package_name' => $data['package_name'],
-                'description' => $data['description'] ?? null,
+                $this->repo->packageName() => $data['package_name'],
+                $this->repo->description() => $data['description'] ?? null,
                 'icon' => $data['icon'] ?? $package->icon,
-                'total_price' => $totalPrice,
-                'final_price' => $totalPrice,
-                'status' => $data['status'] ?? $package->status,
-                'updated_by' => $userId,
+                $this->repo->totalPrice() => $totalPrice,
+                $this->repo->finalPrice() => $totalPrice,
+                $this->repo->status() => $data['status'] ?? $package->{$this->repo->status()},
+                $this->repo->updatedBy() => $userId,
             ]);
 
-            ClientPackageService::where('package_id', $package->id)->delete();
+            $this->packageServiceRepo->deleteByPackageId($package->{$this->repo->id()});
 
             foreach ($serviceIds as $index => $serviceId) {
-                ClientPackageService::create([
-                    'package_id' => $package->id,
-                    'service_id' => $serviceId,
-                    'is_mandatory' => 1,
-                    'display_order' => $index + 1,
-                    'status' => 'active',
-                    'created_by' => $package->created_by,
-                    'updated_by' => $userId,
+                $this->packageServiceRepo->create([
+                    $this->packageServiceRepo->packageId() => $package->{$this->repo->id()},
+                    $this->packageServiceRepo->serviceId() => $serviceId,
+                    $this->packageServiceRepo->isMandatory() => 1,
+                    $this->packageServiceRepo->displayOrder() => $index + 1,
+                    $this->packageServiceRepo->status() => 'active',
+                    $this->packageServiceRepo->createdBy() => $package->{$this->repo->createdBy()},
+                    $this->packageServiceRepo->updatedBy() => $userId,
                 ]);
             }
 
@@ -221,7 +222,7 @@ class PackageService
 
     public function deletePackage(int $id)
     {
-        $package = Package::where('type', 'admin')->find($id);
+        $package = $this->repo->findAdminPackage($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
@@ -229,7 +230,7 @@ class PackageService
 
         DB::beginTransaction();
         try {
-            ClientPackageService::where('package_id', $package->id)->delete();
+            $this->packageServiceRepo->deleteByPackageId($package->{$this->repo->id()});
             $package->delete();
             DB::commit();
             return true;
@@ -241,17 +242,17 @@ class PackageService
 
     public function togglePackageStatus(int $id, ?int $userId)
     {
-        $package = Package::where('type', 'admin')->find($id);
+        $package = $this->repo->findAdminPackage($id);
 
         if (!$package) {
             throw new \Exception('Package not found.', 404);
         }
 
-        $newStatus = $package->status === 'active' ? 'inactive' : 'active';
+        $newStatus = $package->{$this->repo->status()} === 'active' ? 'inactive' : 'active';
         $package->update([
-            'status' => $newStatus,
-            'is_active' => $newStatus === 'active' ? 1 : 0,
-            'updated_by' => $userId,
+            $this->repo->status() => $newStatus,
+            $this->repo->isActive() => $newStatus === 'active' ? 1 : 0,
+            $this->repo->updatedBy() => $userId,
         ]);
 
         return $package;

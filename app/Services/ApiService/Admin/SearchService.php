@@ -2,12 +2,25 @@
 
 namespace App\Services\ApiService\Admin;
 
-use App\Models\Client;
-use App\Models\Service;
-use App\Models\Package;
+use App\Repositories\ClientRepository;
+use App\Repositories\CandidateRepository;
+use App\Repositories\SupportTicketRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\CandidateOrderRepository;
+use App\Repositories\ServiceRepository;
+use App\Repositories\PackageRepository;
 
 class SearchService
 {
+    public function __construct(
+        protected ClientRepository $clientRepo,
+        protected CandidateRepository $candidateRepo,
+        protected SupportTicketRepository $supportTicketRepo,
+        protected InvoiceRepository $invoiceRepo,
+        protected CandidateOrderRepository $candidateOrderRepo,
+        protected ServiceRepository $serviceRepo,
+        protected PackageRepository $packageRepo
+    ) {}
     public function search(string $query): array
     {
         if (empty($query)) {
@@ -17,7 +30,7 @@ class SearchService
         $results = [];
 
         // Search Clients
-        $clients = Client::where('company_name', 'like', "%{$query}%")
+        $clients = $this->clientRepo->query()->where('company_name', 'like', "%{$query}%")
                          ->orWhere('email', 'like', "%{$query}%")
                          ->orWhere('address', 'like', "%{$query}%")
                          ->take(5)
@@ -39,7 +52,7 @@ class SearchService
         }
 
         // Search Candidates
-        $candidates = \App\Models\Candidate::where('first_name', 'like', "%{$query}%")
+        $candidates = $this->candidateRepo->query()->where('first_name', 'like', "%{$query}%")
                          ->orWhere('last_name', 'like', "%{$query}%")
                          ->orWhere('email', 'like', "%{$query}%")
                          ->orWhere('address', 'like', "%{$query}%")
@@ -62,7 +75,7 @@ class SearchService
         }
 
         // Search Support Tickets
-        $tickets = \App\Models\SupportTicket::where('ticket_number', 'like', "%{$query}%")
+        $tickets = $this->supportTicketRepo->query()->where('ticket_number', 'like', "%{$query}%")
                          ->take(5)
                          ->get();
         if ($tickets->count() > 0) {
@@ -82,7 +95,7 @@ class SearchService
         }
 
         // Search Invoices
-        $invoices = \App\Models\Invoice::where('invoice_number', 'like', "%{$query}%")
+        $invoices = $this->invoiceRepo->query()->where('invoice_number', 'like', "%{$query}%")
                          ->take(5)
                          ->get();
         if ($invoices->count() > 0) {
@@ -102,7 +115,7 @@ class SearchService
         }
 
         // Search Orders
-        $orders = \App\Models\CandidateOrder::where('order_number', 'like', "%{$query}%")
+        $orders = $this->candidateOrderRepo->query()->where('order_number', 'like', "%{$query}%")
                          ->take(5)
                          ->get();
         if ($orders->count() > 0) {
@@ -122,7 +135,7 @@ class SearchService
         }
 
         // Search Services
-        $services = Service::where('service_name', 'like', "%{$query}%")
+        $services = $this->serviceRepo->query()->where('service_name', 'like', "%{$query}%")
                            ->take(5)
                            ->get();
         if ($services->count() > 0) {
@@ -142,7 +155,7 @@ class SearchService
         }
 
         // Search Packages
-        $packages = Package::where('package_name', 'like', "%{$query}%")
+        $packages = $this->packageRepo->query()->where('package_name', 'like', "%{$query}%")
                            ->take(5)
                            ->get();
         if ($packages->count() > 0) {

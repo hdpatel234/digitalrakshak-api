@@ -6,13 +6,16 @@ use App\Models\EmailQueue;
 use App\Models\EmailLog;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Services\EmailQueueService;
+use App\Repositories\EmailQueueRepository;
+use App\Repositories\EmailLogRepository;
 use Illuminate\Support\Str;
 
 class SystemEmailQueueService
 {
     public function __construct(
-        protected EmailQueueService $emailQueueService
+        protected EmailQueueService $emailQueueService,
+        protected EmailQueueRepository $queueRepo,
+        protected EmailLogRepository $logRepo
     ) {}
 
     public function queueEmail(array $data)
@@ -33,33 +36,33 @@ class SystemEmailQueueService
         $startDate = $data['start_date'] ?? null;
         $endDate = $data['end_date'] ?? null;
 
-        $query = EmailQueue::select(
-            'id',
+        $query = $this->queueRepo->query()->select(
+            $this->queueRepo->id(),
             DB::raw("'queue' as source"),
-            'to_email as recipient',
-            'subject',
-            'body_text',
-            'body_html',
-            'status',
-            'priority',
-            'created_at as scheduledFor',
-            'attempts'
+            $this->queueRepo->toEmail() . ' as recipient',
+            $this->queueRepo->subject(),
+            $this->queueRepo->bodyText(),
+            $this->queueRepo->bodyHtml(),
+            $this->queueRepo->status(),
+            $this->queueRepo->priority(),
+            $this->queueRepo->createdAt() . ' as scheduledFor',
+            $this->queueRepo->attempts()
         );
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('to_email', 'like', '%' . $search . '%')
-                  ->orWhere('subject', 'like', '%' . $search . '%');
+                $q->where($this->queueRepo->toEmail(), 'like', '%' . $search . '%')
+                  ->orWhere($this->queueRepo->subject(), 'like', '%' . $search . '%');
             });
         }
         if ($status !== 'all') {
-            $query->where('status', $status);
+            $query->where($this->queueRepo->status(), $status);
         }
         if ($priority !== 'all') {
-            $query->where('priority', $priority);
+            $query->where($this->queueRepo->priority(), $priority);
         }
         if ($startDate && $endDate) {
-            $query->whereBetween('created_at', [
+            $query->whereBetween($this->queueRepo->createdAt(), [
                 Carbon::parse($startDate)->setTimezone(config('app.timezone')),
                 Carbon::parse($endDate)->setTimezone(config('app.timezone'))
             ]);
@@ -81,10 +84,10 @@ class SystemEmailQueueService
 
     public function getStats()
     {
-        $pending = EmailQueue::where('status', 'pending')->count();
-        $processing = EmailQueue::where('status', 'processing')->count();
-        $failed = EmailQueue::where('status', 'failed')->count();
-        $sentToday = EmailQueue::where('status', 'sent')->whereDate('sent_at', Carbon::today())->count();
+        $pending = $this->queueRepo->query()->where($this->queueRepo->status(), 'pending')->count();
+        $processing = $this->queueRepo->query()->where($this->queueRepo->status(), 'processing')->count();
+        $failed = $this->queueRepo->query()->where($this->queueRepo->status(), 'failed')->count();
+        $sentToday = $this->queueRepo->query()->where($this->queueRepo->status(), 'sent')->whereDate($this->queueRepo->sentAt(), Carbon::today())->count();
 
         return [
             'pending' => $pending,
@@ -101,12 +104,12 @@ class SystemEmailQueueService
         }
 
         // Since queue contains everything now, source doesn't strictly matter
-        $record = EmailQueue::find($id);
+        $record = $this->queueRepo->find($id);
         if (!$record && $source === 'log') {
             // Backward compatibility if they pass a log id, find the queue id
-            $log = EmailLog::find($id);
+            $log = $this->logRepo->find($id);
             if ($log) {
-                $record = EmailQueue::find($log->email_queue_id);
+                $record = $this->queueRepo->find($log->{$this->logRepo->emailQueueId()});
             }
         }
         if (!$record) {

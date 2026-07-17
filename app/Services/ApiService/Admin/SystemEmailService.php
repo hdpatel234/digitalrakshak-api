@@ -7,18 +7,29 @@ use App\Models\EmailTemplate;
 use App\Models\EmailServer;
 use App\Models\EmailQueue;
 
+use App\Repositories\EmailLogRepository;
+use App\Repositories\EmailTemplateRepository;
+use App\Repositories\EmailServerRepository;
+use App\Repositories\EmailQueueRepository;
+
 class SystemEmailService
 {
+    public function __construct(
+        protected EmailLogRepository $logRepo,
+        protected EmailTemplateRepository $templateRepo,
+        protected EmailServerRepository $serverRepo,
+        protected EmailQueueRepository $queueRepo
+    ) {}
     public function getOverview()
     {
         $stats = [
-            'total_sent' => EmailLog::whereIn('status', ['sent', 'delivered'])->count(),
-            'total_templates' => EmailTemplate::count(),
-            'total_servers' => EmailServer::count(),
-            'total_queued' => EmailQueue::where('status', 'pending')->count(),
+            'total_sent' => $this->logRepo->query()->whereIn($this->logRepo->status(), ['sent', 'delivered'])->count(),
+            'total_templates' => $this->templateRepo->count(),
+            'total_servers' => $this->serverRepo->count(),
+            'total_queued' => $this->queueRepo->query()->where($this->queueRepo->status(), 'pending')->count(),
         ];
 
-        $recent_logs = EmailLog::join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
+        $recent_logs = $this->logRepo->query()->join('email_queue', 'email_logs.email_queue_id', '=', 'email_queue.id')
             ->select('email_logs.*', 'email_queue.to_email', 'email_queue.subject')
             ->latest('email_logs.created_at')
             ->take(5)
@@ -43,31 +54,31 @@ class SystemEmailService
     public function getTemplates(array $data)
     {
         $limit = $data['limit'] ?? 10;
-        $query = EmailTemplate::query();
+        $query = $this->templateRepo->query();
 
         if (isset($data['search']) && $data['search']) {
             $search = $data['search'];
             $query->where(function($q) use ($search) {
-                $q->where('template_name', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%");
+                $q->where($this->templateRepo->templateName(), 'like', "%{$search}%")
+                  ->orWhere($this->templateRepo->subject(), 'like', "%{$search}%");
             });
         }
 
         if (isset($data['type']) && $data['type'] && $data['type'] !== 'all') {
-            $query->where('email_type', $data['type']);
+            $query->where($this->templateRepo->emailType(), $data['type']);
         }
 
         if (isset($data['status']) && $data['status'] !== 'all' && $data['status'] !== null) {
             $status = in_array($data['status'], ['Active', '1', 1, true, 'true', 'active']) ? 1 : 0;
-            $query->where('is_active', $status);
+            $query->where($this->templateRepo->isActive(), $status);
         }
 
         $templates = $query->paginate($limit);
 
         $stats = [
-            'total' => EmailTemplate::count(),
-            'active' => EmailTemplate::where('is_active', 1)->count(),
-            'inactive' => EmailTemplate::where('is_active', 0)->count(),
+            'total' => $this->templateRepo->count(),
+            'active' => $this->templateRepo->query()->where($this->templateRepo->isActive(), 1)->count(),
+            'inactive' => $this->templateRepo->query()->where($this->templateRepo->isActive(), 0)->count(),
         ];
 
         return [
@@ -78,13 +89,11 @@ class SystemEmailService
 
     public function storeTemplate(array $data)
     {
-        return EmailTemplate::create($data);
+        return $this->templateRepo->create($data);
     }
 
     public function updateTemplate(int $id, array $data)
     {
-        $template = EmailTemplate::findOrFail($id);
-        $template->update($data);
-        return $template;
+        return $this->templateRepo->update($id, $data);
     }
 }

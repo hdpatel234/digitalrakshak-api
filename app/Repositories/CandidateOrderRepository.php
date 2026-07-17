@@ -166,5 +166,20 @@ class CandidateOrderRepository extends BaseRepository
     {
         return CandidateOrder::DELETED_BY;
     }
+    
     // functions
+    public function getTotalRevenue(string $paymentStatus)
+    {
+        return $this->query()->where($this->paymentStatus(), $paymentStatus)->sum($this->totalAmount());
+    }
+
+    public function countBetweenDates($start, $end)
+    {
+        return $this->query()->whereBetween($this->createdAt(), [$start, $end])->count();
+    }
+
+    public function getRecentOrders(int $limit)
+    {
+        return $this->query()->with(['client', 'candidates'])->orderBy($this->createdAt(), 'desc')->limit($limit)->get();
+    }
 }
