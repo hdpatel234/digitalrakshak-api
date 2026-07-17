@@ -2,62 +2,31 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Models\ServiceField;
+use App\Http\Requests\Api\Admin\StoreServiceFieldRequest;
+use App\Http\Requests\Api\Admin\UpdateServiceFieldRequest;
+use App\Services\ApiService\Admin\ServiceFieldService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
 
 class ServiceFieldController extends BaseController
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected ServiceFieldService $serviceFieldService
+    ) {}
+
     /**
      * Display a listing of the service fields.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ServiceField::query();
+        addInfoLog("Admin service field list request");
 
-        // Filter by service
-        if ($request->has('service_id') && !empty($request->service_id) && $request->service_id !== 'all') {
-            $query->where('service_id', $request->service_id);
-        }
+        $data = $this->serviceFieldService->getFields($request->all());
 
-        // Search filtering
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('field_name', 'LIKE', "%{$search}%")
-                    ->orWhere('field_label', 'LIKE', "%{$search}%");
-            });
-        }
-
-        // Sorting
-        $sortBy = $request->get('sort_by', 'display_order');
-        $sortDirection = $request->get('sort_direction', 'asc');
-        $query->orderBy($sortBy, $sortDirection);
-
-        // Pagination
-        $perPage = $request->get('limit', 10);
-        $fields = $query->with('service')->paginate($perPage);
-
-        $mappedFields = collect($fields->items())->map(function ($field) {
-            $data = $field->toArray();
-            $data['service_name'] = $field->service ? $field->service->service_name : null;
-            return $data;
-        });
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Service fields retrieved successfully.',
-            'data' => [
-                'list' => $mappedFields,
-                'pagination' => [
-                    'total' => $fields->total(),
-                    'per_page' => $fields->perPage(),
-                    'current_page' => $fields->currentPage(),
-                    'last_page' => $fields->lastPage(),
-                ]
-            ]
-        ]);
+        return $this->success('Service fields retrieved successfully.', $data);
     }
 
     /**
@@ -65,25 +34,11 @@ class ServiceFieldController extends BaseController
      */
     public function stats(Request $request): JsonResponse
     {
-        $query = ServiceField::query();
+        addInfoLog("Admin service field stats request");
 
-        if ($request->has('service_id') && !empty($request->service_id) && $request->service_id !== 'all') {
-            $query->where('service_id', $request->service_id);
-        }
+        $data = $this->serviceFieldService->getStats($request->all());
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'total_fields' => (clone $query)->count(),
-                'active_fields' => (clone $query)->where('status', '!=', 'inactive')->count(),
-                'required_fields' => (clone $query)->where('is_required', true)->count(),
-                'text_inputs' => (clone $query)->whereIn('field_type', ['text', 'textarea', 'Text', 'Textarea'])->count(),
-                'number_inputs' => (clone $query)->whereIn('field_type', ['number', 'Number'])->count(),
-                'file_uploads' => (clone $query)->whereIn('field_type', ['file', 'File'])->count(),
-                'selections' => (clone $query)->whereIn('field_type', ['dropdown', 'Dropdown', 'select', 'Select'])->count(),
-                'email_fields' => (clone $query)->whereIn('field_type', ['email', 'Email'])->count(),
-            ]
-        ]);
+        return $this->success('Service fields stats retrieved successfully.', $data);
     }
 
     /**
@@ -91,132 +46,59 @@ class ServiceFieldController extends BaseController
      */
     public function sections(Request $request): JsonResponse
     {
-        $defaultSections = ['Employment', 'Identity', 'Address', 'Education'];
-        $dbSections = ServiceField::whereNotNull('section')
-            ->where('section', '!=', '')
-            ->distinct()
-            ->pluck('section')
-            ->toArray();
+        addInfoLog("Admin service field sections request");
 
-        $allSections = array_values(array_unique(array_merge($defaultSections, $dbSections)));
+        $data = $this->serviceFieldService->getSections();
 
-        $formatted = array_map(function ($sec) {
-            return ['value' => $sec, 'label' => $sec];
-        }, $allSections);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Sections retrieved successfully.',
-            'data' => $formatted
-        ]);
+        return $this->success('Sections retrieved successfully.', $data);
     }
 
     /**
      * Store a newly created service field.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreServiceFieldRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'service_id' => 'required|exists:services,id',
-            'field_name' => 'required|string|max:100',
-            'section' => 'nullable|string|max:100',
-            'field_label' => 'required|string|max:100',
-            'field_type' => 'required|string|max:50',
-            'is_required' => 'boolean',
-            'validation_regex' => 'nullable|string|max:255',
-            'display_order' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
+        addInfoLog("Admin service field create request");
 
-        if ($validator->fails()) {
+        try {
+            $field = $this->serviceFieldService->storeField($request->validated());
+            return $this->success('Service field created successfully.', $field, 201);
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 422 ? 422 : 500;
+            $errors = json_decode($e->getMessage(), true) ?? ['error' => [$e->getMessage()]];
+            
             return response()->json([
                 'status' => false,
                 'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+                'errors' => $errors
+            ], $code);
         }
-
-        $data = $validator->validated();
-        if (!isset($data['display_order'])) {
-            $data['display_order'] = 0;
-        }
-
-        // Ensure field_name is unique per service
-        $existing = ServiceField::where('service_id', $data['service_id'])->where('field_name', $data['field_name'])->first();
-        if ($existing) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => ['field_name' => ['Field name already exists for this service.']]
-            ], 422);
-        }
-
-        $field = ServiceField::create($data);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Service field created successfully.',
-            'data' => $field
-        ], 201);
     }
 
     /**
      * Update the specified service field.
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(UpdateServiceFieldRequest $request, $id): JsonResponse
     {
-        $field = ServiceField::find($id);
+        addInfoLog("Admin service field update request");
 
-        if (!$field) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Service field not found.'
-            ], 404);
+        try {
+            $field = $this->serviceFieldService->updateField($id, $request->validated());
+            return $this->success('Service field updated successfully.', $field);
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 422 ? 422 : ($e->getCode() === 404 ? 404 : 500);
+            
+            if ($code === 422) {
+                $errors = json_decode($e->getMessage(), true) ?? ['error' => [$e->getMessage()]];
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $errors
+                ], $code);
+            }
+            
+            return $this->error($e->getMessage() ?: 'Failed to update service field.', $code);
         }
-
-        $validator = Validator::make($request->all(), [
-            'service_id' => 'required|exists:services,id',
-            'field_name' => 'required|string|max:100',
-            'section' => 'nullable|string|max:100',
-            'field_label' => 'required|string|max:100',
-            'field_type' => 'required|string|max:50',
-            'is_required' => 'boolean',
-            'validation_regex' => 'nullable|string|max:255',
-            'display_order' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $validator->validated();
-
-        // Ensure field_name is unique per service (excluding current)
-        $existing = ServiceField::where('service_id', $data['service_id'])
-            ->where('field_name', $data['field_name'])
-            ->where('id', '!=', $id)
-            ->first();
-
-        if ($existing) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => ['field_name' => ['Field name already exists for this service.']]
-            ], 422);
-        }
-
-        $field->update($data);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Service field updated successfully.',
-            'data' => $field
-        ]);
     }
 
     /**
@@ -224,20 +106,14 @@ class ServiceFieldController extends BaseController
      */
     public function destroy($id): JsonResponse
     {
-        $field = ServiceField::find($id);
+        addInfoLog("Admin service field delete request");
 
-        if (!$field) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Service field not found.'
-            ], 404);
+        try {
+            $this->serviceFieldService->deleteField($id);
+            return $this->success('Service field deleted successfully.');
+        } catch (\Exception $e) {
+            $code = $e->getCode() === 404 ? 404 : 500;
+            return $this->error($e->getMessage() ?: 'Failed to delete service field.', $code);
         }
-
-        $field->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Service field deleted successfully.'
-        ]);
     }
 }
