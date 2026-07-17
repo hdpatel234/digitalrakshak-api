@@ -774,6 +774,62 @@ class OrderService extends BaseService
             ->values()
             ->all();
 
+        if (!empty($candidates)) {
+            $candidateIdsForServiceData = array_filter(array_map(function ($item) {
+                return $item['candidate_id'] ?? null;
+            }, $candidates));
+
+            if (!empty($candidateIdsForServiceData)) {
+                $candidatesMap = \App\Models\Candidate::whereIn('id', $candidateIdsForServiceData)
+                    ->get()
+                    ->keyBy('id');
+
+                $candidateServices = \App\Models\CandidateService::whereIn('candidate_id', $candidateIdsForServiceData)
+                    ->get();
+                $candidateServiceIds = $candidateServices->pluck('id')->toArray();
+
+                $candidateServiceData = [];
+                if (!empty($candidateServiceIds)) {
+                    $candidateServiceData = \App\Models\CandidateServiceData::whereIn('candidate_service_id', $candidateServiceIds)
+                        ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
+                        ->join('services', 'services_fields.service_id', '=', 'services.id')
+                        ->select(
+                            'candidate_service_data.*',
+                            'services_fields.field_name',
+                            'services_fields.field_label',
+                            'services_fields.field_type',
+                            'services.service_name',
+                            'services.service_code',
+                            'candidate_services.candidate_id'
+                        )
+                        ->join('candidate_services', 'candidate_service_data.candidate_service_id', '=', 'candidate_services.id')
+                        ->get()
+                        ->groupBy('candidate_id');
+                }
+
+                foreach ($candidates as &$candidateItem) {
+                    $candidateId = $candidateItem['candidate_id'] ?? null;
+                    $candidateDetails = $candidateId && isset($candidatesMap[$candidateId])
+                        ? $candidatesMap[$candidateId]->toArray()
+                        : null;
+
+                    if ($candidateDetails && isset($candidateServiceData[$candidateId])) {
+                        $candidateDetails['service_data'] = $candidateServiceData[$candidateId]->toArray();
+                    } else if ($candidateDetails) {
+                        $candidateDetails['service_data'] = [];
+                    }
+
+                    $candidateItem['candaite_details'] = $candidateDetails;
+                    $candidateItem['candidate_details'] = $candidateDetails;
+                }
+            } else {
+                foreach ($candidates as &$candidateItem) {
+                    $candidateItem['candaite_details'] = null;
+                    $candidateItem['candidate_details'] = null;
+                }
+            }
+        }
+
         return [
             'order' => $orderData,
             'candidates' => $candidates,

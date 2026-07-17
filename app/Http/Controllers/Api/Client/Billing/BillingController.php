@@ -11,9 +11,7 @@ class BillingController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected BillingService $billingService
-    ) {}
+    public function __construct(protected BillingService $billingService) {}
 
     public function paymentGateways(Request $request)
     {

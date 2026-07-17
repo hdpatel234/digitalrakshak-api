@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Client\Company;
 
 use App\Http\Controllers\Api\Client\BaseController;
+use App\Http\Requests\Api\Client\Company\UpdateCompanyRequest;
 use App\Services\ApiService\Client\CompanyService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -11,41 +12,40 @@ class CompanyController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(private CompanyService $companyService) {}
+    public function __construct(protected CompanyService $companyService) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        addInfoLog("Company details data request");
+        addInfoLog("Client company list request");
 
-        $company = $this->companyService->index();
-        
-        $companyData = $company->toArray();
-        if (!empty($companyData['logo'])) {
-            $companyData['logo'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $companyData['logo'], '/');
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
         }
+
+        $companyData = $this->companyService->getCompanyDetails($clientId);
 
         return $this->success('Company fetched successfully', $companyData);
     }
-    public function update(Request $request)
+
+    public function update(UpdateCompanyRequest $request)
     {
-        addInfoLog("Company details update request");
+        addInfoLog("Client company update request");
         
-        $id = $request->user()->client_id;
-        $data = $request->except(['logo', 'remove_logo']);
-        
-        if ($request->has('remove_logo') && $request->remove_logo === 'true') {
-            $data['logo'] = null;
-        } elseif ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('company_logos', 'public');
-            $data['logo'] = $path;
+        $user = $request->user('api') ?? $request->user();
+        $clientId = (int) ($user?->client_id ?? 0);
+
+        if ($clientId <= 0) {
+            return $this->error('Client context not found for this user.', 422);
         }
 
-        $company = $this->companyService->update($id, $data);
-        
-        $companyData = $company->toArray();
-        if (!empty($companyData['logo'])) {
-            $companyData['logo'] = rtrim((string) config('app.url'), '/') . '/storage/' . ltrim((string) $companyData['logo'], '/');
-        }
+        $companyData = $this->companyService->updateCompanyDetails(
+            $clientId,
+            $request->except(['logo', 'remove_logo']) + ['remove_logo' => $request->remove_logo],
+            $request->file('logo')
+        );
         
         return $this->success('Company updated successfully', $companyData);
     }

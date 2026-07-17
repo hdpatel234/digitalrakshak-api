@@ -19,7 +19,7 @@ class OrderController extends BaseController
 
     public function index(Request $request)
     {
-        addInfoLog("Order list request");
+        addInfoLog("Client order list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -35,7 +35,7 @@ class OrderController extends BaseController
 
     public function store(StoreOrderRequest $request)
     {
-        addInfoLog("Order store request");
+        addInfoLog("Client order create request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -60,7 +60,7 @@ class OrderController extends BaseController
 
     public function show(Request $request, int $order)
     {
-        addInfoLog("Order show request");
+        addInfoLog("Client order show request, ID: {$order}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -71,63 +71,6 @@ class OrderController extends BaseController
 
         try {
             $result = $this->orderService->getOrder((int) $order, $clientId);
-
-            if (!empty($result['candidates'])) {
-                $candidateIds = array_filter(array_map(function ($item) {
-                    return $item['candidate_id'] ?? null;
-                }, $result['candidates']));
-
-                if (!empty($candidateIds)) {
-                    $candidatesMap = \App\Models\Candidate::whereIn('id', $candidateIds)
-                        ->get()
-                        ->keyBy('id');
-
-                    $candidateServices = \App\Models\CandidateService::whereIn('candidate_id', $candidateIds)
-                        ->get();
-                    $candidateServiceIds = $candidateServices->pluck('id')->toArray();
-
-                    $candidateServiceData = [];
-                    if (!empty($candidateServiceIds)) {
-                        $candidateServiceData = \App\Models\CandidateServiceData::whereIn('candidate_service_id', $candidateServiceIds)
-                            ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
-                            ->join('services', 'services_fields.service_id', '=', 'services.id')
-                            ->select(
-                                'candidate_service_data.*',
-                                'services_fields.field_name',
-                                'services_fields.field_label',
-                                'services_fields.field_type',
-                                'services.service_name',
-                                'services.service_code',
-                                'candidate_services.candidate_id'
-                            )
-                            ->join('candidate_services', 'candidate_service_data.candidate_service_id', '=', 'candidate_services.id')
-                            ->get()
-                            ->groupBy('candidate_id');
-                    }
-
-                    foreach ($result['candidates'] as &$candidateItem) {
-                        $candidateId = $candidateItem['candidate_id'] ?? null;
-                        $candidateDetails = $candidateId && isset($candidatesMap[$candidateId])
-                            ? $candidatesMap[$candidateId]->toArray()
-                            : null;
-
-                        if ($candidateDetails && isset($candidateServiceData[$candidateId])) {
-                            $candidateDetails['service_data'] = $candidateServiceData[$candidateId]->toArray();
-                        } else if ($candidateDetails) {
-                            $candidateDetails['service_data'] = [];
-                        }
-
-                        $candidateItem['candaite_details'] = $candidateDetails;
-                        $candidateItem['candidate_details'] = $candidateDetails;
-                    }
-                } else {
-                    foreach ($result['candidates'] as &$candidateItem) {
-                        $candidateItem['candaite_details'] = null;
-                        $candidateItem['candidate_details'] = null;
-                    }
-                }
-            }
-
             return $this->success('Order fetched successfully.', $result);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
@@ -136,7 +79,7 @@ class OrderController extends BaseController
 
     public function initiatePayment(InitiateOrderPaymentRequest $request, $order)
     {
-        addInfoLog("Initiate payment for order $order request");
+        addInfoLog("Client order initiate payment request, ID: {$order}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -162,7 +105,7 @@ class OrderController extends BaseController
 
     public function completePayment(CompleteOrderPaymentRequest $request, int $order)
     {
-        addInfoLog("Complete payment for order $order request");
+        addInfoLog("Client order complete payment request, ID: {$order}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);

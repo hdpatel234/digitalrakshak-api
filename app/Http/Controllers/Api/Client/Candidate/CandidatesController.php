@@ -18,13 +18,11 @@ class CandidatesController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected CandidateService $candidateService
-    ) {}
+    public function __construct(protected CandidateService $candidateService) {}
 
     public function index(Request $request)
     {
-        addInfoLog("Candiates list request");
+        addInfoLog("Client candidate list request");
 
         $result = $this->candidateService->getCandidates(
             $request->all(),
@@ -36,7 +34,7 @@ class CandidatesController extends BaseController
 
     public function store(StoreCandidateRequest $request)
     {
-        addInfoLog("Candidate Store request");
+        addInfoLog("Client candidate create request");
 
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -67,7 +65,7 @@ class CandidatesController extends BaseController
 
     public function show(Request $request, $id)
     {
-        addInfoLog("Candidate Show request");
+        addInfoLog("Client candidate show request, ID: {$id}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -89,7 +87,7 @@ class CandidatesController extends BaseController
     }
     public function importSample(Request $request): Response
     {
-        addInfoLog("Candiate Sheet Sample Request");
+        addInfoLog("Client candidate sheet sample request");
 
         $format = strtolower((string) $request->query('format', 'csv'));
         if (!in_array($format, ['csv', 'xlsx'], true)) {
@@ -152,7 +150,7 @@ class CandidatesController extends BaseController
 
     public function import(StoreCandidateImportRequest $request): JsonResponse
     {
-        addInfoLog("Candiate Import Request");
+        addInfoLog("Client candidate import request");
 
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -168,7 +166,7 @@ class CandidatesController extends BaseController
 
     public function imports(Request $request): JsonResponse
     {
-        addInfoLog("Candidates Import List Request");
+        addInfoLog("Client candidate import list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -183,7 +181,7 @@ class CandidatesController extends BaseController
     }
     public function destroy($id)
     {
-        addInfoLog("Candidate Delete request");
+        addInfoLog("Client candidate delete request, ID: {$id}");
 
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -213,7 +211,7 @@ class CandidatesController extends BaseController
     }
     public function bulkDelete(Request $request)
     {
-        addInfoLog("Candidate Bulk Delete request");
+        addInfoLog("Client candidate bulk delete request");
 
         $user = Auth::user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -245,7 +243,7 @@ class CandidatesController extends BaseController
 
     public function export(Request $request)
     {
-        addInfoLog("Candidate Export request");
+        addInfoLog("Client candidate export request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -327,7 +325,7 @@ class CandidatesController extends BaseController
 
     public function downloadReport(Request $request, $id)
     {
-        addInfoLog("Candidate Download Report request");
+        addInfoLog("Client candidate download report request, ID: {$id}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);

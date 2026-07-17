@@ -16,13 +16,11 @@ class CandidateInvitationController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected CandidateInvitationService $candidateInvitationService
-    ) {}
+    public function __construct(protected CandidateInvitationService $candidateInvitationService) {}
 
     public function index(Request $request)
     {
-        addInfoLog("Candidates Invitation list index");
+        addInfoLog("Client candidate invitation list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -38,14 +36,14 @@ class CandidateInvitationController extends BaseController
 
     public function store(StoreCandidateInvitationRequest $request)
     {
-        addInfoLog("Candiate Invitation create request");
+        addInfoLog("Client candidate invitation create request");
 
         return $this->handleInvitationCreation($request, $request->validated());
     }
 
     public function invite(StoreCandidateInvitationRequest $request, int $candidate)
     {
-        addInfoLog("Candiate Invitation send request");
+        addInfoLog("Client candidate invitation send request");
 
         $payload = $request->validated();
         $payload['candidate_ids'] = [$candidate];
@@ -84,7 +82,7 @@ class CandidateInvitationController extends BaseController
 
     public function showByToken(Request $request, $token)
     {
-        addInfoLog("Candiate Invitation show by token request");
+        addInfoLog("Client candidate invitation show by token request");
 
         try {
             $invitationData = $this->candidateInvitationService->getInvitationByToken((string) $token);
@@ -97,7 +95,7 @@ class CandidateInvitationController extends BaseController
 
     public function updateByToken(UpdateCandidateInvitationByTokenRequest $request, $token)
     {
-        addInfoLog("Candidate invitation data update by token");
+        addInfoLog("Client candidate invitation update by token request");
 
         try {
             $this->candidateInvitationService->updateInvitationByToken(
@@ -120,7 +118,7 @@ class CandidateInvitationController extends BaseController
 
     public function parseResume(ParseResumeRequest $request)
     {
-        addInfoLog('parseResume request');
+        addInfoLog("Client candidate resume parse request");
 
         $file = $request->file('resume');
         $originalName = (string) $file->getClientOriginalName();
@@ -138,7 +136,7 @@ class CandidateInvitationController extends BaseController
     }
     public function resend(Request $request, $invitationId)
     {
-        addInfoLog("Candidate Invitation resend request");
+        addInfoLog("Client candidate invitation resend request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);

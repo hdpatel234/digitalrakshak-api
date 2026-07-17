@@ -11,13 +11,11 @@ class InvoiceController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected InvoiceService $invoiceService
-    ) {}
+    public function __construct(protected InvoiceService $invoiceService) {}
 
     public function index(Request $request)
     {
-        addInfoLog("Invoice list request");
+        addInfoLog("Client invoice list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -33,7 +31,7 @@ class InvoiceController extends BaseController
 
     public function show(Request $request, $invoiceId)
     {
-        addInfoLog("Invoice show request");
+        addInfoLog("Client invoice show request, ID: {$invoiceId}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -53,7 +51,7 @@ class InvoiceController extends BaseController
 
     public function downloadPdf(Request $request, $invoiceId)
     {
-        addInfoLog("Invoice download pdf request");
+        addInfoLog("Client invoice download pdf request, ID: {$invoiceId}");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);

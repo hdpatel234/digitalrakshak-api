@@ -11,13 +11,11 @@ class ServicesController extends BaseController
 {
     use ApiResponse;
 
-    public function __construct(
-        protected ServiceApiService $serviceApiService
-    ) {}
+    public function __construct(protected ServiceApiService $serviceApiService) {}
 
     public function index(Request $request)
     {
-        addInfoLog("Services list api request");
+        addInfoLog("Client services list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);

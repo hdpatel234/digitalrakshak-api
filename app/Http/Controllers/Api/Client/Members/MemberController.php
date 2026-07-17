@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Api\Client\Members;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Client\BaseController;
 use App\Services\ApiService\Client\MemberService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\Api\Client\Members\StoreMemberRequest;
 use App\Http\Requests\Api\Client\Members\UpdateMemberRequest;
 
-class MemberController extends Controller
+class MemberController extends BaseController
 {
     use ApiResponse;
     public function __construct(protected MemberService $memberService) {}
 
     public function index(Request $request)
     {
-        addInfoLog("Users list request");
+        addInfoLog("Client member list request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -35,7 +35,7 @@ class MemberController extends Controller
 
     public function show(Request $request, $user)
     {
-        addInfoLog("Users show request");
+        addInfoLog("Client member show request, ID: {$user}");
 
         $mainUser = $request->user('api') ?? $request->user();
         $clientId = (int) ($mainUser?->client_id ?? 0);
@@ -54,7 +54,7 @@ class MemberController extends Controller
 
     public function store(StoreMemberRequest $request)
     {
-        addInfoLog("Users store request");
+        addInfoLog("Client member create request");
 
         $user = $request->user('api') ?? $request->user();
         $clientId = (int) ($user?->client_id ?? 0);
@@ -73,7 +73,7 @@ class MemberController extends Controller
 
     public function update(UpdateMemberRequest $request, $user)
     {
-        addInfoLog("Users update request");
+        addInfoLog("Client member update request, ID: {$user}");
 
         $mainUser = $request->user('api') ?? $request->user();
         $clientId = (int) ($mainUser?->client_id ?? 0);
@@ -92,7 +92,7 @@ class MemberController extends Controller
 
     public function destroy(Request $request, $user)
     {
-        addInfoLog("Users delete request");
+        addInfoLog("Client member delete request, ID: {$user}");
 
         $mainUser = $request->user('api') ?? $request->user();
         $clientId = (int) ($mainUser?->client_id ?? 0);
