@@ -112,4 +112,35 @@ class ClientRepository extends BaseRepository
         return Client::DELETED_BY;
     }
     // functions
+    public function getClientsQuery(array $data)
+    {
+        $query = $this->query();
+
+        // Search filtering
+        if (isset($data['search']) && !empty($data['search'])) {
+            $search = $data['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where($this->companyName(), 'LIKE', "%{$search}%")
+                  ->orWhere($this->email(), 'LIKE', "%{$search}%")
+                  ->orWhere($this->phone(), 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Status filtering
+        if (isset($data['status']) && $data['status'] !== 'all') {
+            $query->where($this->status(), $data['status']);
+        }
+
+        // Sorting
+        $sortBy = $data['sort_by'] ?? $this->createdAt();
+        $sortDirection = $data['sort_direction'] ?? 'desc';
+        $query->orderBy($sortBy, $sortDirection);
+
+        return $query;
+    }
+
+    public function countByStatus(string $status)
+    {
+        return $this->query()->where($this->status(), $status)->count();
+    }
 }
