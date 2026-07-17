@@ -6,6 +6,7 @@ use App\Enums\EmailPriority;
 use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
 use App\Enums\OrderStatus;
+use App\Enums\UserStatus;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\BaseService;
@@ -191,7 +192,7 @@ class OrderService extends BaseService
                     $this->paymentGatewayConfigService->transactionFeeType(),
                     $this->paymentGatewayConfigService->transactionFeeFixed(),
                     $this->paymentGatewayConfigService->transactionFeePercentage(),
-                    $this->paymentGatewayConfigService->isActive(),
+                    $this->paymentGatewayConfigService->status(),
 
                 ])
                 ->with([
@@ -246,7 +247,7 @@ class OrderService extends BaseService
                         'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeType()},
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
-                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigService->isActive()} === 'active' ? 1 : 0,
+                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigService->status()} === 'active' ? 1 : 0,
 
                         'gateway' => $gateway ? [
                             'id' => (int) ($gateway->{$this->paymentGatewayService->id()} ?? 0),
@@ -347,7 +348,7 @@ class OrderService extends BaseService
                     }
                 ])
                 ->where($this->paymentGatewayConfigService->id(), $paymentProviderId)
-                ->where($this->paymentGatewayConfigService->isActive(), 'active')
+                ->where($this->paymentGatewayConfigService->status(), 'active')
                 ->first();
 
             if (!$gatewayConfig || !$gatewayConfig->gateway) {
@@ -377,7 +378,7 @@ class OrderService extends BaseService
         );
 
         $subtotal = $unitPrice * count($candidateIds);
-        
+
         $gstConfig = \App\Models\Configuration::where('config_key', 'gst_percentage')->first();
         $taxPercentage = $gstConfig ? (float) $gstConfig->config_value : 18;
         $taxAmount = $subtotal * ($taxPercentage / 100);
@@ -578,7 +579,6 @@ class OrderService extends BaseService
                 $this->candidateOrderService->billingSyncStatus() => 'manual',
                 $this->candidateOrderService->invoiceGeneratedAt() => now(),
             ]);
-
         } catch (\Throwable $e) {
             Log::error("Failed to generate local invoice for order {$order->{$this->candidateOrderService->id()}}: " . $e->getMessage());
         }
@@ -711,7 +711,7 @@ class OrderService extends BaseService
                     $this->paymentGatewayConfigService->transactionFeeType(),
                     $this->paymentGatewayConfigService->transactionFeeFixed(),
                     $this->paymentGatewayConfigService->transactionFeePercentage(),
-                    $this->paymentGatewayConfigService->isActive(),
+                    $this->paymentGatewayConfigService->status(),
 
                 ])
                 ->with([
@@ -748,7 +748,7 @@ class OrderService extends BaseService
                     'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeType()},
                     'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeeFixed()},
                     'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigService->transactionFeePercentage()},
-                    'is_active' => $gatewayConfig->{$this->paymentGatewayConfigService->isActive()} === 'active' ? 1 : 0,
+                    'is_active' => $gatewayConfig->{$this->paymentGatewayConfigService->status()} === 'active' ? 1 : 0,
 
                     'gateway' => $gateway ? [
                         'id' => (int) ($gateway->{$this->paymentGatewayService->id()} ?? 0),
@@ -807,7 +807,7 @@ class OrderService extends BaseService
         $gatewayConfig = $this->paymentGatewayConfigService->query()
             ->with(['gateway'])
             ->where($this->paymentGatewayConfigService->id(), $gatewayConfigId)
-            ->where($this->paymentGatewayConfigService->isActive(), 1)
+            ->where($this->paymentGatewayConfigService->status(), UserStatus::ACTIVE)
             ->first();
 
         if (!$gatewayConfig || !$gatewayConfig->gateway) {

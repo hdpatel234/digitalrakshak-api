@@ -9,7 +9,6 @@ use App\Mail\EmploymentVerificationMail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class EmploymentVerificationService extends BaseVerificationService
 {
@@ -36,11 +35,11 @@ class EmploymentVerificationService extends BaseVerificationService
                 $formattedData[$fieldName] = $data->field_value;
 
                 // Very naive email detection for the sake of the flow
-                // if (str_contains(strtolower($fieldName), 'email') || filter_var($data->field_value, FILTER_VALIDATE_EMAIL)) {
-                //     if ($companyEmail === 'hr@example.com') { // only override if it's the fallback
-                //         $companyEmail = $data->field_value;
-                //     }
-                // }
+                if (str_contains(strtolower($fieldName), 'email') || filter_var($data->field_value, FILTER_VALIDATE_EMAIL)) {
+                    if ($companyEmail === 'hr@example.com') { // only override if it's the fallback
+                        $companyEmail = $data->field_value;
+                    }
+                }
             }
 
             // Generate token

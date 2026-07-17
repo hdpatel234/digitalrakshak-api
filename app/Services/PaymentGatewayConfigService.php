@@ -139,9 +139,10 @@ class PaymentGatewayConfigService extends BaseService
     {
         return $this->repository->settlementAccount();
     }
-    public function isActive()
+
+    public function status()
     {
-        return $this->repository->isActive();
+        return $this->repository->status();
     }
 
     public function lastUsedAt()

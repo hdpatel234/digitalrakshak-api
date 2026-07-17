@@ -137,7 +137,7 @@ class PaymentGatewayConfigRepository extends BaseRepository
         return PaymentGatewayConfig::SETTLEMENT_ACCOUNT;
     }
 
-    public function isActive()
+    public function status()
     {
         return PaymentGatewayConfig::STATUS;
     }
