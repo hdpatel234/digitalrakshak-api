@@ -3,17 +3,17 @@
 namespace App\Services\ApiService\Client;
 
 use App\Services\BaseService;
-use App\Services\ClientService;
+use App\Repositories\ClientRepository;
 
 class CompanySettingService extends BaseService
 {
     public function __construct(
-        protected ClientService $clientService
+        protected ClientRepository $clientRepo
     ) {}
 
     public function getSettings(int $clientId): array
     {
-        $client = $this->clientService->query()->where('id', $clientId)->first();
+        $client = $this->clientRepo->find($clientId);
 
         if (!$client) {
             throw new \Exception('Client not found.', 404);
@@ -24,14 +24,14 @@ class CompanySettingService extends BaseService
 
     public function updateSettings(array $data, int $clientId): array
     {
-        $client = $this->clientService->query()->where('id', $clientId)->first();
+        $client = $this->clientRepo->find($clientId);
 
         if (!$client) {
             throw new \Exception('Client not found.', 404);
         }
 
-        $client->update($data);
+        $this->clientRepo->update($clientId, $data);
 
-        return $client->fresh()->toArray();
+        return $this->clientRepo->find($clientId)->toArray();
     }
 }

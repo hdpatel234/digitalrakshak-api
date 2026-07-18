@@ -3,12 +3,12 @@
 namespace App\Services\ApiService\Client;
 
 use App\Enums\CandidateStatus;
-use App\Models\CandidateImportHistory;
-use App\Services\BaseService;
+use App\Repositories\CandidateRepository;
 use App\Services\CandidateService as CoreCandidateService;
-use App\Services\CityService;
-use App\Services\CountryService;
-use App\Services\StateService;
+use App\Repositories\CityRepository;
+use App\Repositories\CountryRepository;
+use App\Repositories\StateRepository;
+use App\Repositories\CandidateImportHistoryRepository;
 use App\Services\Webhook\ClientWebhookDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,19 +20,21 @@ use ZipArchive;
 class CandidateService extends BaseService
 {
     public function __construct(
-        protected CoreCandidateService $candidateService,
-        protected CountryService $countryService,
-        protected StateService $stateService,
-        protected CityService $cityService,
+        protected CandidateRepository $candidateRepo,
+        protected CoreCandidateService $coreCandidateService,
+        protected CountryRepository $countryRepo,
+        protected StateRepository $stateRepo,
+        protected CityRepository $cityRepo,
+        protected CandidateImportHistoryRepository $candidateImportHistoryRepo,
         protected ClientWebhookDispatcher $clientWebhookDispatcher
     ) {}
 
     public function getCandidates(array $params, ?object $user): array
     {
-        $query = $this->candidateService->query()->with(['packages', 'candidateServices']);
+        $query = $this->candidateRepo->query()->with(['packages', 'candidateRepos']);
 
         if ($user && isset($user->client_id) && $user->client_id !== null) {
-            $query->where($this->candidateService->clientId(), $user->client_id);
+            $query->where($this->candidateRepo->clientId(), $user->client_id);
         }
 
         if (!empty($params['package_id'])) {
@@ -41,42 +43,42 @@ class CandidateService extends BaseService
             });
         }
 
-        $result = $this->candidateService->datatable(
+        $result = $this->candidateRepo->datatable(
             query: $query,
             params: $params,
             config: [
                 'searchable' => [
-                    $this->candidateService->firstName(),
-                    $this->candidateService->lastName(),
-                    $this->candidateService->email(),
-                    $this->candidateService->phone(),
-                    $this->candidateService->alternatePhone(),
-                    $this->candidateService->city(),
-                    $this->candidateService->state(),
-                    $this->candidateService->country(),
-                    $this->candidateService->source(),
+                    $this->candidateRepo->firstName(),
+                    $this->candidateRepo->lastName(),
+                    $this->candidateRepo->email(),
+                    $this->candidateRepo->phone(),
+                    $this->candidateRepo->alternatePhone(),
+                    $this->candidateRepo->city(),
+                    $this->candidateRepo->state(),
+                    $this->candidateRepo->country(),
+                    $this->candidateRepo->source(),
                 ],
-                'status_column' => $this->candidateService->status(),
-                'date_column' => $this->candidateService->createdAt(),
+                'status_column' => $this->candidateRepo->status(),
+                'date_column' => $this->candidateRepo->createdAt(),
                 'allowed_filters' => [
-                    'client_id' => $this->candidateService->clientId(),
-                    'source' => $this->candidateService->source(),
-                    'gender' => $this->candidateService->gender(),
-                    'country' => $this->candidateService->country(),
-                    'state' => $this->candidateService->state(),
-                    'city' => $this->candidateService->city(),
+                    'client_id' => $this->candidateRepo->clientId(),
+                    'source' => $this->candidateRepo->source(),
+                    'gender' => $this->candidateRepo->gender(),
+                    'country' => $this->candidateRepo->country(),
+                    'state' => $this->candidateRepo->state(),
+                    'city' => $this->candidateRepo->city(),
                 ],
                 'allowed_sorts' => [
-                    $this->candidateService->id(),
-                    $this->candidateService->firstName(),
-                    $this->candidateService->lastName(),
-                    $this->candidateService->email(),
-                    $this->candidateService->status(),
-                    $this->candidateService->source(),
-                    $this->candidateService->createdAt(),
-                    $this->candidateService->updatedAt(),
+                    $this->candidateRepo->id(),
+                    $this->candidateRepo->firstName(),
+                    $this->candidateRepo->lastName(),
+                    $this->candidateRepo->email(),
+                    $this->candidateRepo->status(),
+                    $this->candidateRepo->source(),
+                    $this->candidateRepo->createdAt(),
+                    $this->candidateRepo->updatedAt(),
                 ],
-                'default_sort_by' => $this->candidateService->createdAt(),
+                'default_sort_by' => $this->candidateRepo->createdAt(),
                 'default_sort_direction' => 'desc',
                 'default_per_page' => 10,
                 'max_per_page' => 100,
@@ -89,8 +91,8 @@ class CandidateService extends BaseService
                 ->values();
 
             $missingCountryIds = $list
-                ->filter(fn($row) => empty($row[$this->candidateService->country()] ?? null) && !empty($row[$this->candidateService->countryId()] ?? null))
-                ->pluck($this->candidateService->countryId())
+                ->filter(fn($row) => empty($row[$this->candidateRepo->country()] ?? null) && !empty($row[$this->candidateRepo->countryId()] ?? null))
+                ->pluck($this->candidateRepo->countryId())
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
@@ -98,8 +100,8 @@ class CandidateService extends BaseService
                 ->all();
 
             $missingStateIds = $list
-                ->filter(fn($row) => empty($row[$this->candidateService->state()] ?? null) && !empty($row[$this->candidateService->stateId()] ?? null))
-                ->pluck($this->candidateService->stateId())
+                ->filter(fn($row) => empty($row[$this->candidateRepo->state()] ?? null) && !empty($row[$this->candidateRepo->stateId()] ?? null))
+                ->pluck($this->candidateRepo->stateId())
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
@@ -107,8 +109,8 @@ class CandidateService extends BaseService
                 ->all();
 
             $missingCityIds = $list
-                ->filter(fn($row) => empty($row[$this->candidateService->city()] ?? null) && !empty($row[$this->candidateService->cityId()] ?? null))
-                ->pluck($this->candidateService->cityId())
+                ->filter(fn($row) => empty($row[$this->candidateRepo->city()] ?? null) && !empty($row[$this->candidateRepo->cityId()] ?? null))
+                ->pluck($this->candidateRepo->cityId())
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
@@ -117,45 +119,45 @@ class CandidateService extends BaseService
 
             $countryNamesById = $missingCountryIds === []
                 ? collect()
-                : $this->countryService->query()
-                ->whereIn($this->countryService->id(), $missingCountryIds)
+                : $this->countryRepo->query()
+                ->whereIn($this->countryRepo->id(), $missingCountryIds)
                 ->get()
-                ->pluck($this->countryService->name(), $this->countryService->id());
+                ->pluck($this->countryRepo->name(), $this->countryRepo->id());
 
             $stateNamesById = $missingStateIds === []
                 ? collect()
-                : $this->stateService->query()
-                ->whereIn($this->stateService->id(), $missingStateIds)
+                : $this->stateRepo->query()
+                ->whereIn($this->stateRepo->id(), $missingStateIds)
                 ->get()
-                ->pluck($this->stateService->name(), $this->stateService->id());
+                ->pluck($this->stateRepo->name(), $this->stateRepo->id());
 
             $cityNamesById = $missingCityIds === []
                 ? collect()
-                : $this->cityService->query()
-                ->whereIn($this->cityService->id(), $missingCityIds)
+                : $this->cityRepo->query()
+                ->whereIn($this->cityRepo->id(), $missingCityIds)
                 ->get()
-                ->pluck($this->cityService->name(), $this->cityService->id());
+                ->pluck($this->cityRepo->name(), $this->cityRepo->id());
 
             $result['list'] = $list
                 ->map(function (array $row) use ($countryNamesById, $stateNamesById, $cityNamesById) {
-                    if (empty($row[$this->candidateService->country()] ?? null)) {
-                        $countryId = (int) ($row[$this->candidateService->countryId()] ?? 0);
+                    if (empty($row[$this->candidateRepo->country()] ?? null)) {
+                        $countryId = (int) ($row[$this->candidateRepo->countryId()] ?? 0);
                         if ($countryId > 0) {
-                            $row[$this->candidateService->country()] = $countryNamesById->get($countryId);
+                            $row[$this->candidateRepo->country()] = $countryNamesById->get($countryId);
                         }
                     }
 
-                    if (empty($row[$this->candidateService->state()] ?? null)) {
-                        $stateId = (int) ($row[$this->candidateService->stateId()] ?? 0);
+                    if (empty($row[$this->candidateRepo->state()] ?? null)) {
+                        $stateId = (int) ($row[$this->candidateRepo->stateId()] ?? 0);
                         if ($stateId > 0) {
-                            $row[$this->candidateService->state()] = $stateNamesById->get($stateId);
+                            $row[$this->candidateRepo->state()] = $stateNamesById->get($stateId);
                         }
                     }
 
-                    if (empty($row[$this->candidateService->city()] ?? null)) {
-                        $cityId = (int) ($row[$this->candidateService->cityId()] ?? 0);
+                    if (empty($row[$this->candidateRepo->city()] ?? null)) {
+                        $cityId = (int) ($row[$this->candidateRepo->cityId()] ?? 0);
                         if ($cityId > 0) {
-                            $row[$this->candidateService->city()] = $cityNamesById->get($cityId);
+                            $row[$this->candidateRepo->city()] = $cityNamesById->get($cityId);
                         }
                     }
 
@@ -208,7 +210,7 @@ class CandidateService extends BaseService
 
     public function storeCandidate(array $validatedData, int $clientId, ?string $ipAddress): array
     {
-        $created = $this->candidateService->createWithAssociations(
+        $created = $this->coreCandidateService->createWithAssociations(
             $validatedData,
             $clientId,
             $ipAddress
@@ -237,7 +239,7 @@ class CandidateService extends BaseService
         $file = $request->file('file');
         $storedPath = $file->store('candidate-imports');
 
-        $import = CandidateImportHistory::query()->create([
+        $import = $this->candidateImportHistoryRepo->query()->create([
             'client_id' => $clientId,
             'filename' => $file->getClientOriginalName(),
             'total_records' => 0,
@@ -275,11 +277,11 @@ class CandidateService extends BaseService
 
     public function getImportHistory(int $clientId): array
     {
-        return CandidateImportHistory::query()
+        return $this->candidateImportHistoryRepo->query()
             ->where('client_id', $clientId)
             ->orderByDesc('id')
             ->get()
-            ->map(function (CandidateImportHistory $import): array {
+            ->map(function ($import): array {
                 $meta = [];
                 if (!empty($import->error_log)) {
                     $decoded = json_decode($import->error_log, true);

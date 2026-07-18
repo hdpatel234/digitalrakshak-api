@@ -13,14 +13,10 @@ use Illuminate\Support\Str;
 
 class MemberService extends BaseService
 {
-    protected UserRepository $userRepository;
-    protected ClientService $clientService;
-
-    public function __construct(UserRepository $userRepository, ClientService $clientService)
-    {
+    public function __construct(
+        protected UserRepository $userRepository
+    ) {
         parent::__construct($userRepository);
-        $this->userRepository = $userRepository;
-        $this->clientService = $clientService;
     }
 
     public function index(array $params, int $clientId): array

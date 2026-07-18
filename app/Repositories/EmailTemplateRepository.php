@@ -77,4 +77,11 @@ class EmailTemplateRepository extends BaseRepository
         return EmailTemplate::UPDATED_BY;
     }
     // functions
+    public function findActiveByCode(string $code)
+    {
+        return $this->query()
+            ->where($this->templateCode(), $code)
+            ->where($this->isActive(), true)
+            ->first();
+    }
 }

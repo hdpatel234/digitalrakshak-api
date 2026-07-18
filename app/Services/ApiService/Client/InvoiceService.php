@@ -2,36 +2,36 @@
 
 namespace App\Services\ApiService\Client;
 
-use App\Models\Client;
+use App\Repositories\ClientRepository;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\InvoiceItemRepository;
 use App\Services\BaseService;
-use App\Services\ClientService;
-use App\Services\InvoiceService as CoreInvoiceService;
-use App\Models\InvoiceItem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceService extends BaseService
 {
     public function __construct(
-        protected CoreInvoiceService $invoiceService,
-        protected ClientService $clientService
+        protected InvoiceRepository $invoiceRepo,
+        protected ClientRepository $clientRepo,
+        protected InvoiceItemRepository $invoiceItemRepo
     ) {}
 
     public function getInvoices(array $params, int $clientId): array
     {
-        $table = $this->invoiceService->query()->getModel()->getTable();
-        $clientIdColumn = $this->invoiceService->clientId();
-        $statusColumn = $this->invoiceService->status();
-        $paymentStatusColumn = $this->invoiceService->paymentStatus();
-        $invoiceNumberColumn = $this->invoiceService->invoiceNumber();
-        $externalInvoiceNumberColumn = $this->invoiceService->externalInvoiceNumber();
-        $invoiceDateColumn = $this->invoiceService->invoiceDate();
-        $dueDateColumn = $this->invoiceService->dueDate();
+        $table = $this->invoiceRepo->query()->getModel()->getTable();
+        $clientIdColumn = $this->invoiceRepo->clientId();
+        $statusColumn = $this->invoiceRepo->status();
+        $paymentStatusColumn = $this->invoiceRepo->paymentStatus();
+        $invoiceNumberColumn = $this->invoiceRepo->invoiceNumber();
+        $externalInvoiceNumberColumn = $this->invoiceRepo->externalInvoiceNumber();
+        $invoiceDateColumn = $this->invoiceRepo->invoiceDate();
+        $dueDateColumn = $this->invoiceRepo->dueDate();
 
         $qualifiedClientIdColumn = $table . '.' . $clientIdColumn;
         $qualifiedStatusColumn = $table . '.' . $statusColumn;
 
-        $query = $this->invoiceService->query()
+        $query = $this->invoiceRepo->query()
             ->with('order')
             ->where($qualifiedClientIdColumn, $clientId);
 
@@ -50,7 +50,7 @@ class InvoiceService extends BaseService
             $params['per_page'] = $params['limit'];
         }
 
-        $result = $this->invoiceService->datatable(
+        $result = $this->invoiceRepo->datatable(
             query: $query,
             params: $params,
             config: [
@@ -69,8 +69,8 @@ class InvoiceService extends BaseService
                 'allowed_sorts' => [
                     $table . '.id',
                     $table . '.' . $invoiceNumberColumn,
-                    $table . '.' . $this->invoiceService->totalAmount(),
-                    $table . '.' . $this->invoiceService->amountDue(),
+                    $table . '.' . $this->invoiceRepo->totalAmount(),
+                    $table . '.' . $this->invoiceRepo->amountDue(),
                     $table . '.' . $statusColumn,
                     $table . '.' . $paymentStatusColumn,
                     $table . '.' . $invoiceDateColumn,
@@ -107,7 +107,7 @@ class InvoiceService extends BaseService
 
     public function getInvoice(int $invoiceId, int $clientId)
     {
-        $invoice = $this->invoiceService->query()->find($invoiceId);
+        $invoice = $this->invoiceRepo->query()->find($invoiceId);
 
         if (!$invoice) {
             throw new \Exception('Invoice not found', 404);
@@ -122,7 +122,7 @@ class InvoiceService extends BaseService
 
     public function downloadInvoicePdf(int $invoiceId, int $clientId): array
     {
-        $invoice = $this->invoiceService->query()->find($invoiceId);
+        $invoice = $this->invoiceRepo->query()->find($invoiceId);
 
         if (!$invoice) {
             throw new \Exception('Invoice not found', 404);
@@ -132,8 +132,7 @@ class InvoiceService extends BaseService
             throw new \Exception('You do not have permission to download this invoice.', 403);
         }
 
-        /** @var Client|null $client */
-        $client = $this->clientService->query()->find($invoice->client_id);
+        $client = $this->clientRepo->query()->find($invoice->client_id);
 
         if (!$client) {
             throw new \Exception('Client not found', 404);
@@ -141,7 +140,7 @@ class InvoiceService extends BaseService
 
         if (!$invoice->external_invoice_id) {
             try {
-                $items = InvoiceItem::where('invoice_id', $invoice->id)->get();
+                $items = $this->invoiceItemRepo->query()->where($this->invoiceItemRepo->invoiceId(), $invoice->id)->get();
                 $pdf = Pdf::loadView('invoices.client_pdf', [
                     'invoice' => $invoice,
                     'client' => $client,

@@ -34,8 +34,8 @@ class CompanyService extends BaseService
 
         unset($data['remove_logo']);
 
+        $this->clientRepository->update($clientId, $data);
         $client = $this->clientRepository->find($clientId);
-        $client->update($data);
         
         $companyData = $client->toArray();
         if (!empty($companyData['logo'])) {

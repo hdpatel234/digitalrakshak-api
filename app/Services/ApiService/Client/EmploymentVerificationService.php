@@ -2,15 +2,19 @@
 
 namespace App\Services\ApiService\Client;
 
-use App\Models\EmploymentVerification;
+use App\Repositories\EmploymentVerificationRepository;
 use Illuminate\Support\Carbon;
 
 class EmploymentVerificationService
 {
+    public function __construct(
+        protected EmploymentVerificationRepository $verificationRepo
+    ) {}
+
     public function getVerificationDetails(string $token)
     {
-        $verification = EmploymentVerification::with('candidateService.candidate')
-            ->where('token', $token)
+        $verification = $this->verificationRepo->query()->with('candidateService.candidate')
+            ->where($this->verificationRepo->token(), $token)
             ->first();
 
         if (!$verification) {
@@ -28,7 +32,7 @@ class EmploymentVerificationService
 
     public function processVerification(string $token, array $data)
     {
-        $verification = EmploymentVerification::where('token', $token)->first();
+        $verification = $this->verificationRepo->query()->where($this->verificationRepo->token(), $token)->first();
 
         if (!$verification) {
             throw new \Exception('Invalid or expired verification link.', 404);
@@ -38,10 +42,10 @@ class EmploymentVerificationService
             throw new \Exception('This verification has already been processed.', 400);
         }
 
-        $verification->update([
-            'status' => $data['status'],
-            'remarks' => $data['remarks'] ?? null,
-            'verified_at' => Carbon::now(),
+        $this->verificationRepo->update($verification->id, [
+            $this->verificationRepo->status() => $data['status'],
+            $this->verificationRepo->remarks() => $data['remarks'] ?? null,
+            $this->verificationRepo->verifiedAt() => Carbon::now(),
         ]);
 
         // Update the related candidate service

@@ -2,18 +2,22 @@
 
 namespace App\Services\ApiService\Client;
 
-use App\Models\Candidate;
-use App\Models\Package;
+use App\Repositories\CandidateRepository;
+use App\Repositories\PackageRepository;
+use App\Repositories\PackageServiceRepository;
 
 class DashboardService
 {
+    public function __construct(
+        protected CandidateRepository $candidateRepo,
+        protected PackageRepository $packageRepo,
+        protected PackageServiceRepository $packageServiceRepo
+    ) {}
+
     public function getDashboardData(int $clientId)
     {
-        // For demonstration, we'll return structured data that the Next.js frontend expects.
-        // In a real scenario, you would calculate these metrics using actual Models and queries scoped to $clientId.
-
-        $totalCandidates = Candidate::where('client_id', $clientId)->count() ?? 1250;
-        $activePackagesCount = Package::where('is_active', true)->where('client_id', $clientId)->count() ?? 12;
+        $totalCandidates = $this->candidateRepo->query()->where($this->candidateRepo->clientId(), $clientId)->count() ?? 1250;
+        $activePackagesCount = $this->packageRepo->query()->where($this->packageRepo->isActive(), true)->where($this->packageRepo->clientId(), $clientId)->count() ?? 12;
 
         return [
             'stats' => [
@@ -65,31 +69,31 @@ class DashboardService
                     ['category' => 'Other Services', 'amount' => 4500],
                 ]
             ],
-            'active_packages' => Package::where('is_active', true)
+            'active_packages' => $this->packageRepo->query()->where($this->packageRepo->isActive(), true)
                 ->where(function ($query) use ($clientId) {
-                    $query->where('type', 'admin')
-                        ->orWhere('client_id', $clientId);
+                    $query->where($this->packageRepo->type(), 'admin')
+                        ->orWhere($this->packageRepo->clientId(), $clientId);
                 })
                 ->get()
                 ->map(function ($pkg) {
-                    $servicesCount = \App\Models\PackageService::where('package_id', $pkg->id)->count();
+                    $servicesCount = $this->packageServiceRepo->query()->where($this->packageServiceRepo->packageId(), $pkg->{$this->packageRepo->id()})->count();
                     return [
-                        'id' => $pkg->id,
-                        'name' => $pkg->package_name ?? $pkg->name ?? 'Unknown Package',
-                        'price' => $pkg->final_price ?? $pkg->total_price ?? 0,
+                        'id' => $pkg->{$this->packageRepo->id()},
+                        'name' => $pkg->{$this->packageRepo->packageName()} ?? $pkg->name ?? 'Unknown Package',
+                        'price' => $pkg->{$this->packageRepo->finalPrice()} ?? $pkg->total_price ?? 0,
                         'services_count' => $servicesCount,
-                        'type' => $pkg->type,
+                        'type' => $pkg->{$this->packageRepo->type()},
                         'expires_at' => '2026-12-31' // Placeholder
                     ];
                 }),
-            'latest_candidates' => Candidate::where('client_id', $clientId)->withCount('packages')->latest()->take(5)->get()->map(function ($cand) {
+            'latest_candidates' => $this->candidateRepo->query()->where($this->candidateRepo->clientId(), $clientId)->withCount('packages')->latest()->take(5)->get()->map(function ($cand) {
                 return [
-                    'id' => $cand->id,
-                    'name' => $cand->first_name . ' ' . $cand->last_name,
-                    'email' => $cand->email,
+                    'id' => $cand->{$this->candidateRepo->id()},
+                    'name' => $cand->{$this->candidateRepo->firstName()} . ' ' . $cand->{$this->candidateRepo->lastName()},
+                    'email' => $cand->{$this->candidateRepo->email()},
                     'packages_count' => $cand->packages_count,
-                    'status' => $cand->status ?? 'Pending',
-                    'created_at' => $cand->created_at ? $cand->created_at->format('Y-m-d H:i:s') : null
+                    'status' => $cand->{$this->candidateRepo->status()} ?? 'Pending',
+                    'created_at' => $cand->{$this->candidateRepo->createdAt()} ? $cand->{$this->candidateRepo->createdAt()}->format('Y-m-d H:i:s') : null
                 ];
             })
         ];

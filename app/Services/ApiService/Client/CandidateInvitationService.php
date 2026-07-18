@@ -12,82 +12,86 @@ use App\Enums\EmailTemplateCode;
 use App\Services\Ai\AiManager;
 use App\Services\Ai\ResumeParserService;
 use App\Services\BaseService;
-use App\Services\CandidateInvitationService as CoreCandidateInvitationService;
-use App\Services\CandidateInvitationsLogService;
-use App\Services\CandidateService as CoreCandidateService;
-use App\Services\CandidateServiceDataService;
-use App\Services\CandidateServiceService;
-use App\Services\ClientService;
-use App\Services\ConfigurationService;
-use App\Services\EmailQueueService;
 use App\Services\EmailTemplateService;
-use App\Services\PackageService;
-use App\Services\PackageServiceService;
-use App\Services\ServiceService;
-use App\Services\ServicesFieldService;
+use App\Repositories\CandidateInvitationRepository;
+use App\Repositories\CandidateRepository;
+use App\Repositories\PackageRepository;
+use App\Repositories\ClientRepository;
+use App\Repositories\EmailTemplateRepository;
+use App\Repositories\EmailQueueRepository;
+use App\Repositories\CandidateInvitationsLogRepository;
+use App\Repositories\PackageServiceRepository;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServicesFieldRepository;
+use App\Repositories\CandidateServiceRepository;
+use App\Repositories\CandidateServiceDataRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+/**
+ * @property CandidateInvitationRepository $invitationRepo
+ */
 class CandidateInvitationService extends BaseService
 {
     public function __construct(
-        protected CoreCandidateInvitationService $invitationService,
-        protected CoreCandidateService $candidateService,
-        protected PackageService $packageService,
-        protected ClientService $clientService,
+        protected CandidateInvitationRepository $invitationRepo,
+        protected CandidateRepository $candidateRepo,
+        protected PackageRepository $packageRepo,
+        protected ClientRepository $clientRepo,
+        protected EmailTemplateRepository $emailTemplateRepo,
         protected EmailTemplateService $emailTemplateService,
-        protected EmailQueueService $emailQueueService,
-        protected CandidateInvitationsLogService $candidateInvitationsLogService,
+        protected EmailQueueRepository $emailQueueRepo,
+        protected CandidateInvitationsLogRepository $candidateInvitationsLogRepo,
         protected ConfigurationService $configurationService,
-        protected PackageServiceService $packageServiceService,
-        protected ServiceService $serviceService,
-        protected ServicesFieldService $servicesFieldService,
-        protected CandidateServiceService $candidateServiceService,
-        protected CandidateServiceDataService $candidateServiceDataService,
+        protected PackageServiceRepository $packageServiceRepo,
+        protected ServiceRepository $serviceRepo,
+        protected ServicesFieldRepository $servicesFieldRepo,
+        protected CandidateServiceRepository $candidateServiceRepo,
+        protected CandidateServiceDataRepository $candidateServiceDataRepo,
         protected AiManager $aiManager,
         protected ResumeParserService $resumeParserService
     ) {}
 
     public function getInvitations(array $params, int $clientId): array
     {
-        $invitationTable = $this->invitationService->query()->getModel()->getTable();
-        $invitationIdColumn = $this->invitationService->id();
-        $candidateIdColumn = $this->invitationService->candidateId();
-        $packageIdColumn = $this->invitationService->packageId();
-        $clientIdColumn = $this->invitationService->clientId();
-        $statusColumn = $this->invitationService->status();
-        $formDataColumn = $this->invitationService->formData();
+        $invitationTable = $this->invitationRepo->query()->getModel()->getTable();
+        $invitationIdColumn = $this->invitationRepo->id();
+        $candidateIdColumn = $this->invitationRepo->candidateId();
+        $packageIdColumn = $this->invitationRepo->packageId();
+        $clientIdColumn = $this->invitationRepo->clientId();
+        $statusColumn = $this->invitationRepo->status();
+        $formDataColumn = $this->invitationRepo->formData();
 
-        $query = $this->invitationService->query()
+        $query = $this->invitationRepo->query()
             ->where($invitationTable . '.' . $clientIdColumn, $clientId);
 
-        $result = $this->invitationService->datatable(
+        $result = $this->invitationRepo->datatable(
             query: $query,
             params: $params,
             config: [
                 'searchable' => [
-                    $invitationTable . '.' . $this->invitationService->invitationToken(),
-                    $invitationTable . '.' . $this->invitationService->formLink(),
-                    $invitationTable . '.' . $this->invitationService->invitationType(),
+                    $invitationTable . '.' . $this->invitationRepo->invitationToken(),
+                    $invitationTable . '.' . $this->invitationRepo->formLink(),
+                    $invitationTable . '.' . $this->invitationRepo->invitationType(),
                 ],
                 'status_column' => $invitationTable . '.' . $statusColumn,
-                'date_column' => $invitationTable . '.' . $this->invitationService->createdAt(),
+                'date_column' => $invitationTable . '.' . $this->invitationRepo->createdAt(),
                 'allowed_filters' => [
                     'candidate_id' => $invitationTable . '.' . $candidateIdColumn,
                     'package_id' => $invitationTable . '.' . $packageIdColumn,
-                    'invitation_type' => $invitationTable . '.' . $this->invitationService->invitationType(),
-                    'invited_by' => $invitationTable . '.' . $this->invitationService->invitedBy(),
+                    'invitation_type' => $invitationTable . '.' . $this->invitationRepo->invitationType(),
+                    'invited_by' => $invitationTable . '.' . $this->invitationRepo->invitedBy(),
                 ],
                 'allowed_sorts' => [
                     $invitationTable . '.' . $invitationIdColumn,
                     $invitationTable . '.' . $statusColumn,
-                    $invitationTable . '.' . $this->invitationService->invitedAt(),
-                    $invitationTable . '.' . $this->invitationService->expiresAt(),
-                    $invitationTable . '.' . $this->invitationService->createdAt(),
+                    $invitationTable . '.' . $this->invitationRepo->invitedAt(),
+                    $invitationTable . '.' . $this->invitationRepo->expiresAt(),
+                    $invitationTable . '.' . $this->invitationRepo->createdAt(),
                 ],
-                'default_sort_by' => $invitationTable . '.' . $this->invitationService->createdAt(),
+                'default_sort_by' => $invitationTable . '.' . $this->invitationRepo->createdAt(),
                 'default_sort_direction' => 'desc',
                 'default_per_page' => 10,
                 'max_per_page' => 100,
@@ -104,7 +108,7 @@ class CandidateInvitationService extends BaseService
             ->filter(static fn($id) => $id > 0)
             ->all();
 
-        $invitationsById = $this->invitationService->query()
+        $invitationsById = $this->invitationRepo->query()
             ->whereIn($invitationIdColumn, $invitationIds)
             ->with(['candidate', 'package'])
             ->get()
@@ -133,10 +137,10 @@ class CandidateInvitationService extends BaseService
 
         $packagesById = collect();
         if (!empty($allPackageIds)) {
-            $packagesById = $this->packageService->query()
-                ->whereIn($this->packageService->id(), $allPackageIds)
+            $packagesById = $this->packageRepo->query()
+                ->whereIn($this->packageRepo->id(), $allPackageIds)
                 ->get()
-                ->keyBy($this->packageService->id());
+                ->keyBy($this->packageRepo->id());
         }
 
         $clientAppUrl = $this->configurationService->getStringValue(
@@ -173,22 +177,22 @@ class CandidateInvitationService extends BaseService
 
                 $candidate = $invitationModel?->candidate;
                 $package = $invitationModel?->package;
-                $candidateFirstName = trim((string) ($candidate?->{$this->candidateService->firstName()} ?? ''));
-                $candidateLastName = trim((string) ($candidate?->{$this->candidateService->lastName()} ?? ''));
+                $candidateFirstName = trim((string) ($candidate?->{$this->candidateRepo->firstName()} ?? ''));
+                $candidateLastName = trim((string) ($candidate?->{$this->candidateRepo->lastName()} ?? ''));
 
                 $invitation['candidate'] = [
-                    'id' => $candidate?->{$this->candidateService->id()} ?? ($invitation[$this->invitationService->candidateId()] ?? null),
+                    'id' => $candidate?->{$this->candidateRepo->id()} ?? ($invitation[$this->invitationRepo->candidateId()] ?? null),
                     'name' => trim($candidateFirstName . ' ' . $candidateLastName),
-                    'first_name' => $candidate?->{$this->candidateService->firstName()} ?? null,
-                    'last_name' => $candidate?->{$this->candidateService->lastName()} ?? null,
-                    'email' => $candidate?->{$this->candidateService->email()} ?? null,
-                    'phone' => $candidate?->{$this->candidateService->phone()} ?? null,
+                    'first_name' => $candidate?->{$this->candidateRepo->firstName()} ?? null,
+                    'last_name' => $candidate?->{$this->candidateRepo->lastName()} ?? null,
+                    'email' => $candidate?->{$this->candidateRepo->email()} ?? null,
+                    'phone' => $candidate?->{$this->candidateRepo->phone()} ?? null,
                 ];
 
                 $invitation['package'] = [
-                    'id' => $package?->{$this->packageService->id()} ?? ($invitation[$packageIdColumn] ?? null),
-                    'name' => $package?->{$this->packageService->packageName()} ?? null,
-                    'code' => $package?->{$this->packageService->packageCode()} ?? null,
+                    'id' => $package?->{$this->packageRepo->id()} ?? ($invitation[$packageIdColumn] ?? null),
+                    'name' => $package?->{$this->packageRepo->packageName()} ?? null,
+                    'code' => $package?->{$this->packageRepo->packageCode()} ?? null,
                     'package_ids' => $packageIds,
                 ];
 
@@ -196,17 +200,17 @@ class CandidateInvitationService extends BaseService
                     $pkg = $packagesById->get($id);
                     if ($pkg) {
                         return [
-                            'id' => $pkg->{$this->packageService->id()},
-                            'name' => $pkg->{$this->packageService->packageName()},
-                            'code' => $pkg->{$this->packageService->packageCode()},
+                            'id' => $pkg->{$this->packageRepo->id()},
+                            'name' => $pkg->{$this->packageRepo->packageName()},
+                            'code' => $pkg->{$this->packageRepo->packageCode()},
                         ];
                     }
                     return null;
                 })->filter()->values()->all();
 
-                $relativeLink = (string) ($invitation[$this->invitationService->formLink()] ?? '');
+                $relativeLink = (string) ($invitation[$this->invitationRepo->formLink()] ?? '');
                 if ($relativeLink) {
-                    $invitation[$this->invitationService->formLink()] = $baseUrl !== ''
+                    $invitation[$this->invitationRepo->formLink()] = $baseUrl !== ''
                         ? $baseUrl . '/' . ltrim($relativeLink, '/')
                         : '/' . ltrim($relativeLink, '/');
                 }
@@ -234,9 +238,9 @@ class CandidateInvitationService extends BaseService
             ->values()
             ->all();
 
-        $candidateIdColumn = $this->candidateService->id();
-        $candidates = $this->candidateService->query()
-            ->where($this->candidateService->clientId(), $clientId)
+        $candidateIdColumn = $this->candidateRepo->id();
+        $candidates = $this->candidateRepo->query()
+            ->where($this->candidateRepo->clientId(), $clientId)
             ->whereIn($candidateIdColumn, $candidateIds)
             ->get();
 
@@ -247,12 +251,12 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Some candidates are invalid for this client.');
         }
 
-        $packageIdColumn = $this->packageService->id();
-        $packageClientIdColumn = $this->packageService->clientId();
-        $packageStatusColumn = $this->packageService->status();
-        $packageIsActiveColumn = $this->packageService->isActive();
+        $packageIdColumn = $this->packageRepo->id();
+        $packageClientIdColumn = $this->packageRepo->clientId();
+        $packageStatusColumn = $this->packageRepo->status();
+        $packageIsActiveColumn = $this->packageRepo->isActive();
 
-        $packages = $this->packageService->query()
+        $packages = $this->packageRepo->query()
             ->whereIn($packageIdColumn, $packageIds)
             ->where(function ($query) use ($packageClientIdColumn, $clientId) {
                 $query->where($packageClientIdColumn, $clientId)
@@ -289,11 +293,11 @@ class CandidateInvitationService extends BaseService
         $status = (string) ($payload['status'] ?? CandidateInvitationStatus::PENDING->value);
         $baseFormData = is_array($payload['form_data'] ?? null) ? $payload['form_data'] : [];
 
-        $client = $this->clientService->query()
-            ->where($this->clientService->id(), $clientId)
+        $client = $this->clientRepo->query()
+            ->where($this->clientRepo->id(), $clientId)
             ->first();
 
-        $invitationTemplate = $this->emailTemplateService->findActiveByCode(
+        $invitationTemplate = $this->emailTemplateRepo->findActiveByCode(
             EmailTemplateCode::CANDIDATE_INVITATION_FORM->value
         );
 
@@ -304,36 +308,36 @@ class CandidateInvitationService extends BaseService
                 $token = Str::random(64);
                 $formLink = '/invitation/' . $token;
 
-                $invitation = $this->invitationService->create([
-                    $this->invitationService->candidateId() => $candidate->{$this->candidateService->id()},
-                    $this->invitationService->clientId() => $clientId,
-                    $this->invitationService->packageId() => $primaryPackageId,
-                    $this->invitationService->invitationType() => $invitationType,
-                    $this->invitationService->invitationToken() => $token,
-                    $this->invitationService->formLink() => $formLink,
-                    $this->invitationService->formData() => array_merge($baseFormData, [
+                $invitation = $this->invitationRepo->create([
+                    $this->invitationRepo->candidateId() => $candidate->{$this->candidateRepo->id()},
+                    $this->invitationRepo->clientId() => $clientId,
+                    $this->invitationRepo->packageId() => $primaryPackageId,
+                    $this->invitationRepo->invitationType() => $invitationType,
+                    $this->invitationRepo->invitationToken() => $token,
+                    $this->invitationRepo->formLink() => $formLink,
+                    $this->invitationRepo->formData() => array_merge($baseFormData, [
                         'package_ids' => $packageIds,
-                        'candidate_id' => $candidate->{$this->candidateService->id()},
+                        'candidate_id' => $candidate->{$this->candidateRepo->id()},
                     ]),
-                    $this->invitationService->invitedBy() => $user?->id,
-                    $this->invitationService->invitedAt() => $now,
-                    $this->invitationService->expiresAt() => $expiresAt,
-                    $this->invitationService->reminderCount() => 0,
-                    $this->invitationService->status() => $status,
+                    $this->invitationRepo->invitedBy() => $user?->id,
+                    $this->invitationRepo->invitedAt() => $now,
+                    $this->invitationRepo->expiresAt() => $expiresAt,
+                    $this->invitationRepo->reminderCount() => 0,
+                    $this->invitationRepo->status() => $status,
                 ]);
 
-                $this->candidateInvitationsLogService->create([
-                    $this->candidateInvitationsLogService->invitationId() => $invitation->{$this->invitationService->id()},
-                    $this->candidateInvitationsLogService->action() => 'created',
-                    $this->candidateInvitationsLogService->ipAddress() => $ip,
-                    $this->candidateInvitationsLogService->userAgent() => $userAgent,
-                    $this->candidateInvitationsLogService->status() => $status,
+                $this->candidateInvitationsLogRepo->create([
+                    $this->candidateInvitationsLogRepo->invitationId() => $invitation->{$this->invitationRepo->id()},
+                    $this->candidateInvitationsLogRepo->action() => 'created',
+                    $this->candidateInvitationsLogRepo->ipAddress() => $ip,
+                    $this->candidateInvitationsLogRepo->userAgent() => $userAgent,
+                    $this->candidateInvitationsLogRepo->status() => $status,
                 ]);
 
-                $this->candidateService->update(
-                    $candidate->{$this->candidateService->id()},
+                $this->candidateRepo->update(
+                    $candidate->{$this->candidateRepo->id()},
                     [
-                        $this->candidateService->status() => CandidateStatus::INVITED->value,
+                        $this->candidateRepo->status() => CandidateStatus::INVITED->value,
                     ]
                 );
 
@@ -350,20 +354,20 @@ class CandidateInvitationService extends BaseService
         if ($invitationTemplate) {
             foreach ($createdInvitations as $invitation) {
                 $candidate = $candidates->firstWhere(
-                    $this->candidateService->id(),
-                    $invitation->{$this->invitationService->candidateId()}
+                    $this->candidateRepo->id(),
+                    $invitation->{$this->invitationRepo->candidateId()}
                 );
 
-                $candidateEmail = strtolower(trim((string) ($candidate?->{$this->candidateService->email()} ?? '')));
+                $candidateEmail = strtolower(trim((string) ($candidate?->{$this->candidateRepo->email()} ?? '')));
                 if ($candidateEmail === '') {
                     continue;
                 }
 
-                $candidateFirstName = trim((string) ($candidate?->{$this->candidateService->firstName()} ?? ''));
-                $candidateLastName = trim((string) ($candidate?->{$this->candidateService->lastName()} ?? ''));
+                $candidateFirstName = trim((string) ($candidate?->{$this->candidateRepo->firstName()} ?? ''));
+                $candidateLastName = trim((string) ($candidate?->{$this->candidateRepo->lastName()} ?? ''));
                 $candidateFullName = trim($candidateFirstName . ' ' . $candidateLastName) ?? $candidateEmail;
 
-                $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+                $relativeLink = (string) ($invitation->{$this->invitationRepo->formLink()} ?? '');
                 $baseUrl = rtrim($clientAppUrl, '/');
                 $inviteLink = $baseUrl !== ''
                     ? $baseUrl . '/' . ltrim($relativeLink, '/')
@@ -375,38 +379,38 @@ class CandidateInvitationService extends BaseService
                     'candidate_last_name' => $candidateLastName,
                     'candidate_email' => $candidateEmail,
                     'candidate_invite_link' => $inviteLink,
-                    'company_name' => (string) ($client?->{$this->clientService->companyName()} ?? config('app.name')),
-                    'client_email' => (string) ($client?->{$this->clientService->email()} ?? ''),
-                    'invitation_token' => (string) ($invitation->{$this->invitationService->invitationToken()} ?? ''),
-                    'invitation_expires_at' => (string) ($invitation->{$this->invitationService->expiresAt()} ?? ''),
+                    'company_name' => (string) ($client?->{$this->clientRepo->companyName()} ?? config('app.name')),
+                    'client_email' => (string) ($client?->{$this->clientRepo->email()} ?? ''),
+                    'invitation_token' => (string) ($invitation->{$this->invitationRepo->invitationToken()} ?? ''),
+                    'invitation_expires_at' => (string) ($invitation->{$this->invitationRepo->expiresAt()} ?? ''),
                 ]);
 
-                $this->emailQueueService->create([
-                    $this->emailQueueService->emailUid() => 'email_' . Str::uuid(),
-                    $this->emailQueueService->toEmail() => $candidateEmail,
-                    $this->emailQueueService->toName() => $candidateFullName !== '' ? $candidateFullName : null,
-                    $this->emailQueueService->subject() => (string) ($rendered['subject'] ?? ''),
-                    $this->emailQueueService->bodyHtml() => $rendered['body_html'] ?? null,
-                    $this->emailQueueService->bodyText() => $rendered['body_text'] ?? null,
-                    $this->emailQueueService->templateId() => $invitationTemplate->{$this->emailTemplateService->id()},
-                    $this->emailQueueService->emailType() => (string) ($invitationTemplate->{$this->emailTemplateService->emailType()} ?? 'candidate_invitation'),
-                    $this->emailQueueService->priority() => (string) ($invitationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
-                    $this->emailQueueService->clientId() => $clientId,
-                    $this->emailQueueService->candidateId() => $invitation->{$this->invitationService->candidateId()},
-                    $this->emailQueueService->userId() => $user?->id,
-                    $this->emailQueueService->assignedServerId() => $invitationTemplate->{$this->emailTemplateService->serverId()},
-                    $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
-                    $this->emailQueueService->attempts() => 0,
-                    $this->emailQueueService->maxAttempts() => 3,
-                    $this->emailQueueService->scheduledAt() => now(),
-                    $this->emailQueueService->expiresAt() => $invitation->{$this->invitationService->expiresAt()},
+                $this->emailQueueRepo->create([
+                    $this->emailQueueRepo->emailUid() => 'email_' . Str::uuid(),
+                    $this->emailQueueRepo->toEmail() => $candidateEmail,
+                    $this->emailQueueRepo->toName() => $candidateFullName !== '' ? $candidateFullName : null,
+                    $this->emailQueueRepo->subject() => (string) ($rendered['subject'] ?? ''),
+                    $this->emailQueueRepo->bodyHtml() => $rendered['body_html'] ?? null,
+                    $this->emailQueueRepo->bodyText() => $rendered['body_text'] ?? null,
+                    $this->emailQueueRepo->templateId() => $invitationTemplate->{$this->emailTemplateRepo->id()},
+                    $this->emailQueueRepo->emailType() => (string) ($invitationTemplate->{$this->emailTemplateRepo->emailType()} ?? 'candidate_invitation'),
+                    $this->emailQueueRepo->priority() => (string) ($invitationTemplate->{$this->emailTemplateRepo->defaultPriority()} ?? EmailPriority::NORMAL->value),
+                    $this->emailQueueRepo->clientId() => $clientId,
+                    $this->emailQueueRepo->candidateId() => $invitation->{$this->invitationRepo->candidateId()},
+                    $this->emailQueueRepo->userId() => $user?->id,
+                    $this->emailQueueRepo->assignedServerId() => $invitationTemplate->{$this->emailTemplateRepo->serverId()},
+                    $this->emailQueueRepo->status() => EmailQueueStatus::PENDING->value,
+                    $this->emailQueueRepo->attempts() => 0,
+                    $this->emailQueueRepo->maxAttempts() => 3,
+                    $this->emailQueueRepo->scheduledAt() => now(),
+                    $this->emailQueueRepo->expiresAt() => $invitation->{$this->invitationRepo->expiresAt()},
                 ]);
 
-                $this->candidateService->update(
-                    $invitation->{$this->invitationService->candidateId()},
+                $this->candidateRepo->update(
+                    $invitation->{$this->invitationRepo->candidateId()},
                     [
-                        $this->candidateService->status() => CandidateStatus::SENT->value,
-                        $this->candidateService->invitationSentAt() => now(),
+                        $this->candidateRepo->status() => CandidateStatus::SENT->value,
+                        $this->candidateRepo->invitationSentAt() => now(),
                     ]
                 );
             }
@@ -418,35 +422,35 @@ class CandidateInvitationService extends BaseService
         }
 
         $createdInvitationIds = collect($createdInvitations)
-            ->pluck($this->invitationService->id())
+            ->pluck($this->invitationRepo->id())
             ->map(static fn($id) => (int) $id)
             ->values()
             ->all();
 
-        $createdInvitationWithRelations = $this->invitationService->query()
-            ->whereIn($this->invitationService->id(), $createdInvitationIds)
+        $createdInvitationWithRelations = $this->invitationRepo->query()
+            ->whereIn($this->invitationRepo->id(), $createdInvitationIds)
             ->with(['candidate', 'package'])
             ->get();
 
         $baseUrl = rtrim($clientAppUrl, '/');
         $responseInvitations = $createdInvitationWithRelations
             ->map(function ($invitation) use ($packageIds, $baseUrl) {
-                $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+                $relativeLink = (string) ($invitation->{$this->invitationRepo->formLink()} ?? '');
                 $fullFormLink = $baseUrl !== '' && $relativeLink
                     ? $baseUrl . '/' . ltrim($relativeLink, '/')
                     : ($relativeLink ? '/' . ltrim($relativeLink, '/') : null);
 
                 return [
-                    'id' => $invitation->{$this->invitationService->id()},
-                    'candidate_id' => $invitation->{$this->invitationService->candidateId()},
-                    'package_id' => $invitation->{$this->invitationService->packageId()},
+                    'id' => $invitation->{$this->invitationRepo->id()},
+                    'candidate_id' => $invitation->{$this->invitationRepo->candidateId()},
+                    'package_id' => $invitation->{$this->invitationRepo->packageId()},
                     'package_ids' => $packageIds,
-                    'invitation_type' => $invitation->{$this->invitationService->invitationType()},
-                    'invitation_token' => $invitation->{$this->invitationService->invitationToken()},
+                    'invitation_type' => $invitation->{$this->invitationRepo->invitationType()},
+                    'invitation_token' => $invitation->{$this->invitationRepo->invitationToken()},
                     'form_link' => $fullFormLink,
-                    'status' => $invitation->{$this->invitationService->status()},
-                    'invited_at' => $invitation->{$this->invitationService->invitedAt()},
-                    'expires_at' => $invitation->{$this->invitationService->expiresAt()},
+                    'status' => $invitation->{$this->invitationRepo->status()},
+                    'invited_at' => $invitation->{$this->invitationRepo->invitedAt()},
+                    'expires_at' => $invitation->{$this->invitationRepo->expiresAt()},
                 ];
             })
             ->values()
@@ -455,15 +459,15 @@ class CandidateInvitationService extends BaseService
         $responseCandidates = $createdInvitationWithRelations
             ->pluck('candidate')
             ->filter()
-            ->unique($this->candidateService->id())
+            ->unique($this->candidateRepo->id())
             ->map(function ($candidate) {
                 return [
-                    'id' => $candidate->{$this->candidateService->id()},
-                    'first_name' => $candidate->{$this->candidateService->firstName()},
-                    'last_name' => $candidate->{$this->candidateService->lastName()},
-                    'email' => $candidate->{$this->candidateService->email()},
-                    'phone' => $candidate->{$this->candidateService->phone()},
-                    'status' => $candidate->{$this->candidateService->status()},
+                    'id' => $candidate->{$this->candidateRepo->id()},
+                    'first_name' => $candidate->{$this->candidateRepo->firstName()},
+                    'last_name' => $candidate->{$this->candidateRepo->lastName()},
+                    'email' => $candidate->{$this->candidateRepo->email()},
+                    'phone' => $candidate->{$this->candidateRepo->phone()},
+                    'status' => $candidate->{$this->candidateRepo->status()},
                 ];
             })
             ->values()
@@ -472,11 +476,11 @@ class CandidateInvitationService extends BaseService
         $responsePackages = $packages
             ->map(function ($package) {
                 return [
-                    'id' => $package->{$this->packageService->id()},
-                    'package_name' => $package->{$this->packageService->packageName()},
-                    'package_code' => $package->{$this->packageService->packageCode()},
-                    'type' => $package->{$this->packageService->type()},
-                    'status' => $package->{$this->packageService->status()},
+                    'id' => $package->{$this->packageRepo->id()},
+                    'package_name' => $package->{$this->packageRepo->packageName()},
+                    'package_code' => $package->{$this->packageRepo->packageCode()},
+                    'type' => $package->{$this->packageRepo->type()},
+                    'status' => $package->{$this->packageRepo->status()},
                 ];
             })
             ->values()
@@ -496,8 +500,8 @@ class CandidateInvitationService extends BaseService
 
     public function getInvitationByToken(string $token): array
     {
-        $invitation = $this->invitationService->query()
-            ->where($this->invitationService->invitationToken(), $token)
+        $invitation = $this->invitationRepo->query()
+            ->where($this->invitationRepo->invitationToken(), $token)
             ->with(['candidate', 'package'])
             ->first();
 
@@ -505,15 +509,15 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Invitation not found or token is invalid.', 404);
         }
 
-        if ((string) ($invitation->{$this->invitationService->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
+        if ((string) ($invitation->{$this->invitationRepo->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
             throw new \Exception('Invitation has already been completed.', 422);
         }
 
-        if ((string) ($invitation->{$this->invitationService->status()} ?? '') !== CandidateInvitationStatus::PENDING->value) {
+        if ((string) ($invitation->{$this->invitationRepo->status()} ?? '') !== CandidateInvitationStatus::PENDING->value) {
             throw new \Exception('Invitation is not valid.', 422);
         }
 
-        $expiresAt = $invitation->{$this->invitationService->expiresAt()};
+        $expiresAt = $invitation->{$this->invitationRepo->expiresAt()};
         if (!empty($expiresAt) && now()->greaterThan($expiresAt)) {
             throw new \Exception('Invitation has expired.', 410);
         }
@@ -521,49 +525,49 @@ class CandidateInvitationService extends BaseService
         [$formData, $packageIds, $packageServices, $serviceIds, $serviceFieldsByServiceId, $serviceMetaByServiceId] = $this->buildInvitationContext($invitation);
         $candidate = $invitation->candidate;
         $fieldValuesByFieldId = $this->getCandidateFieldValuesByFieldId(
-            (int) ($candidate?->{$this->candidateService->id()} ?? 0),
+            (int) ($candidate?->{$this->candidateRepo->id()} ?? 0),
             $serviceIds
         );
 
         $services = collect();
         if ($serviceIds->isNotEmpty()) {
-            $services = $this->serviceService->query()
-                ->whereIn($this->serviceService->id(), $serviceIds->all())
+            $services = $this->serviceRepo->query()
+                ->whereIn($this->serviceRepo->id(), $serviceIds->all())
                 ->where(function ($query) {
-                    $query->where($this->serviceService->status(), 'active')
-                        ->orWhere($this->serviceService->status(), 1);
+                    $query->where($this->serviceRepo->status(), 'active')
+                        ->orWhere($this->serviceRepo->status(), 1);
                 })
                 ->get()
                 ->map(function ($service) use ($serviceFieldsByServiceId, $serviceMetaByServiceId, $fieldValuesByFieldId) {
-                    $serviceId = (int) ($service->{$this->serviceService->id()} ?? 0);
+                    $serviceId = (int) ($service->{$this->serviceRepo->id()} ?? 0);
                     $fields = collect($serviceFieldsByServiceId->get($serviceId, []))
                         ->map(function ($field) use ($fieldValuesByFieldId) {
                             return [
-                                'id' => $field->{$this->servicesFieldService->id()},
-                                'service_id' => $field->{$this->servicesFieldService->serviceId()},
-                                'field_name' => $field->{$this->servicesFieldService->fieldName()},
-                                'field_label' => $field->{$this->servicesFieldService->fieldLabel()},
+                                'id' => $field->{$this->servicesFieldRepo->id()},
+                                'service_id' => $field->{$this->servicesFieldRepo->serviceId()},
+                                'field_name' => $field->{$this->servicesFieldRepo->fieldName()},
+                                'field_label' => $field->{$this->servicesFieldRepo->fieldLabel()},
                                 'section' => $field->section,
-                                'field_type' => $field->{$this->servicesFieldService->fieldType()},
-                                'is_required' => $field->{$this->servicesFieldService->isRequired()},
+                                'field_type' => $field->{$this->servicesFieldRepo->fieldType()},
+                                'is_required' => $field->{$this->servicesFieldRepo->isRequired()},
                                 'or_group_name' => $field->or_group_name,
-                                'validation_regex' => $field->{$this->servicesFieldService->validationRegex()},
-                                'display_order' => $field->{$this->servicesFieldService->displayOrder()},
-                                'status' => $field->{$this->servicesFieldService->status()},
-                                'value' => $fieldValuesByFieldId->get((int) ($field->{$this->servicesFieldService->id()} ?? 0)),
+                                'validation_regex' => $field->{$this->servicesFieldRepo->validationRegex()},
+                                'display_order' => $field->{$this->servicesFieldRepo->displayOrder()},
+                                'status' => $field->{$this->servicesFieldRepo->status()},
+                                'value' => $fieldValuesByFieldId->get((int) ($field->{$this->servicesFieldRepo->id()} ?? 0)),
                             ];
                         })
                         ->values()
                         ->all();
 
                     return array_merge([
-                        'id' => $service->{$this->serviceService->id()},
-                        'service_name' => $service->{$this->serviceService->serviceName()},
-                        'service_code' => $service->{$this->serviceService->serviceCode()},
-                        'service_category' => $service->{$this->serviceService->serviceCategory()},
-                        'description' => $service->{$this->serviceService->description()},
-                        'base_price' => $service->{$this->serviceService->basePrice()},
-                        'status' => $service->{$this->serviceService->status()},
+                        'id' => $service->{$this->serviceRepo->id()},
+                        'service_name' => $service->{$this->serviceRepo->serviceName()},
+                        'service_code' => $service->{$this->serviceRepo->serviceCode()},
+                        'service_category' => $service->{$this->serviceRepo->serviceCategory()},
+                        'description' => $service->{$this->serviceRepo->description()},
+                        'base_price' => $service->{$this->serviceRepo->basePrice()},
+                        'status' => $service->{$this->serviceRepo->status()},
                         'fields' => $fields,
                     ], $serviceMetaByServiceId->get($serviceId, []));
                 })
@@ -572,14 +576,14 @@ class CandidateInvitationService extends BaseService
         }
 
         $invitationData = $invitation->toArray();
-        
+
         $clientAppUrl = $this->configurationService->getStringValue(
             ConfigurationKey::CLIENT_APP_URL,
             (string) config('app.client_url', env('CLIENT_URL', ''))
         );
         $baseUrl = rtrim($clientAppUrl, '/');
-        $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
-        $invitationData[$this->invitationService->formLink()] = $baseUrl !== '' && $relativeLink
+        $relativeLink = (string) ($invitation->{$this->invitationRepo->formLink()} ?? '');
+        $invitationData[$this->invitationRepo->formLink()] = $baseUrl !== '' && $relativeLink
             ? $baseUrl . '/' . ltrim($relativeLink, '/')
             : ($relativeLink ? '/' . ltrim($relativeLink, '/') : null);
 
@@ -596,8 +600,8 @@ class CandidateInvitationService extends BaseService
 
     public function updateInvitationByToken(string $token, array $payload, string $ip, string $userAgent): void
     {
-        $invitation = $this->invitationService->query()
-            ->where($this->invitationService->invitationToken(), $token)
+        $invitation = $this->invitationRepo->query()
+            ->where($this->invitationRepo->invitationToken(), $token)
             ->with(['candidate'])
             ->first();
 
@@ -605,15 +609,15 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Invitation not found or token is invalid.', 404);
         }
 
-        if ((string) ($invitation->{$this->invitationService->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
+        if ((string) ($invitation->{$this->invitationRepo->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
             throw new \Exception('Invitation has already been completed.', 422);
         }
 
-        if ((string) ($invitation->{$this->invitationService->status()} ?? '') !== CandidateInvitationStatus::PENDING->value) {
+        if ((string) ($invitation->{$this->invitationRepo->status()} ?? '') !== CandidateInvitationStatus::PENDING->value) {
             throw new \Exception('Invitation is not valid.', 422);
         }
 
-        $expiresAt = $invitation->{$this->invitationService->expiresAt()};
+        $expiresAt = $invitation->{$this->invitationRepo->expiresAt()};
         if (!empty($expiresAt) && now()->greaterThan($expiresAt)) {
             throw new \Exception('Invitation has expired.', 410);
         }
@@ -621,7 +625,7 @@ class CandidateInvitationService extends BaseService
         [$formData, $packageIds, $packageServices, $serviceIds, $serviceFieldsByServiceId] = $this->buildInvitationContext($invitation);
         $allowedFields = $serviceFieldsByServiceId
             ->flatten(1)
-            ->keyBy($this->servicesFieldService->id());
+            ->keyBy($this->servicesFieldRepo->id());
 
         $inputFields = collect($payload['fields'] ?? []);
         $invalidFieldIds = $inputFields
@@ -642,7 +646,7 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Candidate not found for this invitation.', 404);
         }
 
-        $candidateId = (int) ($candidate->{$this->candidateService->id()} ?? 0);
+        $candidateId = (int) ($candidate->{$this->candidateRepo->id()} ?? 0);
         if ($candidateId <= 0) {
             throw new \Exception('Candidate not found for this invitation.', 404);
         }
@@ -650,27 +654,27 @@ class CandidateInvitationService extends BaseService
         DB::transaction(function () use ($payload, $candidateId, $serviceIds, $allowedFields, $invitation, $ip, $userAgent) {
             $candidateDetails = $payload['candidate_details'] ?? [];
 
-            $this->candidateService->update($candidateId, [
-                $this->candidateService->firstName() => trim((string) ($candidateDetails['first_name'] ?? '')),
-                $this->candidateService->lastName() => trim((string) ($candidateDetails['last_name'] ?? '')),
-                $this->candidateService->email() => strtolower(trim((string) ($candidateDetails['email'] ?? ''))),
-                $this->candidateService->phone() => trim((string) ($candidateDetails['phone'] ?? '')),
-                $this->candidateService->address() => trim((string) ($candidateDetails['address'] ?? '')),
-                $this->candidateService->countryId() => !empty($candidateDetails['country_id']) ? (int) $candidateDetails['country_id'] : null,
-                $this->candidateService->stateId() => !empty($candidateDetails['state_id']) ? (int) $candidateDetails['state_id'] : null,
-                $this->candidateService->cityId() => !empty($candidateDetails['city_id']) ? (int) $candidateDetails['city_id'] : null,
-                $this->candidateService->pincode() => !empty($candidateDetails['pincode']) ? (string) $candidateDetails['pincode'] : null,
-                $this->candidateService->status() => CandidateStatus::ACTIVE->value,
-                $this->candidateService->invitationAcceptedAt() => now(),
+            $this->candidateRepo->update($candidateId, [
+                $this->candidateRepo->firstName() => trim((string) ($candidateDetails['first_name'] ?? '')),
+                $this->candidateRepo->lastName() => trim((string) ($candidateDetails['last_name'] ?? '')),
+                $this->candidateRepo->email() => strtolower(trim((string) ($candidateDetails['email'] ?? ''))),
+                $this->candidateRepo->phone() => trim((string) ($candidateDetails['phone'] ?? '')),
+                $this->candidateRepo->address() => trim((string) ($candidateDetails['address'] ?? '')),
+                $this->candidateRepo->countryId() => !empty($candidateDetails['country_id']) ? (int) $candidateDetails['country_id'] : null,
+                $this->candidateRepo->stateId() => !empty($candidateDetails['state_id']) ? (int) $candidateDetails['state_id'] : null,
+                $this->candidateRepo->cityId() => !empty($candidateDetails['city_id']) ? (int) $candidateDetails['city_id'] : null,
+                $this->candidateRepo->pincode() => !empty($candidateDetails['pincode']) ? (string) $candidateDetails['pincode'] : null,
+                $this->candidateRepo->status() => CandidateStatus::ACTIVE->value,
+                $this->candidateRepo->invitationAcceptedAt() => now(),
             ]);
 
             $candidateServices = collect();
             if ($serviceIds->isNotEmpty()) {
-                $candidateServices = $this->candidateServiceService->query()
-                    ->where($this->candidateServiceService->candidateId(), $candidateId)
-                    ->whereIn($this->candidateServiceService->serviceId(), $serviceIds->all())
+                $candidateServices = $this->candidateServiceRepo->query()
+                    ->where($this->candidateServiceRepo->candidateId(), $candidateId)
+                    ->whereIn($this->candidateServiceRepo->serviceId(), $serviceIds->all())
                     ->get()
-                    ->keyBy($this->candidateServiceService->serviceId());
+                    ->keyBy($this->candidateServiceRepo->serviceId());
             }
 
             foreach (($payload['fields'] ?? []) as $fieldInput) {
@@ -684,33 +688,33 @@ class CandidateInvitationService extends BaseService
                     continue;
                 }
 
-                $serviceId = (int) ($field->{$this->servicesFieldService->serviceId()} ?? 0);
+                $serviceId = (int) ($field->{$this->servicesFieldRepo->serviceId()} ?? 0);
                 if ($serviceId <= 0) {
                     continue;
                 }
 
                 $candidateService = $candidateServices->get($serviceId);
                 if (!$candidateService) {
-                    $candidateService = $this->candidateServiceService->create([
-                        $this->candidateServiceService->candidateId() => $candidateId,
-                        $this->candidateServiceService->serviceId() => $serviceId,
-                        $this->candidateServiceService->status() => CandidateStatus::ACTIVE->value,
+                    $candidateService = $this->candidateServiceRepo->create([
+                        $this->candidateServiceRepo->candidateId() => $candidateId,
+                        $this->candidateServiceRepo->serviceId() => $serviceId,
+                        $this->candidateServiceRepo->status() => CandidateStatus::ACTIVE->value,
                     ]);
                     $candidateServices->put($serviceId, $candidateService);
                 }
 
-                $candidateServiceId = (int) ($candidateService->{$this->candidateServiceService->id()} ?? 0);
+                $candidateServiceId = (int) ($candidateService->{$this->candidateServiceRepo->id()} ?? 0);
                 if ($candidateServiceId <= 0) {
                     continue;
                 }
 
-                $existingValue = $this->candidateServiceDataService->query()
-                    ->where($this->candidateServiceDataService->candidateServiceId(), $candidateServiceId)
-                    ->where($this->candidateServiceDataService->fieldId(), $fieldId)
+                $existingValue = $this->candidateServiceDataRepo->query()
+                    ->where($this->candidateServiceDataRepo->candidateServiceId(), $candidateServiceId)
+                    ->where($this->candidateServiceDataRepo->fieldId(), $fieldId)
                     ->first();
 
                 $value = $fieldInput['value'] ?? null;
-                
+
                 if ($value instanceof \Illuminate\Http\UploadedFile) {
                     $path = $value->store('candidate_documents', 'local');
                     $normalizedValue = $path;
@@ -721,46 +725,46 @@ class CandidateInvitationService extends BaseService
                 }
 
                 if ($existingValue) {
-                    $this->candidateServiceDataService->update(
-                        $existingValue->{$this->candidateServiceDataService->id()},
+                    $this->candidateServiceDataRepo->update(
+                        $existingValue->{$this->candidateServiceDataRepo->id()},
                         [
-                            $this->candidateServiceDataService->fieldValue() => $normalizedValue,
+                            $this->candidateServiceDataRepo->fieldValue() => $normalizedValue,
                         ]
                     );
                     continue;
                 }
 
-                $this->candidateServiceDataService->create([
-                    $this->candidateServiceDataService->candidateServiceId() => $candidateServiceId,
-                    $this->candidateServiceDataService->fieldId() => $fieldId,
-                    $this->candidateServiceDataService->fieldValue() => $normalizedValue,
-                    $this->candidateServiceDataService->status() => CandidateStatus::ACTIVE->value,
+                $this->candidateServiceDataRepo->create([
+                    $this->candidateServiceDataRepo->candidateServiceId() => $candidateServiceId,
+                    $this->candidateServiceDataRepo->fieldId() => $fieldId,
+                    $this->candidateServiceDataRepo->fieldValue() => $normalizedValue,
+                    $this->candidateServiceDataRepo->status() => CandidateStatus::ACTIVE->value,
                 ]);
             }
 
-            $this->invitationService->update(
-                $invitation->{$this->invitationService->id()},
+            $this->invitationRepo->update(
+                $invitation->{$this->invitationRepo->id()},
                 [
-                    $this->invitationService->status() => CandidateInvitationStatus::COMPLETED->value,
-                    $this->invitationService->completedAt() => now(),
+                    $this->invitationRepo->status() => CandidateInvitationStatus::COMPLETED->value,
+                    $this->invitationRepo->completedAt() => now(),
                 ]
             );
 
-            $this->candidateInvitationsLogService->create([
-                $this->candidateInvitationsLogService->invitationId() => $invitation->{$this->invitationService->id()},
-                $this->candidateInvitationsLogService->action() => 'completed',
-                $this->candidateInvitationsLogService->ipAddress() => $ip,
-                $this->candidateInvitationsLogService->userAgent() => $userAgent,
-                $this->candidateInvitationsLogService->status() => CandidateInvitationStatus::COMPLETED->value,
+            $this->candidateInvitationsLogRepo->create([
+                $this->candidateInvitationsLogRepo->invitationId() => $invitation->{$this->invitationRepo->id()},
+                $this->candidateInvitationsLogRepo->action() => 'completed',
+                $this->candidateInvitationsLogRepo->ipAddress() => $ip,
+                $this->candidateInvitationsLogRepo->userAgent() => $userAgent,
+                $this->candidateInvitationsLogRepo->status() => CandidateInvitationStatus::COMPLETED->value,
             ]);
         });
     }
 
     public function resendInvitation(int $invitationId, int $clientId, ?object $user, string $ip, string $userAgent): void
     {
-        $invitation = $this->invitationService->query()
-            ->where($this->invitationService->id(), $invitationId)
-            ->where($this->invitationService->clientId(), $clientId)
+        $invitation = $this->invitationRepo->query()
+            ->where($this->invitationRepo->id(), $invitationId)
+            ->where($this->invitationRepo->clientId(), $clientId)
             ->with(['candidate'])
             ->first();
 
@@ -768,7 +772,7 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Invitation not found.', 404);
         }
 
-        if ((string) ($invitation->{$this->invitationService->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
+        if ((string) ($invitation->{$this->invitationRepo->status()} ?? '') === CandidateInvitationStatus::COMPLETED->value) {
             throw new \Exception('Invitation has already been completed.', 422);
         }
 
@@ -777,11 +781,11 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Candidate not found for this invitation.', 404);
         }
 
-        $client = $this->clientService->query()
-            ->where($this->clientService->id(), $clientId)
+        $client = $this->clientRepo->query()
+            ->where($this->clientRepo->id(), $clientId)
             ->first();
 
-        $invitationTemplate = $this->emailTemplateService->findActiveByCode(
+        $invitationTemplate = $this->emailTemplateRepo->findActiveByCode(
             EmailTemplateCode::CANDIDATE_INVITATION_FORM->value
         );
 
@@ -789,7 +793,7 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Candidate invitation template not found.', 404);
         }
 
-        $candidateEmail = strtolower(trim((string) ($candidate->{$this->candidateService->email()} ?? '')));
+        $candidateEmail = strtolower(trim((string) ($candidate->{$this->candidateRepo->email()} ?? '')));
         if ($candidateEmail === '') {
             throw new \Exception('Candidate does not have an email address.', 422);
         }
@@ -799,13 +803,13 @@ class CandidateInvitationService extends BaseService
             (string) config('app.client_url', env('CLIENT_URL', ''))
         );
         $baseUrl = rtrim($clientAppUrl, '/');
-        $relativeLink = (string) ($invitation->{$this->invitationService->formLink()} ?? '');
+        $relativeLink = (string) ($invitation->{$this->invitationRepo->formLink()} ?? '');
         $inviteLink = $baseUrl !== ''
             ? $baseUrl . '/' . ltrim($relativeLink, '/')
             : '/' . ltrim($relativeLink, '/');
 
-        $candidateFirstName = trim((string) ($candidate->{$this->candidateService->firstName()} ?? ''));
-        $candidateLastName = trim((string) ($candidate->{$this->candidateService->lastName()} ?? ''));
+        $candidateFirstName = trim((string) ($candidate->{$this->candidateRepo->firstName()} ?? ''));
+        $candidateLastName = trim((string) ($candidate->{$this->candidateRepo->lastName()} ?? ''));
         $candidateFullName = trim($candidateFirstName . ' ' . $candidateLastName) ?? $candidateEmail;
 
         DB::transaction(function () use ($invitation, $candidate, $client, $invitationTemplate, $candidateEmail, $candidateFullName, $candidateFirstName, $candidateLastName, $inviteLink, $user, $ip, $userAgent, $clientId) {
@@ -815,47 +819,47 @@ class CandidateInvitationService extends BaseService
                 'candidate_last_name' => $candidateLastName,
                 'candidate_email' => $candidateEmail,
                 'candidate_invite_link' => $inviteLink,
-                'company_name' => (string) ($client?->{$this->clientService->companyName()} ?? config('app.name')),
-                'client_email' => (string) ($client?->{$this->clientService->email()} ?? ''),
-                'invitation_token' => (string) ($invitation->{$this->invitationService->invitationToken()} ?? ''),
-                'invitation_expires_at' => (string) ($invitation->{$this->invitationService->expiresAt()} ?? ''),
+                'company_name' => (string) ($client?->{$this->clientRepo->companyName()} ?? config('app.name')),
+                'client_email' => (string) ($client?->{$this->clientRepo->email()} ?? ''),
+                'invitation_token' => (string) ($invitation->{$this->invitationRepo->invitationToken()} ?? ''),
+                'invitation_expires_at' => (string) ($invitation->{$this->invitationRepo->expiresAt()} ?? ''),
             ]);
 
-            $this->emailQueueService->create([
-                $this->emailQueueService->emailUid() => 'email_' . Str::uuid(),
-                $this->emailQueueService->toEmail() => $candidateEmail,
-                $this->emailQueueService->toName() => $candidateFullName !== '' ? $candidateFullName : null,
-                $this->emailQueueService->subject() => (string) ($rendered['subject'] ?? ''),
-                $this->emailQueueService->bodyHtml() => $rendered['body_html'] ?? null,
-                $this->emailQueueService->bodyText() => $rendered['body_text'] ?? null,
-                $this->emailQueueService->templateId() => $invitationTemplate->{$this->emailTemplateService->id()},
-                $this->emailQueueService->emailType() => (string) ($invitationTemplate->{$this->emailTemplateService->emailType()} ?? 'candidate_invitation'),
-                $this->emailQueueService->priority() => (string) ($invitationTemplate->{$this->emailTemplateService->defaultPriority()} ?? EmailPriority::NORMAL->value),
-                $this->emailQueueService->clientId() => $clientId,
-                $this->emailQueueService->candidateId() => $invitation->{$this->invitationService->candidateId()},
-                $this->emailQueueService->userId() => $user?->id,
-                $this->emailQueueService->assignedServerId() => $invitationTemplate->{$this->emailTemplateService->serverId()},
-                $this->emailQueueService->status() => EmailQueueStatus::PENDING->value,
-                $this->emailQueueService->attempts() => 0,
-                $this->emailQueueService->maxAttempts() => 3,
-                $this->emailQueueService->scheduledAt() => now(),
-                $this->emailQueueService->expiresAt() => $invitation->{$this->invitationService->expiresAt()},
+            $this->emailQueueRepo->create([
+                $this->emailQueueRepo->emailUid() => 'email_' . Str::uuid(),
+                $this->emailQueueRepo->toEmail() => $candidateEmail,
+                $this->emailQueueRepo->toName() => $candidateFullName !== '' ? $candidateFullName : null,
+                $this->emailQueueRepo->subject() => (string) ($rendered['subject'] ?? ''),
+                $this->emailQueueRepo->bodyHtml() => $rendered['body_html'] ?? null,
+                $this->emailQueueRepo->bodyText() => $rendered['body_text'] ?? null,
+                $this->emailQueueRepo->templateId() => $invitationTemplate->{$this->emailTemplateRepo->id()},
+                $this->emailQueueRepo->emailType() => (string) ($invitationTemplate->{$this->emailTemplateRepo->emailType()} ?? 'candidate_invitation'),
+                $this->emailQueueRepo->priority() => (string) ($invitationTemplate->{$this->emailTemplateRepo->defaultPriority()} ?? EmailPriority::NORMAL->value),
+                $this->emailQueueRepo->clientId() => $clientId,
+                $this->emailQueueRepo->candidateId() => $invitation->{$this->invitationRepo->candidateId()},
+                $this->emailQueueRepo->userId() => $user?->id,
+                $this->emailQueueRepo->assignedServerId() => $invitationTemplate->{$this->emailTemplateRepo->serverId()},
+                $this->emailQueueRepo->status() => EmailQueueStatus::PENDING->value,
+                $this->emailQueueRepo->attempts() => 0,
+                $this->emailQueueRepo->maxAttempts() => 3,
+                $this->emailQueueRepo->scheduledAt() => now(),
+                $this->emailQueueRepo->expiresAt() => $invitation->{$this->invitationRepo->expiresAt()},
             ]);
 
-            $this->invitationService->update(
-                $invitation->{$this->invitationService->id()},
+            $this->invitationRepo->update(
+                $invitation->{$this->invitationRepo->id()},
                 [
-                    $this->invitationService->reminderCount() => ((int) ($invitation->{$this->invitationService->reminderCount()} ?? 0)) + 1,
-                    $this->invitationService->updatedAt() => now(),
+                    $this->invitationRepo->reminderCount() => ((int) ($invitation->{$this->invitationRepo->reminderCount()} ?? 0)) + 1,
+                    $this->invitationRepo->updatedAt() => now(),
                 ]
             );
 
-            $this->candidateInvitationsLogService->create([
-                $this->candidateInvitationsLogService->invitationId() => $invitation->{$this->invitationService->id()},
-                $this->candidateInvitationsLogService->action() => 'resent',
-                $this->candidateInvitationsLogService->ipAddress() => $ip,
-                $this->candidateInvitationsLogService->userAgent() => $userAgent,
-                $this->candidateInvitationsLogService->status() => $invitation->{$this->invitationService->status()},
+            $this->candidateInvitationsLogRepo->create([
+                $this->candidateInvitationsLogRepo->invitationId() => $invitation->{$this->invitationRepo->id()},
+                $this->candidateInvitationsLogRepo->action() => 'resent',
+                $this->candidateInvitationsLogRepo->ipAddress() => $ip,
+                $this->candidateInvitationsLogRepo->userAgent() => $userAgent,
+                $this->candidateInvitationsLogRepo->status() => $invitation->{$this->invitationRepo->status()},
             ]);
         });
     }
@@ -886,7 +890,7 @@ class CandidateInvitationService extends BaseService
 
     protected function buildInvitationContext($invitation): array
     {
-        $formData = $invitation->{$this->invitationService->formData()} ?? [];
+        $formData = $invitation->{$this->invitationRepo->formData()} ?? [];
         if (is_string($formData)) {
             $decoded = json_decode($formData, true);
             $formData = is_array($decoded) ? $decoded : [];
@@ -902,7 +906,7 @@ class CandidateInvitationService extends BaseService
             ->values();
 
         if ($packageIds->isEmpty()) {
-            $primaryPackageId = (int) ($invitation->{$this->invitationService->packageId()} ?? 0);
+            $primaryPackageId = (int) ($invitation->{$this->invitationRepo->packageId()} ?? 0);
             if ($primaryPackageId > 0) {
                 $packageIds = collect([$primaryPackageId]);
             }
@@ -911,17 +915,17 @@ class CandidateInvitationService extends BaseService
         $packageServices = collect();
         $serviceIds = collect();
         if ($packageIds->isNotEmpty()) {
-            $packageServices = $this->packageServiceService->query()
-                ->whereIn($this->packageServiceService->packageId(), $packageIds->all())
+            $packageServices = $this->packageServiceRepo->query()
+                ->whereIn($this->packageServiceRepo->packageId(), $packageIds->all())
                 ->where(function ($query) {
-                    $query->where($this->packageServiceService->status(), 'active')
-                        ->orWhere($this->packageServiceService->status(), 1);
+                    $query->where($this->packageServiceRepo->status(), 'active')
+                        ->orWhere($this->packageServiceRepo->status(), 1);
                 })
-                ->orderBy($this->packageServiceService->displayOrder(), 'asc')
+                ->orderBy($this->packageServiceRepo->displayOrder(), 'asc')
                 ->get();
 
             $serviceIds = $packageServices
-                ->pluck($this->packageServiceService->serviceId())
+                ->pluck($this->packageServiceRepo->serviceId())
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
@@ -930,25 +934,25 @@ class CandidateInvitationService extends BaseService
 
         $serviceFieldsByServiceId = collect();
         if ($serviceIds->isNotEmpty()) {
-            $serviceFieldsByServiceId = $this->servicesFieldService->query()
-                ->whereIn($this->servicesFieldService->serviceId(), $serviceIds->all())
+            $serviceFieldsByServiceId = $this->servicesFieldRepo->query()
+                ->whereIn($this->servicesFieldRepo->serviceId(), $serviceIds->all())
                 ->where(function ($query) {
-                    $query->where($this->servicesFieldService->status(), 'active')
-                        ->orWhere($this->servicesFieldService->status(), 1);
+                    $query->where($this->servicesFieldRepo->status(), 'active')
+                        ->orWhere($this->servicesFieldRepo->status(), 1);
                 })
-                ->orderBy($this->servicesFieldService->displayOrder(), 'asc')
+                ->orderBy($this->servicesFieldRepo->displayOrder(), 'asc')
                 ->get()
-                ->groupBy($this->servicesFieldService->serviceId());
+                ->groupBy($this->servicesFieldRepo->serviceId());
         }
 
         $serviceMetaByServiceId = $packageServices
-            ->groupBy($this->packageServiceService->serviceId())
+            ->groupBy($this->packageServiceRepo->serviceId())
             ->map(function ($items) {
                 $first = $items->first();
 
                 return [
-                    'display_order' => (int) ($first?->{$this->packageServiceService->displayOrder()} ?? 0),
-                    'is_mandatory' => (bool) ($first?->{$this->packageServiceService->isMandatory()} ?? true),
+                    'display_order' => (int) ($first?->{$this->packageServiceRepo->displayOrder()} ?? 0),
+                    'is_mandatory' => (bool) ($first?->{$this->packageServiceRepo->isMandatory()} ?? true),
                 ];
             });
 
@@ -961,20 +965,20 @@ class CandidateInvitationService extends BaseService
             return collect();
         }
 
-        $candidateServiceIds = $this->candidateServiceService->query()
-            ->where($this->candidateServiceService->candidateId(), $candidateId)
-            ->whereIn($this->candidateServiceService->serviceId(), $serviceIds->all())
+        $candidateServiceIds = $this->candidateServiceRepo->query()
+            ->where($this->candidateServiceRepo->candidateId(), $candidateId)
+            ->whereIn($this->candidateServiceRepo->serviceId(), $serviceIds->all())
             ->get()
-            ->pluck($this->candidateServiceService->id())
+            ->pluck($this->candidateServiceRepo->id())
             ->all();
 
         if ($candidateServiceIds === []) {
             return collect();
         }
 
-        return $this->candidateServiceDataService->query()
-            ->whereIn($this->candidateServiceDataService->candidateServiceId(), $candidateServiceIds)
+        return $this->candidateServiceDataRepo->query()
+            ->whereIn($this->candidateServiceDataRepo->candidateServiceId(), $candidateServiceIds)
             ->get()
-            ->pluck($this->candidateServiceDataService->fieldValue(), $this->candidateServiceDataService->fieldId());
+            ->pluck($this->candidateServiceDataRepo->fieldValue(), $this->candidateServiceDataRepo->fieldId());
     }
 }

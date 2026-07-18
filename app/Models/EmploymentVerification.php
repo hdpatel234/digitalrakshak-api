@@ -6,14 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmploymentVerification extends Model
 {
+    const CANDIDATE_SERVICE_ID = 'candidate_service_id';
+    const TOKEN = 'token';
+    const COMPANY_EMAIL = 'company_email';
+    const CANDIDATE_DATA = 'candidate_data';
+    const STATUS = 'status';
+    const REMARKS = 'remarks';
+    const VERIFIED_AT = 'verified_at';
+
     protected $fillable = [
-        'candidate_service_id',
-        'token',
-        'company_email',
-        'candidate_data',
-        'status',
-        'remarks',
-        'verified_at',
+        self::CANDIDATE_SERVICE_ID,
+        self::TOKEN,
+        self::COMPANY_EMAIL,
+        self::CANDIDATE_DATA,
+        self::STATUS,
+        self::REMARKS,
+        self::VERIFIED_AT,
     ];
 
     protected $casts = [
