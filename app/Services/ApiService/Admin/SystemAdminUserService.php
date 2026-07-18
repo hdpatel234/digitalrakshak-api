@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+use App\Enums\UserStatus;
 use App\Repositories\UserRepository;
 
 class SystemAdminUserService
@@ -61,8 +62,8 @@ class SystemAdminUserService
 
         $stats = [
             'total_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->count(),
-            'active_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), 'active')->count(),
-            'suspended_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), 'suspended')->count(),
+            'active_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), UserStatus::ACTIVE->value)->count(),
+            'suspended_admins' => $this->repo->query()->whereIn($this->repo->userType(), ['super_admin', 'admin_user'])->where($this->repo->status(), UserStatus::SUSPENDED->value)->count(),
             'super_admins' => $this->repo->query()->where($this->repo->userType(), 'super_admin')->count(),
         ];
 
@@ -95,7 +96,7 @@ class SystemAdminUserService
             $this->repo->lastName() => $data['lastName'],
             $this->repo->email() => $data['email'],
             $this->repo->userType() => 'admin_user',
-            $this->repo->status() => 'active',
+            $this->repo->status() => UserStatus::ACTIVE->value,
             $this->repo->password() => Hash::make(Str::random(12)), // Random password initially
         ]);
 

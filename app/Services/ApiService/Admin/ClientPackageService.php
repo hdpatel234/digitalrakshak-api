@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\PackageStatus;
 use App\Repositories\PackageRepository;
 use App\Repositories\PackageServiceRepository;
 use App\Repositories\ServiceRepository;
@@ -91,8 +92,8 @@ class ClientPackageService
             throw new \Exception('Package not found.', 404);
         }
 
-        $package->{$this->repo->status()} = $package->{$this->repo->status()} === 'active' ? 'inactive' : 'active';
-        $package->{$this->repo->isActive()} = $package->{$this->repo->status()} === 'active' ? 1 : 0;
+        $package->{$this->repo->status()} = $package->{$this->repo->status()} === PackageStatus::ACTIVE->value ? PackageStatus::INACTIVE->value : PackageStatus::ACTIVE->value;
+        $package->{$this->repo->isActive()} = $package->{$this->repo->status()} === PackageStatus::ACTIVE->value ? 1 : 0;
         $package->save();
 
         return $package;

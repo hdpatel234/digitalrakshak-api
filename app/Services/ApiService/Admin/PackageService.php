@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\PackageStatus;
 use App\Repositories\PackageRepository;
 use App\Repositories\PackageServiceRepository;
 use App\Repositories\ServiceRepository;
@@ -71,8 +72,8 @@ class PackageService
 
         // Stats
         $totalPackages = $this->repo->countByType('admin');
-        $activePackages = $this->repo->countByTypeAndStatus('admin', 'active');
-        $inactivePackages = $this->repo->countByTypeAndStatus('admin', 'inactive');
+        $activePackages = $this->repo->countByTypeAndStatus('admin', PackageStatus::ACTIVE->value);
+        $inactivePackages = $this->repo->countByTypeAndStatus('admin', PackageStatus::INACTIVE->value);
         $packageCategories = $this->repo->countDistinctTypes('admin');
 
         return [
@@ -121,7 +122,7 @@ class PackageService
                 $this->repo->type() => 'admin',
                 $this->repo->clientId() => 0,
                 $this->repo->isActive() => 1,
-                $this->repo->status() => $data['status'] ?? 'active',
+                $this->repo->status() => $data['status'] ?? PackageStatus::ACTIVE->value,
                 $this->repo->createdBy() => $userId,
             ]);
 
@@ -131,7 +132,7 @@ class PackageService
                     $this->packageServiceRepo->serviceId() => $serviceId,
                     $this->packageServiceRepo->isMandatory() => 1,
                     $this->packageServiceRepo->displayOrder() => $index + 1,
-                    $this->packageServiceRepo->status() => 'active',
+                    $this->packageServiceRepo->status() => PackageStatus::ACTIVE->value,
                     $this->packageServiceRepo->createdBy() => $userId,
                 ]);
             }
@@ -206,7 +207,7 @@ class PackageService
                     $this->packageServiceRepo->serviceId() => $serviceId,
                     $this->packageServiceRepo->isMandatory() => 1,
                     $this->packageServiceRepo->displayOrder() => $index + 1,
-                    $this->packageServiceRepo->status() => 'active',
+                    $this->packageServiceRepo->status() => PackageStatus::ACTIVE->value,
                     $this->packageServiceRepo->createdBy() => $package->{$this->repo->createdBy()},
                     $this->packageServiceRepo->updatedBy() => $userId,
                 ]);
@@ -248,10 +249,11 @@ class PackageService
             throw new \Exception('Package not found.', 404);
         }
 
-        $newStatus = $package->{$this->repo->status()} === 'active' ? 'inactive' : 'active';
+        $newStatus = $package->{$this->repo->status()} === PackageStatus::ACTIVE->value ? PackageStatus::INACTIVE->value : PackageStatus::ACTIVE->value;
+
         $package->update([
             $this->repo->status() => $newStatus,
-            $this->repo->isActive() => $newStatus === 'active' ? 1 : 0,
+            $this->repo->isActive() => $newStatus === PackageStatus::ACTIVE->value ? 1 : 0,
             $this->repo->updatedBy() => $userId,
         ]);
 

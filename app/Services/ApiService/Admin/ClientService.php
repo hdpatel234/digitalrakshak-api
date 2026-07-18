@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\ClientStatus;
+use App\Enums\StatusEnum;
 use App\Models\Client;
 use App\Repositories\ClientRepository;
 use App\Repositories\ClientServiceRepository;
@@ -26,9 +28,9 @@ class ClientService
         $clients = $query->paginate($perPage);
 
         $totalClients = $this->repo->count();
-        $activeClients = $this->repo->countByStatus('active');
-        $inactiveClients = $this->repo->countByStatus('inactive');
-        $suspendedClients = $this->repo->countByStatus('suspended');
+        $activeClients = $this->repo->countByStatus(ClientStatus::ACTIVE->value);
+        $inactiveClients = $this->repo->countByStatus(ClientStatus::INACTIVE->value);
+        $suspendedClients = $this->repo->countByStatus(ClientStatus::SUSPENDED->value);
 
         return [
             'list' => $clients->items(),
@@ -45,9 +47,9 @@ class ClientService
                 'suspended' => $suspendedClients,
             ],
             'status_list' => [
-                ['key' => 'active', 'name' => 'Active'],
-                ['key' => 'inactive', 'name' => 'Inactive'],
-                ['key' => 'suspended', 'name' => 'Suspended'],
+                ['key' => ClientStatus::ACTIVE->value, 'name' => 'Active'],
+                ['key' => ClientStatus::INACTIVE->value, 'name' => 'Inactive'],
+                ['key' => ClientStatus::SUSPENDED->value, 'name' => 'Suspended'],
             ]
         ];
     }
@@ -77,7 +79,7 @@ class ClientService
                         $this->clientServiceRepo->updateOrCreateByClientAndService(
                             $client->{$this->repo->id()},
                             $serviceId,
-                            [$this->clientServiceRepo->status() => $isEnabled ? 'active' : 'inactive']
+                            [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
                         );
 
                         if ($customPrice !== null && $customPrice !== '') {
@@ -109,7 +111,7 @@ class ClientService
 
         $services = [];
         foreach ($clientServices as $serviceId => $clientService) {
-            if ($clientService->{$this->clientServiceRepo->status()} === 'active') {
+            if ($clientService->{$this->clientServiceRepo->status()} === StatusEnum::ACTIVE->value) {
                 $customPrice = null;
                 if ($clientPricing->has($serviceId)) {
                     $customPrice = $clientPricing->get($serviceId)->{$this->clientServicePricingRepo->customPrice()};
@@ -156,7 +158,7 @@ class ClientService
                         $this->clientServiceRepo->updateOrCreateByClientAndService(
                             $client->{$this->repo->id()},
                             $serviceId,
-                            [$this->clientServiceRepo->status() => $isEnabled ? 'active' : 'inactive']
+                            [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
                         );
 
                         if ($customPrice !== null && $customPrice !== '') {
@@ -215,7 +217,7 @@ class ClientService
         $data = $services->map(function ($service) use ($clientServices, $clientPricing) {
             $is_enabled = false;
             if ($clientServices->has($service->{$this->serviceRepo->id()})) {
-                $is_enabled = $clientServices->get($service->{$this->serviceRepo->id()})->{$this->clientServiceRepo->status()} === 'active';
+                $is_enabled = $clientServices->get($service->{$this->serviceRepo->id()})->{$this->clientServiceRepo->status()} === StatusEnum::ACTIVE->value;
             }
 
             $custom_price = null;
@@ -249,7 +251,7 @@ class ClientService
                 $this->clientServiceRepo->updateOrCreateByClientAndService(
                     $client->{$this->repo->id()},
                     $serviceId,
-                    [$this->clientServiceRepo->status() => $isEnabled ? 'active' : 'inactive']
+                    [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
                 );
 
                 // Update or Create ClientServicePricing

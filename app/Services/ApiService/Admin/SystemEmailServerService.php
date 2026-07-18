@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Exception;
-
+use App\Enums\EmailServerStatus;
 use App\Repositories\EmailServerTypeRepository;
 use App\Repositories\EmailServerConfigurationValueRepository;
 
@@ -55,9 +55,9 @@ class SystemEmailServerService
     public function getStatuses()
     {
         return [
-            ['status' => 'active'],
-            ['status' => 'inactive'],
-            ['status' => 'failing']
+            ['status' => EmailServerStatus::ACTIVE->value],
+            ['status' => EmailServerStatus::INACTIVE->value],
+            ['status' => EmailServerStatus::FAILING->value]
         ];
     }
 
@@ -90,7 +90,7 @@ class SystemEmailServerService
                 $decryptedVal = $val->field_value;
                 if ($field->is_encrypted) {
                     try {
-                        $decryptedVal = decrypt($val->field_value);
+                        $decryptedVal = decrypt($val->field_value, true);
                     } catch (Exception $e) {
                         $decryptedVal = '';
                     }
@@ -121,7 +121,7 @@ class SystemEmailServerService
                     if ($field) {
                         $val = $value;
                         if ($field->is_encrypted) {
-                            $val = encrypt($value);
+                            $val = encrypt($value, true);
                         }
                         $valuesToInsert[] = [
                             'email_server_id' => $server->id,
@@ -169,7 +169,7 @@ class SystemEmailServerService
                     if ($field) {
                         $val = $value;
                         if ($field->is_encrypted) {
-                            $val = encrypt($value);
+                            $val = encrypt($value, true);
                         }
                         $valuesToInsert[] = [
                             'email_server_id' => $id,
@@ -221,7 +221,7 @@ class SystemEmailServerService
             $result = $tester->test($server);
 
             $healthStatus = $result['status'] === 'success' ? 'Success' : 'Failed';
-            $status = $result['status'] === 'success' ? 'active' : 'failing';
+            $status = $result['status'] === 'success' ? EmailServerStatus::ACTIVE->value : EmailServerStatus::FAILING->value;
 
             $this->emailServerService->update($id, [
                 'health_check_at' => now(),
@@ -257,7 +257,7 @@ class SystemEmailServerService
                 $decryptedVal = $val->field_value;
                 if ($field->is_encrypted) {
                     try {
-                        $decryptedVal = decrypt($val->field_value);
+                        $decryptedVal = decrypt($val->field_value, true);
                     } catch (Exception $e) {
                         $decryptedVal = '';
                     }
