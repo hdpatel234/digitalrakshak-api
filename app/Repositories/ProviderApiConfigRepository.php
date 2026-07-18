@@ -27,14 +27,9 @@ class ProviderApiConfigRepository extends BaseRepository
         return ProviderApiConfig::ENVIRONMENT;
     }
 
-    public function isActive()
+    public function status()
     {
-        return ProviderApiConfig::IS_ACTIVE;
-    }
-
-    public function isDefault()
-    {
-        return ProviderApiConfig::IS_DEFAULT;
+        return ProviderApiConfig::STATUS;
     }
 
     public function baseUrl()

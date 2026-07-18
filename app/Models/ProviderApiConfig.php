@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderApiConfig extends BaseModel
 {
+    use SoftDeletes;
     
     protected $table = "provider_api_configs";
     
     const PROVIDER_ID = "provider_id";
     const CONFIG_NAME = "config_name";
     const ENVIRONMENT = "environment";
-    const IS_ACTIVE = "is_active";
-    const IS_DEFAULT = "is_default";
+    const STATUS = "status";
     const BASE_URL = "base_url";
     const API_VERSION = "api_version";
     const TIMEOUT_SECONDS = "timeout_seconds";
@@ -46,12 +46,12 @@ class ProviderApiConfig extends BaseModel
     const FAILED_CALLS = "failed_calls";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
+    const DELETED_BY = "deleted_by";
     protected $fillable = [
         self::PROVIDER_ID,
         self::CONFIG_NAME,
         self::ENVIRONMENT,
-        self::IS_ACTIVE,
-        self::IS_DEFAULT,
+        self::STATUS,
         self::BASE_URL,
         self::API_VERSION,
         self::TIMEOUT_SECONDS,

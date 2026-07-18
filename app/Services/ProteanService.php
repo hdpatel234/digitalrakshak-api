@@ -5,17 +5,23 @@ namespace App\Services;
 use Exception;
 use Carbon\Carbon;
 use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\ProviderApiConfigRepository;
+use App\Repositories\ServiceProviderRepository;
+use App\Repositories\ApiProviderLogRepository;
 
 class ProteanService
 {
     protected ?object $config = null;
     protected string $environment = 'sandbox';
-
-    public function __construct()
-    {
+    public function __construct(
+        protected ProviderApiConfigRepository $providerApiConfigRepository,
+        protected ServiceProviderRepository $serviceProviderRepository,
+        protected ApiProviderLogRepository $apiProviderLogRepository
+    ) {
         $this->loadConfiguration();
     }
 
@@ -26,20 +32,25 @@ class ProteanService
     {
         $this->environment = config('app.env') === 'production' ? 'production' : 'sandbox';
 
-        $config = DB::table('provider_api_configs')
-            ->join('service_providers', 'provider_api_configs.provider_id', '=', 'service_providers.id')
-            ->where([
-                ['service_providers.provider_code', 'protean'],
-                ['provider_api_configs.environment', $this->environment],
-            ])
+        $configQuery = $this->providerApiConfigRepository->query()
+            ->join(
+                'service_providers',
+                'provider_api_configs.' . $this->providerApiConfigRepository->providerId(),
+                '=',
+                'service_providers.' . $this->serviceProviderRepository->id()
+            );
+
+        $config = (clone $configQuery)
+            ->where('service_providers.' . $this->serviceProviderRepository->providerCode(), 'protean')
+            ->where('provider_api_configs.' . $this->providerApiConfigRepository->environment(), $this->environment)
             ->select('provider_api_configs.*')
             ->first();
 
         // Fallback to any active configuration if environment match is not found
         if (!$config) {
-            $config = DB::table('provider_api_configs')
-                ->join('service_providers', 'provider_api_configs.provider_id', '=', 'service_providers.id')
-                ->where(['service_providers.provider_code' => 'protean', 'provider_api_configs.is_active' => 1])
+            $config = clone $configQuery;
+            $config = $config->where('service_providers.' . $this->serviceProviderRepository->providerCode(), 'protean')
+                ->where('provider_api_configs.' . $this->providerApiConfigRepository->status(), 'active')
                 ->select('provider_api_configs.*')
                 ->first();
         }
@@ -102,13 +113,11 @@ class ProteanService
         // Cache the token with a safety margin of 60 seconds
         $expiry = now()->addSeconds((int)$expiresIn - 60);
 
-        DB::table('provider_api_configs')
-            ->where('id', $this->config->id)
-            ->update([
-                'api_token' => $token,
-                'token_expiry' => $expiry,
-                'updated_at' => now(),
-            ]);
+        $this->providerApiConfigRepository->update($this->config->id, [
+            $this->providerApiConfigRepository->apiToken() => $token,
+            $this->providerApiConfigRepository->tokenExpiry() => $expiry,
+            $this->providerApiConfigRepository->updatedAt() => now(),
+        ]);
 
         // Refresh internal configuration cache
         $this->config->api_token = $token;
@@ -183,7 +192,14 @@ class ProteanService
     {
         $publicKeyContent = $this->getPublicKey();
         $key = PublicKeyLoader::load($publicKeyContent);
-        $key = $key->withHash('sha256')->withMGFHash('sha256');
+
+        if (!$key instanceof \phpseclib3\Crypt\RSA\PublicKey) {
+            throw new Exception("The configured Protean Public Key is not a valid RSA key.");
+        }
+
+        $key = $key->withPadding(RSA::ENCRYPTION_OAEP)
+            ->withHash('sha256')
+            ->withMGFHash('sha256');
 
         return base64_encode($key->encrypt($data));
     }
@@ -195,7 +211,14 @@ class ProteanService
     {
         $privateKeyContent = $this->getPrivateKey();
         $key = PublicKeyLoader::load($privateKeyContent);
-        $key = $key->withHash('sha256')->withMGFHash('sha256');
+
+        if (!$key instanceof \phpseclib3\Crypt\RSA\PrivateKey) {
+            throw new Exception("The configured Server Private Key is not a valid RSA key.");
+        }
+
+        $key = $key->withPadding(RSA::ENCRYPTION_OAEP)
+            ->withHash('sha256')
+            ->withMGFHash('sha256');
 
         return $key->decrypt(base64_decode($encryptedData));
     }
@@ -373,25 +396,25 @@ class ProteanService
     protected function logApiCall(string $endpoint, string $method, array $request, array $response, int $code, float $duration): void
     {
         try {
-            DB::table('api_provider_logs')->insert([
-                'api_provider_id' => $this->config->provider_id,
-                'endpoint' => $endpoint,
-                'method' => $method,
-                'request' => json_encode($request),
-                'response' => json_encode($response),
-                'response_code' => $code,
-                'duration' => $duration,
-                'is_successful' => ($code >= 200 && $code < 300) ? 1 : 0,
-                'created_at' => now(),
-                'updated_at' => now(),
+            $this->apiProviderLogRepository->create([
+                $this->apiProviderLogRepository->apiProviderId() => $this->config->provider_id,
+                $this->apiProviderLogRepository->endpoint() => $endpoint,
+                $this->apiProviderLogRepository->method() => $method,
+                $this->apiProviderLogRepository->request() => json_encode($request),
+                $this->apiProviderLogRepository->response() => json_encode($response),
+                $this->apiProviderLogRepository->responseCode() => $code,
+                $this->apiProviderLogRepository->duration() => $duration,
+                $this->apiProviderLogRepository->isSuccessful() => ($code >= 200 && $code < 300) ? 1 : 0,
+                $this->apiProviderLogRepository->createdAt() => now(),
+                $this->apiProviderLogRepository->updatedAt() => now(),
             ]);
 
             // Update stats on config
-            DB::table('provider_api_configs')
-                ->where('id', $this->config->id)
-                ->increment($code >= 200 && $code < 300 ? 'successful_calls' : 'failed_calls', 1, [
-                    'total_calls' => DB::raw('total_calls + 1'),
-                    'updated_at' => now()
+            $this->providerApiConfigRepository->query()
+                ->where($this->providerApiConfigRepository->id(), $this->config->id)
+                ->increment($code >= 200 && $code < 300 ? $this->providerApiConfigRepository->successfulCalls() : $this->providerApiConfigRepository->failedCalls(), 1, [
+                    $this->providerApiConfigRepository->totalCalls() => DB::raw($this->providerApiConfigRepository->totalCalls() . ' + 1'),
+                    $this->providerApiConfigRepository->updatedAt() => now()
                 ]);
         } catch (Exception $e) {
             Log::warning("Failed to record Protean api provider log: " . $e->getMessage());
