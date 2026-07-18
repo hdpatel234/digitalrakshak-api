@@ -212,10 +212,10 @@ Route::prefix('v1/admin')->middleware(['auth:api', 'role:super_admin|admin', 'th
         Route::get('/failed-jobs', [App\Http\Controllers\Controller::class, 'failedJobs']);
         Route::post('/failed-jobs/{id}/retry', [App\Http\Controllers\Controller::class, 'retryJob']);
         Route::delete('/failed-jobs/{id}', [App\Http\Controllers\Controller::class, 'deleteFailedJob']);
-        Route::get('/cron-jobs', [\App\Http\Controllers\Admin\CronJobController::class, 'index']);
-        Route::put('/cron-jobs/{cron_job}', [\App\Http\Controllers\Admin\CronJobController::class, 'update']);
-        Route::post('/cron-jobs/{cron_job}/toggle', [\App\Http\Controllers\Admin\CronJobController::class, 'toggle']);
-        Route::post('/cron-jobs/{cron_job}/run', [\App\Http\Controllers\Admin\CronJobController::class, 'run']);
+        Route::get('/cron-jobs', [\App\Http\Controllers\Api\Admin\CronJobController::class, 'index']);
+        Route::put('/cron-jobs/{cron_job}', [\App\Http\Controllers\Api\Admin\CronJobController::class, 'update']);
+        Route::post('/cron-jobs/{cron_job}/toggle', [\App\Http\Controllers\Api\Admin\CronJobController::class, 'toggle']);
+        Route::post('/cron-jobs/{cron_job}/run', [\App\Http\Controllers\Api\Admin\CronJobController::class, 'run']);
         Route::get('/email/overview', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'overview']);
         Route::get('/email/templates', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'templates']);
         Route::post('/email/templates', [App\Http\Controllers\Api\Admin\SystemEmailController::class, 'storeTemplate']);
