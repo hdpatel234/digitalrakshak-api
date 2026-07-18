@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Activitylog extends BaseModel
 {
+    use SoftDeletes;
 
     protected $table = "activity_log";
 
