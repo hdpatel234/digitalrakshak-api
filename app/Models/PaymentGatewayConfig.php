@@ -78,6 +78,10 @@ class PaymentGatewayConfig extends BaseModel
         self::UPDATED_BY,
     ];
 
+    protected $casts = [
+        self::ENVIRONMENT => \App\Enums\EnvironmentEnum::class,
+    ];
+
     public function gateway(): BelongsTo
     {
         return $this->belongsTo(PaymentGateway::class, self::GATEWAY_ID);

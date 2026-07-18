@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use Carbon\Carbon;
+use App\Enums\EnvironmentEnum;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Crypt\RSA;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ use App\Repositories\ApiProviderLogRepository;
 class ProteanService
 {
     protected ?object $config = null;
-    protected string $environment = 'sandbox';
+    protected string $environment;
     public function __construct(
         protected ProviderApiConfigRepository $providerApiConfigRepository,
         protected ServiceProviderRepository $serviceProviderRepository,
@@ -30,7 +31,7 @@ class ProteanService
      */
     protected function loadConfiguration(): void
     {
-        $this->environment = config('app.env') === 'production' ? 'production' : 'sandbox';
+        $this->environment = config('app.env') === EnvironmentEnum::PRODUCTION->value ? EnvironmentEnum::PRODUCTION->value : EnvironmentEnum::SANDBOX->value;
 
         $configQuery = $this->providerApiConfigRepository->query()
             ->join(

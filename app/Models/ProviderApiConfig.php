@@ -85,4 +85,8 @@ class ProviderApiConfig extends BaseModel
         self::CREATED_BY,
         self::UPDATED_BY,
     ];
+
+    protected $casts = [
+        self::ENVIRONMENT => \App\Enums\EnvironmentEnum::class,
+    ];
 }

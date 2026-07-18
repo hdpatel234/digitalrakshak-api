@@ -4,40 +4,54 @@ namespace App\Services\Api;
 
 use App\Models\Client;
 use App\Models\ClientApiKey;
-use App\Models\ClientApiLog;
-use App\Models\ClientApiQuota;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\EnvironmentEnum;
+use App\Enums\StatusEnum;
+use App\Services\ClientApiKeyService;
+use App\Services\ClientApiLogService;
+use App\Services\ClientApiQuotaService;
 
 class ClientApiManager
 {
     protected $client;
+    protected $clientApiKeyService;
+    protected $clientApiLogService;
+    protected $clientApiQuotaService;
 
-    public function __construct(Client $client)
-    {
+    public function __construct(
+        Client $client,
+        ClientApiKeyService $clientApiKeyService,
+        ClientApiLogService $clientApiLogService,
+        ClientApiQuotaService $clientApiQuotaService
+    ) {
         $this->client = $client;
+        $this->clientApiKeyService = $clientApiKeyService;
+        $this->clientApiLogService = $clientApiLogService;
+        $this->clientApiQuotaService = $clientApiQuotaService;
     }
 
     /**
      * Generate new API key for client
      */
-    public function generateApiKey(string $keyName, string $type = 'production', array $permissions = []): ClientApiKey
+    public function generateApiKey(string $keyName, string $type = EnvironmentEnum::PRODUCTION->value, array $permissions = []): ClientApiKey
     {
         // Generate unique API key and secret
         $apiKey = 'dr_' . $type . '_' . Str::random(32);
         $apiSecret = Str::random(64);
 
-        return ClientApiKey::create([
-            'client_id' => $this->client->id,
-            'key_name' => $keyName,
-            'api_key' => $apiKey,
-            'api_secret' => Hash::make($apiSecret), // Store hashed secret
-            'key_type' => $type,
-            'permissions' => $permissions,
-            'rate_limit' => $this->client->api_rate_limit_default,
-            'rate_limit_per_day' => $this->client->api_daily_limit_default,
-            'created_by' => auth()->id()
+        return $this->clientApiKeyService->create([
+            $this->clientApiKeyService->clientId() => $this->client->id,
+            $this->clientApiKeyService->keyName() => $keyName,
+            $this->clientApiKeyService->apiKey() => $apiKey,
+            $this->clientApiKeyService->apiSecret() => Hash::make($apiSecret), // Store hashed secret
+            $this->clientApiKeyService->keyType() => $type,
+            $this->clientApiKeyService->permissions() => $permissions,
+            $this->clientApiKeyService->rateLimit() => $this->client->api_rate_limit_default,
+            $this->clientApiKeyService->rateLimitPerDay() => $this->client->api_daily_limit_default,
+            $this->clientApiKeyService->createdBy() => Auth::id()
         ]);
     }
 
@@ -46,11 +60,12 @@ class ClientApiManager
      */
     public function validateApiKey(string $apiKey, ?string $apiSecret = null): ?ClientApiKey
     {
-        $key = ClientApiKey::where('api_key', $apiKey)
-            ->where('status', 'active')
-            ->where(function($query) {
-                $query->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
+        $key = $this->clientApiKeyService->query()
+            ->where($this->clientApiKeyService->apiKey(), $apiKey)
+            ->where($this->clientApiKeyService->status(), StatusEnum::ACTIVE->value)
+            ->where(function ($query) {
+                $query->whereNull($this->clientApiKeyService->expiresAt())
+                    ->orWhere($this->clientApiKeyService->expiresAt(), '>', now());
             })
             ->first();
 
@@ -69,10 +84,10 @@ class ClientApiManager
         }
 
         // Update last used
-        $key->update([
-            'last_used_at' => now(),
-            'last_used_ip' => request()->ip(),
-            'total_requests' => $key->total_requests + 1
+        $this->clientApiKeyService->update($key->id, [
+            $this->clientApiKeyService->lastUsedAt() => now(),
+            $this->clientApiKeyService->lastUsedIp() => request()->ip(),
+            $this->clientApiKeyService->totalRequests() => $key->total_requests + 1
         ]);
 
         // Update quota usage
@@ -87,14 +102,14 @@ class ClientApiManager
     protected function checkRateLimits(ClientApiKey $key): bool
     {
         $cacheKey = "api_rate_limit_{$key->id}_" . now()->format('Y-m-d-H-i');
-        
+
         // Per minute rate limit
         $minuteKey = $cacheKey . '_minute';
         $minuteCount = Cache::increment($minuteKey);
         if ($minuteCount == 1) {
             Cache::expire($minuteKey, 60);
         }
-        
+
         if ($minuteCount > $key->rate_limit) {
             $this->logRequest($key, null, 'rate_limited', 'Rate limit exceeded per minute');
             return false;
@@ -121,7 +136,7 @@ class ClientApiManager
     public function hasPermission(ClientApiKey $key, string $endpoint, string $method): bool
     {
         $permissions = $key->permissions ?? [];
-        
+
         // If no permissions defined, allow all
         if (empty($permissions)) {
             return true;
@@ -144,11 +159,11 @@ class ClientApiManager
     {
         // Format: "method:endpoint" or "endpoint"
         $parts = explode(':', $permission);
-        
+
         if (count($parts) == 2) {
             return strtoupper($parts[0]) == $method && $this->matchEndpoint($parts[1], $endpoint);
         }
-        
+
         return $this->matchEndpoint($permission, $endpoint);
     }
 
@@ -171,19 +186,19 @@ class ClientApiManager
         ?string $error = null,
         array $metadata = []
     ): void {
-        ClientApiLog::create([
-            'client_id' => $this->client->id,
-            'api_key_id' => $key?->id,
-            'endpoint' => request()->path(),
-            'method' => request()->method(),
-            'request_headers' => request()->headers->all(),
-            'request_body' => request()->all(),
-            'response_code' => $responseCode,
-            'status' => $status,
-            'error_message' => $error,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'response_time_ms' => $metadata['response_time'] ?? null
+        $this->clientApiLogService->create([
+            $this->clientApiLogService->clientId() => $this->client->id,
+            $this->clientApiLogService->apiKeyId() => $key?->id,
+            $this->clientApiLogService->endpoint() => request()->path(),
+            $this->clientApiLogService->method() => request()->method(),
+            $this->clientApiLogService->requestHeaders() => request()->headers->all(),
+            $this->clientApiLogService->requestBody() => request()->all(),
+            $this->clientApiLogService->responseCode() => $responseCode,
+            $this->clientApiLogService->status() => $status,
+            $this->clientApiLogService->errorMessage() => $error,
+            $this->clientApiLogService->ipAddress() => request()->ip(),
+            $this->clientApiLogService->userAgent() => request()->userAgent(),
+            $this->clientApiLogService->responseTimeMs() => $metadata['response_time'] ?? null
         ]);
     }
 
@@ -193,20 +208,20 @@ class ClientApiManager
     protected function incrementQuota(ClientApiKey $key): void
     {
         $today = now()->startOfDay();
-        $quota = ClientApiQuota::firstOrCreate(
+        $quota = $this->clientApiQuotaService->query()->firstOrCreate(
             [
-                'client_id' => $this->client->id,
-                'period_start' => $today,
-                'period_end' => $today->copy()->endOfDay()
+                $this->clientApiQuotaService->clientId() => $this->client->id,
+                $this->clientApiQuotaService->periodStart() => $today,
+                $this->clientApiQuotaService->periodEnd() => $today->copy()->endOfDay()
             ],
             [
-                'requests_limit' => $key->rate_limit_per_day,
-                'requests_used' => 0,
-                'reset_at' => $today->copy()->addDay()
+                $this->clientApiQuotaService->requestsLimit() => $key->rate_limit_per_day,
+                $this->clientApiQuotaService->requestsUsed() => 0,
+                $this->clientApiQuotaService->resetAt() => $today->copy()->addDay()
             ]
         );
 
-        $quota->increment('requests_used');
+        $quota->increment($this->clientApiQuotaService->requestsUsed());
     }
 
     /**
@@ -214,15 +229,15 @@ class ClientApiManager
      */
     public function revokeApiKey(ClientApiKey $key, string $reason = null): void
     {
-        $key->update([
-            'status' => 'revoked',
+        $this->clientApiKeyService->update($key->id, [
+            $this->clientApiKeyService->status() => 'revoked',
             'deleted_at' => now()
         ]);
 
         // Log revocation
-        activity()
-            ->performedOn($key)
-            ->withProperties(['reason' => $reason])
-            ->log('API key revoked');
+        // activity()
+        //     ->performedOn($key)
+        //     ->withProperties(['reason' => $reason])
+        //     ->log('API key revoked');
     }
 }
