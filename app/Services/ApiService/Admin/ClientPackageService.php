@@ -21,14 +21,14 @@ class ClientPackageService
 
         $perPage = $data['limit'] ?? 10;
         $packages = $query->paginate($perPage);
-        
+
         $packageIds = collect($packages->items())->pluck($this->repo->id())->toArray();
-        
+
         $packageServices = $this->packageServiceRepo->getActiveServicesByPackageIds($packageIds);
-            
+
         $serviceIds = $packageServices->pluck($this->packageServiceRepo->serviceId())->unique()->toArray();
         $services = $this->serviceRepo->getServicesByIds($serviceIds);
-        
+
         $servicesByPackageId = [];
         foreach ($packageServices as $ps) {
             $service = $services->get($ps->{$this->packageServiceRepo->serviceId()});
@@ -44,11 +44,11 @@ class ClientPackageService
                 ];
             }
         }
-        
+
         $mappedPackages = collect($packages->items())->map(function ($package) use ($servicesByPackageId) {
             $data = $package->toArray();
             $data['services'] = $servicesByPackageId[$package->{$this->repo->id()}] ?? [];
-            $data['available_candidates'] = 0; // This can be updated if we need actual logic
+            $data['available_candidates'] = 0;
             return $data;
         });
 

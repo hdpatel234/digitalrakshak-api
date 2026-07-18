@@ -11,10 +11,7 @@ use App\Repositories\StateRepository;
 use App\Repositories\CandidateImportHistoryRepository;
 use App\Services\Webhook\ClientWebhookDispatcher;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 
 class CandidateService extends BaseService

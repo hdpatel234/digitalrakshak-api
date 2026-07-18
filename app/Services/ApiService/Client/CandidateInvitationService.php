@@ -9,9 +9,8 @@ use App\Enums\ConfigurationKey;
 use App\Enums\EmailPriority;
 use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
-use App\Services\Ai\AiManager;
-use App\Services\Ai\ResumeParserService;
 use App\Services\BaseService;
+use App\Services\ConfigurationService;
 use App\Services\EmailTemplateService;
 use App\Repositories\CandidateInvitationRepository;
 use App\Repositories\CandidateRepository;
@@ -29,6 +28,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Services\Common\ResumeParserService;
 
 /**
  * @property CandidateInvitationRepository $invitationRepo
@@ -50,7 +50,6 @@ class CandidateInvitationService extends BaseService
         protected ServicesFieldRepository $servicesFieldRepo,
         protected CandidateServiceRepository $candidateServiceRepo,
         protected CandidateServiceDataRepository $candidateServiceDataRepo,
-        protected AiManager $aiManager,
         protected ResumeParserService $resumeParserService
     ) {}
 
