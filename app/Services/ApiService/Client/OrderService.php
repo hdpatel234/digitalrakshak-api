@@ -7,6 +7,7 @@ use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
 use App\Enums\OrderStatus;
 use App\Enums\UserStatus;
+use App\Services\BaseService;
 use App\Repositories\ClientRepository;
 use App\Repositories\CandidateOrderRepository;
 use App\Repositories\OrderCandidateRepository;
@@ -24,6 +25,7 @@ use App\Repositories\InvoiceItemRepository;
 use App\Repositories\ConfigurationRepository;
 use App\Repositories\CandidateServiceRepository;
 use App\Repositories\CandidateServiceDataRepository;
+use App\Services\EmailTemplateService;
 use App\Services\PaymentGateway\PaymentGatewayDriverFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -49,7 +51,8 @@ class OrderService extends BaseService
         protected InvoiceItemRepository $invoiceItemRepo,
         protected ConfigurationRepository $configurationRepo,
         protected CandidateServiceRepository $candidateServiceRepo,
-        protected CandidateServiceDataRepository $candidateServiceDataRepo
+        protected CandidateServiceDataRepository $candidateServiceDataRepo,
+        protected EmailTemplateService $emailTemplateService
     ) {}
 
     public function getOrders(array $params, int $clientId): array
@@ -517,7 +520,7 @@ class OrderService extends BaseService
         if ($orderConfimationTemplate) {
             $clientCompanyName = $client->{$this->clientRepo->companyName()};
 
-            $rendered = $this->emailTemplateRepo->renderTemplate($orderConfimationTemplate, [
+            $rendered = $this->emailTemplateService->renderTemplate($orderConfimationTemplate, [
                 'client_company_name' => $clientCompanyName,
                 'client_order_id' => $order->{$this->candidateOrderRepo->orderNumber()} ?? null,
                 'company_name' => (string) config('app.name') ?? env('APP_NAME'),
