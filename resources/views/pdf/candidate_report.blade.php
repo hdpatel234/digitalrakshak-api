@@ -261,28 +261,5 @@
     </div>
     @endforeach
 
-    <!-- SUPPORTING DOCUMENTS -->
-    @if($candidate->documents && $candidate->documents->count() > 0)
-        @foreach($candidate->documents as $doc)
-        <div class="page-break"></div>
-        <div class="logo-container" style="margin-top: 30px;">
-            <h2 style="color: #333; margin: 0; font-size: 24px;"><span style="color: #38c8c4;">DIGITAL</span>RAKSHAK</h2>
-        </div>
-        <div class="report-title-banner">
-            SUPPORTING DOCUMENT
-        </div>
-        
-        <div class="report-page">
-            <h3 style="text-align: center;">{{ $doc->type ?? 'Document' }}</h3>
-            @if($doc->file_path && preg_match('/\.(jpg|jpeg|png)$/i', $doc->file_path))
-                <div class="image-container">
-                    <img src="{{ storage_path('app/' . $doc->file_path) }}" alt="Supporting Document">
-                </div>
-            @else
-                <p style="text-align: center; color: #777;">[ Document attached: {{ basename($doc->file_path) }} ]</p>
-            @endif
-        </div>
-        @endforeach
-    @endif
 </body>
 </html>

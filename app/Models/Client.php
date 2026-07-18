@@ -28,7 +28,6 @@ class Client extends BaseModel
     const CREDIT_BALANCE = "credit_balance";
     const PAYMENT_TERMS = "payment_terms";
     const DEFAULT_SUPPORT_CONFIG_ID = "default_support_config_id";
-    const DEFAULT_DOCUMENT_CONFIG_ID = "default_document_config_id";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
@@ -51,7 +50,6 @@ class Client extends BaseModel
         self::CREDIT_BALANCE,
         self::PAYMENT_TERMS,
         self::DEFAULT_SUPPORT_CONFIG_ID,
-        self::DEFAULT_DOCUMENT_CONFIG_ID,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,
@@ -61,11 +59,6 @@ class Client extends BaseModel
     public function defaultSupportConfig(): BelongsTo
     {
         return $this->belongsTo(SupportConfig::class, self::DEFAULT_SUPPORT_CONFIG_ID);
-    }
-
-    public function defaultDocumentConfig(): BelongsTo
-    {
-        return $this->belongsTo(DocumentConfig::class, self::DEFAULT_DOCUMENT_CONFIG_ID);
     }
 
     public function candidates(): HasMany
@@ -103,11 +96,6 @@ class Client extends BaseModel
         return $this->hasMany(ClientApiQuota::class, ClientApiQuota::CLIENT_ID);
     }
 
-    public function documentConfigs(): HasMany
-    {
-        return $this->hasMany(DocumentConfig::class);
-    }
-
     public function servicePricings(): HasMany
     {
         return $this->hasMany(ClientServicePricing::class, ClientServicePricing::CLIENT_ID);
@@ -126,11 +114,6 @@ class Client extends BaseModel
     public function clientWebhookLogs(): HasMany
     {
         return $this->hasMany(ClientWebhookLog::class, ClientWebhookLog::CLIENT_ID);
-    }
-
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class, Document::CLIENT_ID);
     }
 
     public function emailQueues(): HasMany

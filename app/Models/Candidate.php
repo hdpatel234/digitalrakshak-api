@@ -24,7 +24,6 @@ class Candidate extends BaseModel
             }
             $candidate->candidateInvitations()->delete();
             $candidate->candidateServices()->delete();
-            $candidate->documents()->delete();
         });
     }
 
@@ -122,11 +121,6 @@ class Candidate extends BaseModel
             OrderCandidate::CANDIDATE_ID,
             OrderCandidate::ORDER_ID
         );
-    }
-
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class, Document::CANDIDATE_ID);
     }
 
     public function emailQueues(): HasMany
