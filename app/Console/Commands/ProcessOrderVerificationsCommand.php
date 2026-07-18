@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\ServiceFieldName;
 use App\Services\CandidateOrderService;
 use App\Services\CandidateServiceService;
 use App\Services\CandidateServiceDataService;
@@ -51,7 +52,7 @@ class ProcessOrderVerificationsCommand extends Command
         foreach ($candidateServices as $candidateService) {
             $serviceId = (int) $candidateService->{$this->candidateServiceService->serviceId()};
             $orderId = (int) $candidateService->{$this->candidateServiceService->orderId()};
-            
+
             $this->info(sprintf('Processing Service ID: %d for Candidate ID: %d, Order ID: %d', $serviceId, $candidateService->{$this->candidateServiceService->candidateId()}, $orderId));
 
             // Set state to processing
@@ -76,7 +77,6 @@ class ProcessOrderVerificationsCommand extends Command
                 }
 
                 $processedOrders[$orderId] = true;
-
             } catch (\Exception $e) {
                 Log::error("Failed to process candidate service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
                 $candidateService->update([
@@ -109,7 +109,7 @@ class ProcessOrderVerificationsCommand extends Command
     {
         // Get all input fields for this candidate service
         $dataRows = $this->candidateServiceDataService->query()->where($this->candidateServiceDataService->candidateServiceId(), $candidateService->{$this->candidateServiceService->id()})
-            ->with(['field' => function($q) {
+            ->with(['field' => function ($q) {
                 $q->select('id', 'field_name');
             }])
             ->get();
@@ -122,10 +122,10 @@ class ProcessOrderVerificationsCommand extends Command
         // Fetch inputs from mapped fields
         foreach ($dataRows as $row) {
             $fieldName = $row->field?->field_name ?? '';
-            if ($fieldName === 'beneficiary_account') {
+            if ($fieldName === ServiceFieldName::BENEFICIARY_ACCOUNT->value) {
                 $account = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $accountFieldRow = $row;
-            } elseif ($fieldName === 'beneficiary_ifsc') {
+            } elseif ($fieldName === ServiceFieldName::BENEFICIARY_IFSC->value) {
                 $ifsc = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $ifscFieldRow = $row;
             }
@@ -136,11 +136,11 @@ class ProcessOrderVerificationsCommand extends Command
         }
 
         $this->info("Calling Protean Bank Verify API with Account: $account and IFSC: $ifsc");
-        
+
         $startTime = microtime(true);
         $apiResult = null;
         $error = null;
-        
+
         try {
             $apiResult = $this->proteanService->bankVerify($account, $ifsc);
         } catch (\Exception $e) {
@@ -173,13 +173,13 @@ class ProcessOrderVerificationsCommand extends Command
 
         // Update both fields in DB as verified
         $isVerified = 1;
-        
+
         $accountFieldRow->update([
             $this->candidateServiceDataService->isVerified() => $isVerified,
             $this->candidateServiceDataService->verifiedAt() => now(),
             $this->candidateServiceDataService->status() => 'verified',
         ]);
-        
+
         $ifscFieldRow->update([
             $this->candidateServiceDataService->isVerified() => $isVerified,
             $this->candidateServiceDataService->verifiedAt() => now(),
@@ -200,7 +200,7 @@ class ProcessOrderVerificationsCommand extends Command
     {
         // Get all input fields for this candidate service
         $dataRows = $this->candidateServiceDataService->query()->where($this->candidateServiceDataService->candidateServiceId(), $candidateService->{$this->candidateServiceService->id()})
-            ->with(['field' => function($q) {
+            ->with(['field' => function ($q) {
                 $q->select('id', 'field_name');
             }])
             ->get();
@@ -211,7 +211,7 @@ class ProcessOrderVerificationsCommand extends Command
         // Fetch inputs from mapped fields
         foreach ($dataRows as $row) {
             $fieldName = $row->field?->field_name ?? '';
-            if ($fieldName === 'uan') {
+            if ($fieldName === ServiceFieldName::UAN->value) {
                 $uan = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $uanFieldRow = $row;
             }
@@ -222,11 +222,11 @@ class ProcessOrderVerificationsCommand extends Command
         }
 
         $this->info("Calling Protean EPF UAN Validation API with UAN: $uan");
-        
+
         $startTime = microtime(true);
         $apiResult = null;
         $error = null;
-        
+
         try {
             $apiResult = $this->proteanService->epfUanValidation($uan);
         } catch (\Exception $e) {
@@ -258,7 +258,7 @@ class ProcessOrderVerificationsCommand extends Command
 
         // Save result and verify
         $isVerified = 1;
-        
+
         $uanFieldRow->update([
             $this->candidateServiceDataService->isVerified() => $isVerified,
             $this->candidateServiceDataService->verifiedAt() => now(),
