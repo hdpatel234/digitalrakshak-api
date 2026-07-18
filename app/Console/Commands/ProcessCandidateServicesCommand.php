@@ -3,11 +3,15 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\CandidateOrder;
-use App\Models\CandidateService;
 use App\Models\CandidateServiceLog;
 use App\Services\Verification\VerificationServiceFactory;
 use Illuminate\Support\Facades\Log;
+use App\Services\CandidateOrderService;
+use App\Services\CandidateServiceService;
+use App\Services\CandidateService as CandidateModelService;
+use App\Services\ServiceService;
+use App\Services\CandidateReportService;
+use App\Enums\OrderStatus;
 
 class ProcessCandidateServicesCommand extends Command
 {
@@ -28,13 +32,22 @@ class ProcessCandidateServicesCommand extends Command
     /**
      * Execute the console command.
      */
+    public function __construct(
+        protected CandidateOrderService $candidateOrderService,
+        protected CandidateServiceService $candidateServiceService,
+        protected CandidateModelService $candidateModelService,
+        protected ServiceService $serviceService
+    ) {
+        parent::__construct();
+    }
     public function handle()
     {
         $this->info('Starting candidate services processing...');
 
-        $orders = CandidateOrder::where('status', 'processing')
+        $orders = $this->candidateOrderService->query()
+            ->where($this->candidateOrderService->status(), OrderStatus::PROCESSING->value)
             ->with(['candidates.candidateServices' => function ($q) {
-                $q->where('status', '!=', 'completed')->with('service');
+                $q->where($this->candidateServiceService->status(), '!=', OrderStatus::COMPLETED->value)->with('service');
             }])
             ->get();
 
@@ -44,84 +57,86 @@ class ProcessCandidateServicesCommand extends Command
         }
 
         foreach ($orders as $order) {
-            $this->info("Processing order ID: {$order->id}");
+            $this->info("Processing order ID: {$order->{$this->candidateOrderService->id()}}");
 
             foreach ($order->candidates as $candidate) {
                 foreach ($candidate->candidateServices as $candidateService) {
-                    if (!$candidateService->service || !$candidateService->service->service_code) {
-                        $this->warn("Candidate Service ID {$candidateService->id} is missing service or service_code.");
+                    if (!$candidateService->service || !$candidateService->service->{$this->serviceService->serviceCode()}) {
+                        $this->warn("Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}} is missing service or service_code.");
                         continue;
                     }
 
                     try {
-                        $serviceInstance = VerificationServiceFactory::make($candidateService->service->service_code);
+                        $serviceInstance = VerificationServiceFactory::make($candidateService->service->{$this->serviceService->serviceCode()});
                         $serviceInstance->process($candidateService);
 
                         $freshService = $candidateService->fresh();
-                        if ($freshService->status !== 'completed') {
+                        if ($freshService->{$this->candidateServiceService->status()} !== OrderStatus::COMPLETED->value) {
                         } else {
-                            $existingLog = CandidateServiceLog::where('candidate_service_id', $candidateService->id)->first();
+                            $existingLog = CandidateServiceLog::where('candidate_service_id', $candidateService->{$this->candidateServiceService->id()})->first();
                             if (!$existingLog) {
                                 CandidateServiceLog::create([
-                                    'candidate_id' => $candidate->id,
-                                    'candidate_service_id' => $candidateService->id,
-                                    'title' => "Provider Service Approved: " . ($candidateService->service->name ?? 'Service Verification'),
-                                    'description' => "Verified via " . ($candidateService->service->service_code ?? 'Internal Gateway'),
-                                    'status' => 'completed'
+                                    'candidate_id' => $candidate->{$this->candidateModelService->id()},
+                                    'candidate_service_id' => $candidateService->{$this->candidateServiceService->id()},
+                                    'title' => "Provider Service Approved: " . ($candidateService->service->{$this->serviceService->serviceName()} ?? 'Service Verification'),
+                                    'description' => "Verified via " . ($candidateService->service->{$this->serviceService->serviceCode()} ?? 'Internal Gateway'),
+                                    'status' => OrderStatus::COMPLETED->value
                                 ]);
                             }
                         }
                     } catch (\Exception $e) {
-                        Log::error("Failed to process Candidate Service ID {$candidateService->id}: " . $e->getMessage());
-                        $this->error("Failed to process Candidate Service ID {$candidateService->id}: " . $e->getMessage());
+                        Log::error("Failed to process Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
+                        $this->error("Failed to process Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
                     }
                 }
 
-                $pendingCandidateServicesCount = \App\Models\CandidateService::where('candidate_id', $candidate->id)
-                    ->where('status', '!=', 'completed')
+                $pendingCandidateServicesCount = $this->candidateServiceService->query()
+                    ->where($this->candidateServiceService->candidateId(), $candidate->{$this->candidateModelService->id()})
+                    ->where($this->candidateServiceService->status(), '!=', OrderStatus::COMPLETED->value)
                     ->count();
 
-                if ($pendingCandidateServicesCount === 0 && $candidate->status !== 'completed') {
-                    $candidate->status = 'completed';
+                if ($pendingCandidateServicesCount === 0 && $candidate->{$this->candidateModelService->status()} !== OrderStatus::COMPLETED->value) {
+                    $candidate->{$this->candidateModelService->status()} = OrderStatus::COMPLETED->value;
                     $candidate->save();
-                    $this->info("Candidate ID {$candidate->id} marked as completed.");
+                    $this->info("Candidate ID {$candidate->{$this->candidateModelService->id()}} marked as completed.");
 
                     try {
-                        $reportService = new \App\Services\CandidateReportService();
+                        $reportService = app(CandidateReportService::class);
                         $reportPath = $reportService->generateForCandidate($candidate);
                         if ($reportPath) {
                             $candidate->report_path = $reportPath;
                             $candidate->save();
-                            $this->info("Generated report for Candidate ID {$candidate->id} at {$reportPath}");
+                            $this->info("Generated report for Candidate ID {$candidate->{$this->candidateModelService->id()}} at {$reportPath}");
 
                             CandidateServiceLog::create([
-                                'candidate_id' => $candidate->id,
+                                'candidate_id' => $candidate->{$this->candidateModelService->id()},
                                 'candidate_service_id' => null,
                                 'title' => "Verification Report Cryptographically Sealed",
                                 'description' => "System Automated Agent",
-                                'status' => 'completed'
+                                'status' => OrderStatus::COMPLETED->value
                             ]);
                         } else {
-                            $this->error("Failed to generate report for Candidate ID {$candidate->id}");
+                            $this->error("Failed to generate report for Candidate ID {$candidate->{$this->candidateModelService->id()}}");
                         }
                     } catch (\Exception $e) {
-                        \Illuminate\Support\Facades\Log::error("Report generation failed for candidate {$candidate->id}: " . $e->getMessage());
+                        Log::error("Report generation failed for candidate {$candidate->{$this->candidateModelService->id()}}: " . $e->getMessage());
                         $this->error("Report generation failed: " . $e->getMessage());
                     }
                 }
             }
 
-            $pendingServicesCount = CandidateService::where('order_id', $order->id)
-                ->where('status', '!=', 'completed')
+            $pendingServicesCount = $this->candidateServiceService->query()
+                ->where($this->candidateServiceService->orderId(), $order->{$this->candidateOrderService->id()})
+                ->where($this->candidateServiceService->status(), '!=', OrderStatus::COMPLETED->value)
                 ->count();
 
             if ($pendingServicesCount === 0) {
-                $order->status = 'completed';
-                $order->completed_at = now();
+                $order->{$this->candidateOrderService->status()} = OrderStatus::COMPLETED->value;
+                $order->{$this->candidateOrderService->completedAt()} = now();
                 $order->save();
-                $this->info("Order ID {$order->id} marked as completed.");
+                $this->info("Order ID {$order->{$this->candidateOrderService->id()}} marked as completed.");
             } else {
-                $this->info("Order ID {$order->id} still has {$pendingServicesCount} pending services.");
+                $this->info("Order ID {$order->{$this->candidateOrderService->id()}} still has {$pendingServicesCount} pending services.");
             }
         }
 
