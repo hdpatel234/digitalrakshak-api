@@ -17,10 +17,6 @@ class SupportTicketRepository extends BaseRepository
         return SupportTicket::CLIENT_ID;
     }
 
-    public function supportConfigId()
-    {
-        return SupportTicket::SUPPORT_CONFIG_ID;
-    }
 
     public function orderId()
     {

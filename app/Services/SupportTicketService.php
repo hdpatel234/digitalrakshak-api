@@ -21,11 +21,6 @@ class SupportTicketService extends BaseService
         return $this->repository->clientId();
     }
 
-    public function supportConfigId()
-    {
-        return $this->repository->supportConfigId();
-    }
-
     public function orderId()
     {
         return $this->repository->orderId();

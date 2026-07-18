@@ -27,7 +27,6 @@ class Client extends BaseModel
     const CREDIT_LIMIT = "credit_limit";
     const CREDIT_BALANCE = "credit_balance";
     const PAYMENT_TERMS = "payment_terms";
-    const DEFAULT_SUPPORT_CONFIG_ID = "default_support_config_id";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
@@ -49,17 +48,13 @@ class Client extends BaseModel
         self::CREDIT_LIMIT,
         self::CREDIT_BALANCE,
         self::PAYMENT_TERMS,
-        self::DEFAULT_SUPPORT_CONFIG_ID,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
 
-    public function defaultSupportConfig(): BelongsTo
-    {
-        return $this->belongsTo(SupportConfig::class, self::DEFAULT_SUPPORT_CONFIG_ID);
-    }
+
 
     public function candidates(): HasMany
     {
@@ -99,11 +94,6 @@ class Client extends BaseModel
     public function servicePricings(): HasMany
     {
         return $this->hasMany(ClientServicePricing::class, ClientServicePricing::CLIENT_ID);
-    }
-
-    public function supportConfigs(): HasMany
-    {
-        return $this->hasMany(SupportConfig::class);
     }
 
     public function webhooks(): HasMany

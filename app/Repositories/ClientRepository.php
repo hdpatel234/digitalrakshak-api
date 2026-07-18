@@ -82,15 +82,6 @@ class ClientRepository extends BaseRepository
         return Client::PAYMENT_TERMS;
     }
 
-    public function defaultSupportConfigId()
-    {
-        return Client::DEFAULT_SUPPORT_CONFIG_ID;
-    }
-
-    public function defualtDocumentConfigId()
-    {
-        return Client::DEFAULT_DOCUMENT_CONFIG_ID;
-    }
 
     public function status()
     {

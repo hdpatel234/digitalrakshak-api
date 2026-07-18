@@ -27,10 +27,6 @@ class OrderItemRepository extends BaseRepository
         return OrderItem::SERVICE_ID;
     }
 
-    public function supportConfigId()
-    {
-        return OrderItem::SUPPORT_CONFIG_ID;
-    }
 
     public function ticketId()
     {

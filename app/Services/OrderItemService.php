@@ -9,61 +9,9 @@ use App\Repositories\OrderItemRepository;
  */
 class OrderItemService extends BaseService
 {
-    
     public function __construct(OrderItemRepository $repository)
     {
         $this->repository = $repository;
-    }
-
-    // column constants
-    public function orderId()
-    {
-        return $this->repository->orderId();
-    }
-
-    public function orderCandidateId()
-    {
-        return $this->repository->orderCandidateId();
-    }
-
-    public function serviceId()
-    {
-        return $this->repository->serviceId();
-    }
-
-    public function supportConfigId()
-    {
-        return $this->repository->supportConfigId();
-    }
-
-    public function ticketId()
-    {
-        return $this->repository->ticketId();
-    }
-
-    public function reportDocumentId()
-    {
-        return $this->repository->reportDocumentId();
-    }
-
-    public function supportSyncStatus()
-    {
-        return $this->repository->supportSyncStatus();
-    }
-
-    public function processingRuleId()
-    {
-        return $this->repository->processingRuleId();
-    }
-
-    public function processingStatus()
-    {
-        return $this->repository->processingStatus();
-    }
-
-    public function processingAttempts()
-    {
-        return $this->repository->processingAttempts();
     }
 
     public function processedAt()

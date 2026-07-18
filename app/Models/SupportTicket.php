@@ -13,7 +13,6 @@ class SupportTicket extends BaseModel
     protected $table = "support_tickets";
 
     const CLIENT_ID = "client_id";
-    const SUPPORT_CONFIG_ID = "support_config_id";
     const ORDER_ID = "order_id";
     const EXTERNAL_TICKET_ID = "external_ticket_id";
     const DEPARTMENT_ID = "department_id";
@@ -36,7 +35,6 @@ class SupportTicket extends BaseModel
     const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::CLIENT_ID,
-        self::SUPPORT_CONFIG_ID,
         self::ORDER_ID,
         self::EXTERNAL_TICKET_ID,
         self::DEPARTMENT_ID,

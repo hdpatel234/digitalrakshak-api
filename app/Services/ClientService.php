@@ -85,10 +85,6 @@ class ClientService extends BaseService
         return $this->repository->paymentTerms();
     }
 
-    public function defaultSupportConfigId()
-    {
-        return $this->repository->defaultSupportConfigId();
-    }
 
     public function status()
     {
