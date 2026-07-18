@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserPrivacySetting extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_privacy_settings";
     

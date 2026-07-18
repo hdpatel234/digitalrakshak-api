@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserConfigDefinition extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_config_definitions";
     

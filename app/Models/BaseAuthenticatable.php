@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Schema;
 
 abstract class BaseAuthenticatable extends Authenticatable
 {
+    use SoftDeletes;
+
     protected static array $auditColumnsCache = [];
 
     // column constants

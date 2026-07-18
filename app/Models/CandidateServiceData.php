@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateServiceData extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = "candidate_service_data";
     
     const CANDIDATE_SERVICE_ID = "candidate_service_id";

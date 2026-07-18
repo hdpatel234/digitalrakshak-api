@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PackageService extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "package_services";
     

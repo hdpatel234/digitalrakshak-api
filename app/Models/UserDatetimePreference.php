@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserDatetimePreference extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_datetime_preferences";
     

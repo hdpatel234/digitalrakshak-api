@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Country extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "countries";
     

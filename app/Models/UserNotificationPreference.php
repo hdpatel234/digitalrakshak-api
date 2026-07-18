@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserNotificationPreference extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_notification_preferences";
     

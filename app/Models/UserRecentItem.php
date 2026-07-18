@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserRecentItem extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_recent_items";
     

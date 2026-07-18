@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportPriority extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "support_priorities";
     

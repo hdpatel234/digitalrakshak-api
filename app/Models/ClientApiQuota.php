@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientApiQuota extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "client_api_quotas";
     

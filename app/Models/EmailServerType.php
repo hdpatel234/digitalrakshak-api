@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailServerType extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_server_types";
     

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserSavedSearch extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_saved_searches";
     

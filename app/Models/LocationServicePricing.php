@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LocationServicePricing extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "location_service_pricing";
     

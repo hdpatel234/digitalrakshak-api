@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServiceProviderAssignment extends BaseModel
 {
+    use SoftDeletes;
+
 
     protected $table = "service_provider_assignments";
 

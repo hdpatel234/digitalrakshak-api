@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateImportHistory extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "candidate_import_history";
     

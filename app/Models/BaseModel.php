@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Schema;
 
 abstract class BaseModel extends Model
 {
+    use SoftDeletes;
+
     protected static array $auditColumnsCache = [];
     protected static array $dateTimeColumnsCache = [];
     protected static ?int $timezoneCacheUserId = null;

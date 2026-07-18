@@ -10,6 +10,8 @@ use App\Models\SupportPriority;
 
 class SupportTicket extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = "support_tickets";
 
     const CLIENT_ID = "client_id";

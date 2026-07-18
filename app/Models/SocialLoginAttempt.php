@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SocialLoginAttempt extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "social_login_attempts";
     

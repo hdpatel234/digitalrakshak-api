@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailBounce extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_bounces";
     

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailRoutingRule extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_routing_rules";
     protected $casts = [

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CronJobExecution extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "cron_job_executions";
     

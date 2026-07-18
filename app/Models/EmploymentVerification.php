@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class EmploymentVerification extends Model
 {
+    use SoftDeletes;
+
     const CANDIDATE_SERVICE_ID = 'candidate_service_id';
     const TOKEN = 'token';
     const COMPANY_EMAIL = 'company_email';

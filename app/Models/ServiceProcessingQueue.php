@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServiceProcessingQueue extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "service_processing_queue";
     

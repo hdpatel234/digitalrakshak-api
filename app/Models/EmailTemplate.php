@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailTemplate extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_templates";
     protected $casts = [

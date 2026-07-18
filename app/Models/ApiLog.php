@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ApiLog extends BaseModel
 {
+    use SoftDeletes;
     
     protected $table = "api_logs";
     

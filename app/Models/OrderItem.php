@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderItem extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "order_items";
     

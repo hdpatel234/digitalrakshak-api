@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServicesField extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "services_fields";
     

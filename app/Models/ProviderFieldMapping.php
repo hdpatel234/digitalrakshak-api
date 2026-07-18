@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderFieldMapping extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "provider_field_mappings";
     

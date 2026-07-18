@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderCost extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "provider_costs";
     

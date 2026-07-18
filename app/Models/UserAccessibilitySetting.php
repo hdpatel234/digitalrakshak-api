@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserAccessibilitySetting extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_accessibility_settings";
     

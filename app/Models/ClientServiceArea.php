@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientServiceArea extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "client_service_areas";
     

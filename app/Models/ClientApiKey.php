@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientApiKey extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "client_api_keys";
     

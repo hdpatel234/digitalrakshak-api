@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserExportPreference extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_export_preferences";
     

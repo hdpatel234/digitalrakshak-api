@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class CronJob extends Model
 {
+    use SoftDeletes;
+
     const JOB_NAME = 'job_name';
     const JOB_KEY = 'job_key';
     const COMMAND = 'command';

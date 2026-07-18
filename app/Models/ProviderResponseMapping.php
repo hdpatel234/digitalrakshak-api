@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderResponseMapping extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "provider_response_mappings";
     

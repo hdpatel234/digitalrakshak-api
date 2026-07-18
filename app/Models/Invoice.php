@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "invoices";
     

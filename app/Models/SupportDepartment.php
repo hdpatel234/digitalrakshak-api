@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportDepartment extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "support_departments";
     

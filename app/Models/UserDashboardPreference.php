@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserDashboardPreference extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_dashboard_preferences";
     

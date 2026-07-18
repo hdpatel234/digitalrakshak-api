@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserShortcut extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_shortcuts";
     

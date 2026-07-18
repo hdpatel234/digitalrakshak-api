@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicketConversation extends BaseModel
 {
+    use SoftDeletes;
+
 
     protected $table = "support_ticket_conversations";
     

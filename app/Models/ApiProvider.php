@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ApiProvider extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "api_providers";
     

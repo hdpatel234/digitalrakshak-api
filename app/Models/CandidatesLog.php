@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidatesLog extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "candidates_logs";
     

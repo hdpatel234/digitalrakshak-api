@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailLog extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_logs";
     protected $casts = [

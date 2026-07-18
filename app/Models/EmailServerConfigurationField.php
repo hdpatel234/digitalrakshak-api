@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailServerConfigurationField extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_server_configuration_fields";
     

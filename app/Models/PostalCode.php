@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PostalCode extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "postal_codes";
     

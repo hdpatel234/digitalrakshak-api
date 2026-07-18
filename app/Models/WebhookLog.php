@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WebhookLog extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "webhook_logs";
     

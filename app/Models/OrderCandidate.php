@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderCandidate extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "order_candidates";
     

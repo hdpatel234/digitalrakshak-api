@@ -9,7 +9,7 @@ use App\Repositories\ProviderApiConfigRepository;
  */
 class ProviderApiConfigService extends BaseService
 {
-    
+
     public function __construct(ProviderApiConfigRepository $repository)
     {
         $this->repository = $repository;
@@ -29,16 +29,6 @@ class ProviderApiConfigService extends BaseService
     public function environment()
     {
         return $this->repository->environment();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
-    public function isDefault()
-    {
-        return $this->repository->isDefault();
     }
 
     public function baseUrl()
@@ -84,6 +74,16 @@ class ProviderApiConfigService extends BaseService
     public function apiToken()
     {
         return $this->repository->apiToken();
+    }
+
+    public function publicKey()
+    {
+        return $this->repository->publicKey();
+    }
+
+    public function privateKey()
+    {
+        return $this->repository->privateKey();
     }
 
     public function tokenExpiry()

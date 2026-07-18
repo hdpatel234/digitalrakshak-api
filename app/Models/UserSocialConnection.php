@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserSocialConnection extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_social_connections";
     

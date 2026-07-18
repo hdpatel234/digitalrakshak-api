@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProviderPerformanceLog extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "provider_performance_logs";
     

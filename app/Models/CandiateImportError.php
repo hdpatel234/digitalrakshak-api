@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandiateImportError extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "candiate_import_errors";
     

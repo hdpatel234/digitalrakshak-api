@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WebhookEventType extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "webhook_event_types";
     

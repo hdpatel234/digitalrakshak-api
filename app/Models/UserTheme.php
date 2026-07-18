@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserTheme extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "user_themes";
     

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateServiceLog extends Model
 {
+    use SoftDeletes;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [

@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 class ServiceField extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "services_fields";
     

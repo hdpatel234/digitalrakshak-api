@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailQueue extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "email_queue";
     protected $casts = [

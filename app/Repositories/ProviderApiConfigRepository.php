@@ -77,6 +77,16 @@ class ProviderApiConfigRepository extends BaseRepository
         return ProviderApiConfig::API_TOKEN;
     }
 
+    public function publicKey()
+    {
+        return ProviderApiConfig::PUBLIC_KEY;
+    }
+
+    public function privateKey()
+    {
+        return ProviderApiConfig::PRIVATE_KEY;
+    }
+
     public function tokenExpiry()
     {
         return ProviderApiConfig::TOKEN_EXPIRY;

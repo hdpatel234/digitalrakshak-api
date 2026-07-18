@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SyncJob extends BaseModel
 {
+    use SoftDeletes;
+
     
     protected $table = "sync_jobs";
     

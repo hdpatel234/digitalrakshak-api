@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Configuration extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = "configurations";
 
     const CONFIG_KEY = "config_key";

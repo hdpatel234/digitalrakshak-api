@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProviderApiConfig extends BaseModel
 {
     use SoftDeletes;
-    
+
     protected $table = "provider_api_configs";
-    
+
     const PROVIDER_ID = "provider_id";
     const CONFIG_NAME = "config_name";
     const ENVIRONMENT = "environment";
@@ -23,6 +23,8 @@ class ProviderApiConfig extends BaseModel
     const API_KEY = "api_key";
     const API_SECRET = "api_secret";
     const API_TOKEN = "api_token";
+    const PUBLIC_KEY = "public_key";
+    const PRIVATE_KEY = "private_key";
     const TOKEN_EXPIRY = "token_expiry";
     const USERNAME = "username";
     const PASSWORD = "password";
@@ -61,6 +63,8 @@ class ProviderApiConfig extends BaseModel
         self::API_KEY,
         self::API_SECRET,
         self::API_TOKEN,
+        self::PUBLIC_KEY,
+        self::PRIVATE_KEY,
         self::TOKEN_EXPIRY,
         self::USERNAME,
         self::PASSWORD,
