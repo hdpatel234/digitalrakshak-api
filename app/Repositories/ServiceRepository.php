@@ -17,6 +17,11 @@ class ServiceRepository extends BaseRepository
         return Service::SERVICE_CATEGORY;
     }
 
+    public function serviceType()
+    {
+        return Service::SERVICE_TYPE;
+    }
+
     public function serviceName()
     {
         return Service::SERVICE_NAME;

@@ -9,7 +9,7 @@ use App\Repositories\ServiceProviderAssignmentRepository;
  */
 class ServiceProviderAssignmentService extends BaseService
 {
-    
+
     public function __construct(ServiceProviderAssignmentRepository $repository)
     {
         $this->repository = $repository;
@@ -34,26 +34,6 @@ class ServiceProviderAssignmentService extends BaseService
     public function priority()
     {
         return $this->repository->priority();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
-    public function isDefault()
-    {
-        return $this->repository->isDefault();
-    }
-
-    public function isPrimary()
-    {
-        return $this->repository->isPrimary();
-    }
-
-    public function isBackup()
-    {
-        return $this->repository->isBackup();
     }
 
     public function fallbackThreshold()
@@ -86,9 +66,9 @@ class ServiceProviderAssignmentService extends BaseService
         return $this->repository->bodyTemplate();
     }
 
-    public function currentStatus()
+    public function status()
     {
-        return $this->repository->currentStatus();
+        return $this->repository->status();
     }
 
     public function failureCount()

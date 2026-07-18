@@ -27,6 +27,11 @@ class ServiceService extends BaseService
         return $this->repository->serviceCategory();
     }
 
+    public function serviceType()
+    {
+        return $this->repository->serviceType();
+    }
+
     public function serviceName()
     {
         return $this->repository->serviceName();

@@ -32,26 +32,6 @@ class ServiceProviderAssignmentRepository extends BaseRepository
         return ServiceProviderAssignment::PRIORITY;
     }
 
-    public function isActive()
-    {
-        return ServiceProviderAssignment::IS_ACTIVE;
-    }
-
-    public function isDefault()
-    {
-        return ServiceProviderAssignment::IS_DEFAULT;
-    }
-
-    public function isPrimary()
-    {
-        return ServiceProviderAssignment::IS_PRIMARY;
-    }
-
-    public function isBackup()
-    {
-        return ServiceProviderAssignment::IS_BACKUP;
-    }
-
     public function fallbackThreshold()
     {
         return ServiceProviderAssignment::FALLBACK_THRESHOLD;
@@ -82,9 +62,9 @@ class ServiceProviderAssignmentRepository extends BaseRepository
         return ServiceProviderAssignment::BODY_TEMPLATE;
     }
 
-    public function currentStatus()
+    public function status()
     {
-        return ServiceProviderAssignment::CURRENT_STATUS;
+        return ServiceProviderAssignment::STATUS;
     }
 
     public function failureCount()
