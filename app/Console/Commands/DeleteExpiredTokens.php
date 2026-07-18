@@ -4,11 +4,17 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Services\UserSessionService;
 
 class DeleteExpiredTokens extends Command
 {
     protected $signature = 'passport:delete-expired';
     protected $description = 'Delete expired and revoked Passport tokens';
+
+    public function __construct(protected UserSessionService $userSessionService)
+    {
+        parent::__construct();
+    }
 
     public function handle()
     {
@@ -28,10 +34,10 @@ class DeleteExpiredTokens extends Command
 
         if (!empty($tokenIds)) {
 
-            DB::table('user_sessions')
-                ->whereIn('access_token_id', $tokenIds)
+            $this->userSessionService->query()
+                ->whereIn($this->userSessionService->accessTokenId(), $tokenIds)
                 ->update([
-                    'is_active' => false,
+                    $this->userSessionService->isActive() => false,
                     'updated_at' => now(),
                 ]);
 

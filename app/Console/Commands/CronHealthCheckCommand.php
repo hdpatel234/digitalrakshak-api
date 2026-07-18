@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CronJob;
-use App\Models\CronJobExecution;
+use App\Services\CronJobService;
+use App\Services\CronJobExecutionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +12,13 @@ class CronHealthCheckCommand extends Command
     protected $signature = 'cron:health-check';
     protected $description = 'Check health of cron jobs';
 
+    public function __construct(
+        protected CronJobService $cronJobService,
+        protected CronJobExecutionService $cronJobExecutionService
+    ) {
+        parent::__construct();
+    }
+
     public function handle()
     {
         $healthy = true;
@@ -19,17 +26,17 @@ class CronHealthCheckCommand extends Command
         // Check for jobs that haven't run recently
         $threshold = now()->subHours(2);
         
-        $stuckJobs = CronJob::where('is_active', 1)
+        $stuckJobs = $this->cronJobService->query()->where($this->cronJobService->isActive(), 1)
             ->where(function ($query) use ($threshold) {
-                $query->whereNull('last_run_at')
-                    ->orWhere('last_run_at', '<', $threshold);
+                $query->whereNull($this->cronJobService->lastRunAt())
+                    ->orWhere($this->cronJobService->lastRunAt(), '<', $threshold);
             })
             ->get();
 
         if ($stuckJobs->isNotEmpty()) {
             $this->warn("Stuck jobs found:");
             foreach ($stuckJobs as $job) {
-                $this->line("  - {$job->job_name} (last run: {$job->last_run_at})");
+                $this->line("  - {$job->{$this->cronJobService->jobName()}} (last run: {$job->{$this->cronJobService->lastRunAt()}})");
             }
             
             // Send alert
@@ -38,7 +45,7 @@ class CronHealthCheckCommand extends Command
         }
 
         // Check for failed executions
-        $failedExecutions = CronJobExecution::where('status', 'failed')
+        $failedExecutions = $this->cronJobExecutionService->query()->where($this->cronJobExecutionService->status(), 'failed')
             ->where('created_at', '>=', now()->subHours(24))
             ->count();
 

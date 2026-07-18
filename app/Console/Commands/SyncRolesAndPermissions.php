@@ -12,12 +12,18 @@ use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use App\Services\UserService;
 
 class SyncRolesAndPermissions extends Command
 {
     protected $signature = 'rbac:sync {--assign-users : Assign role to existing users}';
 
     protected $description = 'Create route-based permissions, sync roles, and optionally assign users.';
+
+    public function __construct(protected UserService $userService)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -128,10 +134,10 @@ class SyncRolesAndPermissions extends Command
             return 0;
         }
 
-        $hasUserType = Schema::hasColumn('users', 'user_type');
+        $hasUserType = Schema::hasColumn('users', $this->userService->userType());
         $count = 0;
 
-        User::query()->chunkById(200, function ($users) use (&$count, $roles, $hasUserType): void {
+        $this->userService->query()->chunkById(200, function ($users) use (&$count, $roles, $hasUserType): void {
             foreach ($users as $user) {
                 $targetRole = $this->resolveRoleName($user, $hasUserType);
                 $user->syncRoles([$roles[$targetRole]]);
@@ -145,7 +151,7 @@ class SyncRolesAndPermissions extends Command
     private function resolveRoleName(User $user, bool $hasUserType): string
     {
         if ($hasUserType) {
-            $userTypeAttribute = $user->getAttribute(User::USER_TYPE);
+            $userTypeAttribute = $user->getAttribute($this->userService->userType());
             $userType = $userTypeAttribute instanceof UserType
                 ? $userTypeAttribute->value
                 : Str::lower((string) $userTypeAttribute);

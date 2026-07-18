@@ -3,9 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Enums\OrderStatus;
-use App\Models\CandidateOrder;
-use App\Models\CandidateService;
-use App\Models\CandidateServiceData;
+use App\Enums\PaymentStatus;
+use App\Services\CandidateOrderService;
+use App\Services\CandidateServiceService;
+use App\Services\CandidateServiceDataService;
 use App\Services\ProteanService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,10 @@ class ProcessOrderVerificationsCommand extends Command
     protected $description = 'Process pending candidate verifications (Bank Account and EPF) using Protean APIs';
 
     public function __construct(
-        protected ProteanService $proteanService
+        protected ProteanService $proteanService,
+        protected CandidateOrderService $candidateOrderService,
+        protected CandidateServiceService $candidateServiceService,
+        protected CandidateServiceDataService $candidateServiceDataService
     ) {
         parent::__construct();
     }
@@ -26,10 +30,11 @@ class ProcessOrderVerificationsCommand extends Command
         $this->info('Starting order verifications processing...');
 
         // 1. Fetch all pending or retry candidate services under paid orders
-        $candidateServices = CandidateService::whereIn('processing_status', ['pending', 'retry'])
+        $candidateServices = $this->candidateServiceService->query()
+            ->whereIn($this->candidateServiceService->processingStatus(), ['pending', 'retry'])
             ->whereHas('order', function ($query) {
-                $query->where('payment_status', 'paid')
-                    ->whereIn('status', ['processing', 'completed']);
+                $query->where($this->candidateOrderService->paymentStatus(), PaymentStatus::PAID->value)
+                    ->whereIn($this->candidateOrderService->status(), [OrderStatus::PROCESSING->value, OrderStatus::COMPLETED->value]);
             })
             ->with(['candidate'])
             ->get();
@@ -44,15 +49,15 @@ class ProcessOrderVerificationsCommand extends Command
         $processedOrders = [];
 
         foreach ($candidateServices as $candidateService) {
-            $serviceId = (int) $candidateService->service_id;
-            $orderId = (int) $candidateService->order_id;
+            $serviceId = (int) $candidateService->{$this->candidateServiceService->serviceId()};
+            $orderId = (int) $candidateService->{$this->candidateServiceService->orderId()};
             
-            $this->info(sprintf('Processing Service ID: %d for Candidate ID: %d, Order ID: %d', $serviceId, $candidateService->candidate_id, $orderId));
+            $this->info(sprintf('Processing Service ID: %d for Candidate ID: %d, Order ID: %d', $serviceId, $candidateService->{$this->candidateServiceService->candidateId()}, $orderId));
 
             // Set state to processing
             $candidateService->update([
-                'processing_status' => 'processing',
-                'processing_attempts' => $candidateService->processing_attempts + 1,
+                $this->candidateServiceService->processingStatus() => 'processing',
+                $this->candidateServiceService->processingAttempts() => $candidateService->{$this->candidateServiceService->processingAttempts()} + 1,
             ]);
 
             try {
@@ -63,9 +68,9 @@ class ProcessOrderVerificationsCommand extends Command
                 } else {
                     // Mark as completed or skipped if not an auto-verifiable service
                     $candidateService->update([
-                        'processing_status' => 'completed',
-                        'processed_at' => now(),
-                        'completed_at' => now(),
+                        $this->candidateServiceService->processingStatus() => 'completed',
+                        $this->candidateServiceService->processedAt() => now(),
+                        $this->candidateServiceService->completedAt() => now(),
                     ]);
                     $this->warn("Skipped Service ID {$serviceId} (no automatic API handler configured).");
                 }
@@ -73,24 +78,24 @@ class ProcessOrderVerificationsCommand extends Command
                 $processedOrders[$orderId] = true;
 
             } catch (\Exception $e) {
-                Log::error("Failed to process candidate service ID {$candidateService->id}: " . $e->getMessage());
+                Log::error("Failed to process candidate service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
                 $candidateService->update([
-                    'processing_status' => 'failed',
-                    'error_message' => $e->getMessage(),
+                    $this->candidateServiceService->processingStatus() => 'failed',
+                    $this->candidateServiceService->errorMessage() => $e->getMessage(),
                 ]);
-                $this->error("Error for Service ID {$candidateService->id}: " . $e->getMessage());
+                $this->error("Error for Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
             }
         }
 
         // 2. Check if all services in processed orders are completed and update order status
         foreach (array_keys($processedOrders) as $orderId) {
-            $orderServices = CandidateService::where('order_id', $orderId)->get();
-            $allCompleted = $orderServices->every(fn($item) => $item->processing_status === 'completed');
+            $orderServices = $this->candidateServiceService->query()->where($this->candidateServiceService->orderId(), $orderId)->get();
+            $allCompleted = $orderServices->every(fn($item) => $item->{$this->candidateServiceService->processingStatus()} === 'completed');
 
             if ($allCompleted) {
-                CandidateOrder::where('id', $orderId)->update([
-                    'status' => OrderStatus::COMPLETED->value,
-                    'completed_at' => now(),
+                $this->candidateOrderService->query()->where($this->candidateOrderService->id(), $orderId)->update([
+                    $this->candidateOrderService->status() => OrderStatus::COMPLETED->value,
+                    $this->candidateOrderService->completedAt() => now(),
                 ]);
                 $this->info("Order ID {$orderId} has been successfully completed.");
             }
@@ -100,10 +105,10 @@ class ProcessOrderVerificationsCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function processBankAccountVerification(CandidateService $candidateService): void
+    protected function processBankAccountVerification($candidateService): void
     {
         // Get all input fields for this candidate service
-        $dataRows = CandidateServiceData::where('candidate_service_id', $candidateService->id)
+        $dataRows = $this->candidateServiceDataService->query()->where($this->candidateServiceDataService->candidateServiceId(), $candidateService->{$this->candidateServiceService->id()})
             ->with(['field' => function($q) {
                 $q->select('id', 'field_name');
             }])
@@ -118,10 +123,10 @@ class ProcessOrderVerificationsCommand extends Command
         foreach ($dataRows as $row) {
             $fieldName = $row->field?->field_name ?? '';
             if ($fieldName === 'beneficiary_account') {
-                $account = trim((string) $row->field_value);
+                $account = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $accountFieldRow = $row;
             } elseif ($fieldName === 'beneficiary_ifsc') {
-                $ifsc = trim((string) $row->field_value);
+                $ifsc = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $ifscFieldRow = $row;
             }
         }
@@ -144,8 +149,8 @@ class ProcessOrderVerificationsCommand extends Command
         } finally {
             $durationMs = (int) round((microtime(true) - $startTime) * 1000);
             \Illuminate\Support\Facades\DB::table('api_logs')->insert([
-                'service_id' => $candidateService->service_id,
-                'order_item_id' => $candidateService->order_item_id,
+                'service_id' => $candidateService->{$this->candidateServiceService->serviceId()},
+                'order_item_id' => $candidateService->{$this->candidateServiceService->orderItemId()},
                 'endpoint' => '/api/v1/protean-variablepennydrop/bankaccountverifications/advancedverification',
                 'method' => 'POST',
                 'request_data' => json_encode([
@@ -170,31 +175,31 @@ class ProcessOrderVerificationsCommand extends Command
         $isVerified = 1;
         
         $accountFieldRow->update([
-            'is_verified' => $isVerified,
-            'verified_at' => now(),
-            'status' => 'verified',
+            $this->candidateServiceDataService->isVerified() => $isVerified,
+            $this->candidateServiceDataService->verifiedAt() => now(),
+            $this->candidateServiceDataService->status() => 'verified',
         ]);
         
         $ifscFieldRow->update([
-            'is_verified' => $isVerified,
-            'verified_at' => now(),
-            'status' => 'verified',
+            $this->candidateServiceDataService->isVerified() => $isVerified,
+            $this->candidateServiceDataService->verifiedAt() => now(),
+            $this->candidateServiceDataService->status() => 'verified',
         ]);
 
         $candidateService->update([
-            'processing_status' => 'completed',
-            'processed_at' => now(),
-            'completed_at' => now(),
-            'error_message' => null,
+            $this->candidateServiceService->processingStatus() => 'completed',
+            $this->candidateServiceService->processedAt() => now(),
+            $this->candidateServiceService->completedAt() => now(),
+            $this->candidateServiceService->errorMessage() => null,
         ]);
 
         $this->info("Bank Account Verification completed successfully.");
     }
 
-    protected function processEpfVerification(CandidateService $candidateService): void
+    protected function processEpfVerification($candidateService): void
     {
         // Get all input fields for this candidate service
-        $dataRows = CandidateServiceData::where('candidate_service_id', $candidateService->id)
+        $dataRows = $this->candidateServiceDataService->query()->where($this->candidateServiceDataService->candidateServiceId(), $candidateService->{$this->candidateServiceService->id()})
             ->with(['field' => function($q) {
                 $q->select('id', 'field_name');
             }])
@@ -207,7 +212,7 @@ class ProcessOrderVerificationsCommand extends Command
         foreach ($dataRows as $row) {
             $fieldName = $row->field?->field_name ?? '';
             if ($fieldName === 'uan') {
-                $uan = trim((string) $row->field_value);
+                $uan = trim((string) $row->{$this->candidateServiceDataService->fieldValue()});
                 $uanFieldRow = $row;
             }
         }
@@ -230,8 +235,8 @@ class ProcessOrderVerificationsCommand extends Command
         } finally {
             $durationMs = (int) round((microtime(true) - $startTime) * 1000);
             \Illuminate\Support\Facades\DB::table('api_logs')->insert([
-                'service_id' => $candidateService->service_id,
-                'order_item_id' => $candidateService->order_item_id,
+                'service_id' => $candidateService->{$this->candidateServiceService->serviceId()},
+                'order_item_id' => $candidateService->{$this->candidateServiceService->orderItemId()},
                 'endpoint' => '/api/v1/protean/fetch-employment-history',
                 'method' => 'POST',
                 'request_data' => json_encode([
@@ -255,16 +260,16 @@ class ProcessOrderVerificationsCommand extends Command
         $isVerified = 1;
         
         $uanFieldRow->update([
-            'is_verified' => $isVerified,
-            'verified_at' => now(),
-            'status' => 'verified',
+            $this->candidateServiceDataService->isVerified() => $isVerified,
+            $this->candidateServiceDataService->verifiedAt() => now(),
+            $this->candidateServiceDataService->status() => 'verified',
         ]);
 
         $candidateService->update([
-            'processing_status' => 'completed',
-            'processed_at' => now(),
-            'completed_at' => now(),
-            'error_message' => null,
+            $this->candidateServiceService->processingStatus() => 'completed',
+            $this->candidateServiceService->processedAt() => now(),
+            $this->candidateServiceService->completedAt() => now(),
+            $this->candidateServiceService->errorMessage() => null,
         ]);
 
         $this->info("EPF UAN Validation completed successfully.");

@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Services\ServiceCategoryService;
+use App\Services\ServiceService;
+use App\Services\ServicesFieldService;
 
 class SeedEmploymentVerificationService extends Command
 {
@@ -23,33 +26,40 @@ class SeedEmploymentVerificationService extends Command
     /**
      * Execute the console command.
      */
+    public function __construct(
+        protected ServiceCategoryService $serviceCategoryService,
+        protected ServiceService $serviceService,
+        protected ServicesFieldService $servicesFieldService
+    ) {
+        parent::__construct();
+    }
     public function handle()
     {
         $this->info('Seeding Employment Verification Service...');
 
-        $category = \App\Models\ServiceCategory::where('category_name', 'Verification')->first();
+        $category = $this->serviceCategoryService->query()->where($this->serviceCategoryService->categoryName(), 'Verification')->first();
         if (!$category) {
-            $category = \App\Models\ServiceCategory::create([
-                'category_name' => 'Verification',
-                'category_code' => 'VERIFICATION',
-                'category_slug' => 'verification',
-                'status' => 1,
-                'created_by' => 1
+            $category = $this->serviceCategoryService->create([
+                $this->serviceCategoryService->categoryName() => 'Verification',
+                $this->serviceCategoryService->categoryCode() => 'VERIFICATION',
+                $this->serviceCategoryService->categorySlug() => 'verification',
+                $this->serviceCategoryService->status() => 1,
+                $this->serviceCategoryService->createdBy() => 1
             ]);
         }
 
         // Check if service already exists
-        $service = \App\Models\Service::where(\App\Models\Service::SERVICE_CODE, 'EMP_VER')->first();
+        $service = $this->serviceService->query()->where($this->serviceService->serviceCode(), 'EMP_VER')->first();
 
         if (!$service) {
-            $service = \App\Models\Service::create([
-                \App\Models\Service::SERVICE_CATEGORY => $category->id,
-                \App\Models\Service::SERVICE_NAME => 'Employment Verification',
-                \App\Models\Service::SERVICE_CODE => 'EMP_VER',
-                \App\Models\Service::DESCRIPTION => 'Verification of employment history',
-                \App\Models\Service::BASE_PRICE => 0,
-                \App\Models\Service::STATUS => 1,
-                \App\Models\Service::CREATED_BY => 1,
+            $service = $this->serviceService->create([
+                $this->serviceService->serviceCategory() => $category->{$this->serviceCategoryService->id()},
+                $this->serviceService->serviceName() => 'Employment Verification',
+                $this->serviceService->serviceCode() => 'EMP_VER',
+                $this->serviceService->description() => 'Verification of employment history',
+                $this->serviceService->basePrice() => 0,
+                $this->serviceService->status() => 1,
+                $this->serviceService->createdBy() => 1,
             ]);
             $this->info('Created Service: Employment Verification');
         } else {
@@ -186,15 +196,15 @@ class SeedEmploymentVerificationService extends Command
         ];
 
         foreach ($fields as $fieldData) {
-            $existingField = \App\Models\ServicesField::where(\App\Models\ServicesField::SERVICE_ID, $service->id)
-                ->where(\App\Models\ServicesField::FIELD_NAME, $fieldData['field_name'])
+            $existingField = $this->servicesFieldService->query()->where($this->servicesFieldService->serviceId(), $service->{$this->serviceService->id()})
+                ->where($this->servicesFieldService->fieldName(), $fieldData['field_name'])
                 ->first();
 
             if (!$existingField) {
-                \App\Models\ServicesField::create(array_merge($fieldData, [
-                    \App\Models\ServicesField::SERVICE_ID => $service->id,
-                    \App\Models\ServicesField::STATUS => 1,
-                    \App\Models\ServicesField::CREATED_BY => 1,
+                $this->servicesFieldService->create(array_merge($fieldData, [
+                    $this->servicesFieldService->serviceId() => $service->{$this->serviceService->id()},
+                    $this->servicesFieldService->status() => 1,
+                    $this->servicesFieldService->createdBy() => 1,
                 ]));
                 $this->info("Added field: " . $fieldData['field_name']);
             } else {

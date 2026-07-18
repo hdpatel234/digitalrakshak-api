@@ -3,12 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Enums\CandidateSource;
-use App\Models\CandiateImportError;
+use App\Enums\ImportStatus;
 use App\Models\Candidate;
-use App\Models\CandidateImportHistory;
-use App\Repositories\CityRepository;
-use App\Repositories\CountryRepository;
-use App\Repositories\StateRepository;
+use App\Services\CountryService;
+use App\Services\StateService;
+use App\Services\CityService;
+use App\Services\CandidateImportHistoryService;
+use App\Services\CandiateImportErrorService;
 use App\Services\CandidateService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -26,9 +27,11 @@ class ProcessCandidateImportsCommand extends Command
 
     public function __construct(
         protected CandidateService $candidateService,
-        protected CountryRepository $countryRepository,
-        protected StateRepository $stateRepository,
-        protected CityRepository $cityRepository
+        protected CountryService $countryService,
+        protected StateService $stateService,
+        protected CityService $cityService,
+        protected CandidateImportHistoryService $candidateImportHistoryService,
+        protected CandiateImportErrorService $candiateImportErrorService
     ) {
         parent::__construct();
     }
@@ -37,9 +40,9 @@ class ProcessCandidateImportsCommand extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
-        $imports = CandidateImportHistory::query()
-            ->whereIn(CandidateImportHistory::STATUS, ['pending', 'queued'])
-            ->orderBy(CandidateImportHistory::ID)
+        $imports = $this->candidateImportHistoryService->query()
+            ->whereIn($this->candidateImportHistoryService->status(), [ImportStatus::PENDING->value, ImportStatus::QUEUED->value])
+            ->orderBy($this->candidateImportHistoryService->id())
             ->limit($limit)
             ->get();
 
@@ -52,9 +55,9 @@ class ProcessCandidateImportsCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function processImport(CandidateImportHistory $import): void
+    protected function processImport($import): void
     {
-        $meta = $this->decodeMeta($import->error_log);
+        $meta = $this->decodeMeta($import->{$this->candidateImportHistoryService->errorLog()});
         $storedPath = $meta['stored_path'] ?? null;
 
         if (!is_string($storedPath) || $storedPath === '') {
@@ -68,8 +71,8 @@ class ProcessCandidateImportsCommand extends Command
         }
 
         $import->update([
-            'status' => 'processing',
-            'reason' => null,
+            $this->candidateImportHistoryService->status() => ImportStatus::PROCESSING->value,
+            $this->candidateImportHistoryService->reason() => null,
         ]);
 
         try {
@@ -96,7 +99,7 @@ class ProcessCandidateImportsCommand extends Command
                     $failedCount++;
                     $errorMessage = implode('; ', $validator->errors()->all());
                     $firstFailureReason ??= $errorMessage;
-                    $this->storeRowError($import->id, $rowNumber, $errorMessage, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorMessage, $mapped);
                     continue;
                 }
 
@@ -108,8 +111,8 @@ class ProcessCandidateImportsCommand extends Command
                     );
 
                     $this->candidateService->createWithAssociations(
-                        array_merge($payload, $location, ['source' => CandidateSource::IMPORT_FILE->value]),
-                        (int) $import->client_id,
+                        array_merge($payload, $location, [$this->candidateService->source() => CandidateSource::IMPORT_FILE->value]),
+                        (int) $import->{$this->candidateImportHistoryService->clientId()},
                         null
                     );
                     $successCount++;
@@ -120,16 +123,16 @@ class ProcessCandidateImportsCommand extends Command
                         ? implode('; ', array_merge(...array_values($errors)))
                         : $e->getMessage();
                     $firstFailureReason ??= $errorText;
-                    $this->storeRowError($import->id, $rowNumber, $errorText, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorText, $mapped);
                 } catch (Throwable $e) {
                     $failedCount++;
                     $errorMessage = $e->getMessage();
                     $firstFailureReason ??= $errorMessage;
-                    $this->storeRowError($import->id, $rowNumber, $errorMessage, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorMessage, $mapped);
                 }
             }
 
-            $status = $failedCount > 0 ? 'failed' : 'completed';
+            $status = $failedCount > 0 ? ImportStatus::FAILED->value : ImportStatus::COMPLETED->value;
             $reason = $failedCount > 0
                 ? mb_substr((string) ($firstFailureReason ?? 'Some rows failed during import.'), 0, 1000)
                 : null;
@@ -146,16 +149,16 @@ class ProcessCandidateImportsCommand extends Command
             }
 
             $import->update([
-                'total_records' => $totalRecords,
-                'successful_imports' => $successCount,
-                'failed_imports' => $failedCount,
-                'status' => $status,
-                'reason' => $reason,
-                'error_log' => json_encode($meta),
+                $this->candidateImportHistoryService->totalRecords() => $totalRecords,
+                $this->candidateImportHistoryService->successfulImports() => $successCount,
+                $this->candidateImportHistoryService->failedImports() => $failedCount,
+                $this->candidateImportHistoryService->status() => $status,
+                $this->candidateImportHistoryService->reason() => $reason,
+                $this->candidateImportHistoryService->errorLog() => json_encode($meta),
             ]);
         } catch (Throwable $e) {
             Log::error('Candidate import processing failed', [
-                'import_id' => $import->id,
+                'import_id' => $import->{$this->candidateImportHistoryService->id()},
                 'error' => $e->getMessage(),
             ]);
 
@@ -173,26 +176,26 @@ class ProcessCandidateImportsCommand extends Command
         return is_array($decoded) ? $decoded : [];
     }
 
-    protected function markImportAsFailed(CandidateImportHistory $import, array $meta, string $reason): void
+    protected function markImportAsFailed($import, array $meta, string $reason): void
     {
         $meta['processing_error'] = $reason;
         $meta['processed_at'] = now()->toDateTimeString();
 
         $import->update([
-            'status' => 'failed',
-            'reason' => mb_substr($reason, 0, 1000),
-            'error_log' => json_encode($meta),
+            $this->candidateImportHistoryService->status() => ImportStatus::FAILED->value,
+            $this->candidateImportHistoryService->reason() => mb_substr($reason, 0, 1000),
+            $this->candidateImportHistoryService->errorLog() => json_encode($meta),
         ]);
     }
 
     protected function storeRowError(int $importId, int $rowNumber, string $message, array $rawData): void
     {
-        CandiateImportError::query()->create([
-            'import_id' => $importId,
-            'row_number' => $rowNumber,
-            'error_message' => mb_substr($message, 0, 2000),
-            'raw_data' => json_encode($rawData),
-            'status' => 'failed',
+        $this->candiateImportErrorService->query()->create([
+            $this->candiateImportErrorService->importId() => $importId,
+            $this->candiateImportErrorService->rowNumber() => $rowNumber,
+            $this->candiateImportErrorService->errorMessage() => mb_substr($message, 0, 2000),
+            $this->candiateImportErrorService->rawData() => json_encode($rawData),
+            $this->candiateImportErrorService->status() => ImportStatus::FAILED->value,
         ]);
     }
 
@@ -206,7 +209,7 @@ class ProcessCandidateImportsCommand extends Command
                 'email',
                 'max:255',
                 Rule::unique('candidates', 'email')->where(
-                    fn ($query) => $query->where('client_id', $clientId)
+                    fn($query) => $query->where('client_id', $clientId)
                 ),
             ],
             'dialCode' => ['nullable', 'string', 'max:10'],
@@ -249,7 +252,7 @@ class ProcessCandidateImportsCommand extends Command
         if (!empty($mapped['manageremails'])) {
             $managerEmails = preg_split('/,/', (string) $mapped['manageremails']) ?: [];
             $managerEmails = array_values(array_filter(array_map(
-                static fn ($value) => strtolower(trim((string) $value)),
+                static fn($value) => strtolower(trim((string) $value)),
                 $managerEmails
             )));
         }
@@ -280,41 +283,41 @@ class ProcessCandidateImportsCommand extends Command
         $citySearch = $this->normalizedLocationName($cityName);
 
         if ($countrySearch !== null) {
-            $country = $this->countryRepository->query()
-                ->whereRaw('LOWER(' . $this->countryRepository->name() . ') = ?', [$countrySearch])
+            $country = $this->countryService->query()
+                ->whereRaw('LOWER(' . $this->countryService->name() . ') = ?', [$countrySearch])
                 ->first();
         }
 
         if ($stateSearch !== null) {
-            $stateQuery = $this->stateRepository->query()
-                ->whereRaw('LOWER(' . $this->stateRepository->name() . ') = ?', [$stateSearch]);
+            $stateQuery = $this->stateService->query()
+                ->whereRaw('LOWER(' . $this->stateService->name() . ') = ?', [$stateSearch]);
 
             if ($country) {
-                $stateQuery->where($this->stateRepository->countryId(), $country->id);
+                $stateQuery->where($this->stateService->countryId(), $country->{$this->countryService->id()});
             }
 
             $state = $stateQuery->first();
         }
 
         if ($citySearch !== null) {
-            $cityQuery = $this->cityRepository->query()
-                ->whereRaw('LOWER(' . $this->cityRepository->name() . ') = ?', [$citySearch]);
+            $cityQuery = $this->cityService->query()
+                ->whereRaw('LOWER(' . $this->cityService->name() . ') = ?', [$citySearch]);
 
             if ($country) {
-                $cityQuery->where($this->cityRepository->countryId(), $country->id);
+                $cityQuery->where($this->cityService->countryId(), $country->{$this->countryService->id()});
             }
 
             if ($state) {
-                $cityQuery->where($this->cityRepository->stateId(), $state->id);
+                $cityQuery->where($this->cityService->stateId(), $state->{$this->stateService->id()});
             }
 
             $city = $cityQuery->first();
         }
 
         return [
-            'country' => $country ? (int) $country->id : null,
-            'state' => $state ? (int) $state->id : null,
-            'city' => $city ? (int) $city->id : null,
+            'country' => $country ? (int) $country->{$this->countryService->id()} : null,
+            'state' => $state ? (int) $state->{$this->stateService->id()} : null,
+            'city' => $city ? (int) $city->{$this->cityService->id()} : null,
         ];
     }
 

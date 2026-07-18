@@ -56,6 +56,11 @@ class CandidateImportHistoryService extends BaseService
         return $this->repository->status();
     }
 
+    public function reason()
+    {
+        return $this->repository->reason();
+    }
+
     public function createdBy()
     {
         return $this->repository->createdBy();

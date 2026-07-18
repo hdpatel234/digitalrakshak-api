@@ -52,6 +52,11 @@ class CandidateImportHistoryRepository extends BaseRepository
         return CandidateImportHistory::STATUS;
     }
 
+    public function reason()
+    {
+        return CandidateImportHistory::REASON;
+    }
+
     public function createdBy()
     {
         return CandidateImportHistory::CREATED_BY;

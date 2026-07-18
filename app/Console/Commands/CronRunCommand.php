@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CronJob;
+use App\Services\CronJobService;
 use App\Services\Cron\DynamicCronManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -15,15 +15,14 @@ class CronRunCommand extends Command
                             {--job= : Specific job key to run}
                             {--manual : Indicates manual execution}
                             {--force : Force execution even if not scheduled}';
-    
+
     protected $description = 'Run scheduled cron jobs';
 
-    protected DynamicCronManager $cronManager;
-
-    public function __construct(DynamicCronManager $cronManager)
-    {
+    public function __construct(
+        protected DynamicCronManager $cronManager,
+        protected CronJobService $cronJobService
+    ) {
         parent::__construct();
-        $this->cronManager = $cronManager;
     }
 
     public function handle()
@@ -33,10 +32,8 @@ class CronRunCommand extends Command
         $force = $this->option('force');
 
         if ($jobKey) {
-            // Run specific job
             $this->runSpecificJob($jobKey, $isManual, $force);
         } else {
-            // Run all due jobs
             $this->runAllJobs();
         }
 
@@ -45,7 +42,7 @@ class CronRunCommand extends Command
 
     protected function runSpecificJob($jobKey, $isManual, $force)
     {
-        $job = CronJob::where('job_key', $jobKey)->first();
+        $job = $this->cronJobService->query()->where($this->cronJobService->jobKey(), $jobKey)->first();
 
         if (!$job) {
             $this->error("Job not found: {$jobKey}");
@@ -57,18 +54,18 @@ class CronRunCommand extends Command
             return 0;
         }
 
-        $this->info("Running job: {$job->job_name}");
+        $this->info("Running job: {$job->{$this->cronJobService->jobName()}}");
         $this->executeJob($job);
     }
 
     protected function runAllJobs()
     {
-        $jobs = CronJob::where('is_active', 1)
+        $jobs = $this->cronJobService->query()->where($this->cronJobService->isActive(), 1)
             ->where(function ($query) {
-                $query->where('next_run_at', '<=', now())
-                      ->orWhereNull('next_run_at');
+                $query->where($this->cronJobService->nextRunAt(), '<=', now())
+                    ->orWhereNull($this->cronJobService->nextRunAt());
             })
-            ->orderBy('priority', 'desc')
+            ->orderBy($this->cronJobService->priority(), 'desc')
             ->get();
 
         if ($jobs->isEmpty()) {
@@ -83,7 +80,7 @@ class CronRunCommand extends Command
         }
     }
 
-    protected function executeJob(CronJob $job)
+    protected function executeJob($job)
     {
         try {
             // Create execution log
@@ -95,24 +92,24 @@ class CronRunCommand extends Command
 
             // Update job
             $job->update([
-                'last_run_at' => now(),
-                'last_run_log_id' => $execution->id,
+                $this->cronJobService->lastRunAt() => now(),
+                $this->cronJobService->lastRunLogId() => $execution->id,
             ]);
 
             $output = '';
 
-            if ($job->job_class) {
+            if ($job->{$this->cronJobService->jobClass()}) {
                 // Execute the job class
-                $jobClass = $job->job_class;
-                $method = $job->job_method ?? 'handle';
-                $parameters = is_array($job->parameters) ? $job->parameters : json_decode($job->parameters ?? '{}', true);
+                $jobClass = $job->{$this->cronJobService->jobClass()};
+                $method = $job->{$this->cronJobService->jobMethod()} ?? 'handle';
+                $parameters = is_array($job->{$this->cronJobService->parameters()}) ? $job->{$this->cronJobService->parameters()} : json_decode($job->{$this->cronJobService->parameters()} ?? '{}', true);
 
                 if (!class_exists($jobClass)) {
                     throw new \Exception("Job class not found: {$jobClass}");
                 }
 
                 $instance = app($jobClass);
-                
+
                 // Execute with parameters
                 $result = $instance->$method($parameters);
 
@@ -122,15 +119,14 @@ class CronRunCommand extends Command
                     'failed_count' => $result['failed'] ?? 0,
                     'processed_logs' => isset($result['logs']) ? (is_array($result['logs']) ? json_encode($result['logs']) : $result['logs']) : null,
                 ]);
-
-            } elseif ($job->command) {
+            } elseif ($job->{$this->cronJobService->command()}) {
                 // Execute native artisan command
                 $parameters = [];
-                if (is_array($job->parameters)) {
-                    $parameters = $job->parameters;
+                if (is_array($job->{$this->cronJobService->parameters()})) {
+                    $parameters = $job->{$this->cronJobService->parameters()};
                 }
-                
-                Artisan::call($job->command, $parameters);
+
+                Artisan::call($job->{$this->cronJobService->command()}, $parameters);
                 $output = Artisan::output();
             } else {
                 throw new \Exception("No job class or artisan command defined for this job.");
@@ -147,11 +143,10 @@ class CronRunCommand extends Command
             $this->cronManager->calculateNextRun($job);
 
             $job->update([
-                'last_run_status' => 'success',
+                $this->cronJobService->lastRunStatus() => 'success',
             ]);
 
-            $this->info("✓ Completed: {$job->job_name}");
-
+            $this->info("✓ Completed: {$job->{$this->cronJobService->jobName()}}");
         } catch (\Exception $e) {
             if (isset($execution)) {
                 // Update execution with error
@@ -167,35 +162,35 @@ class CronRunCommand extends Command
             // Handle retry
             $this->handleRetry($job);
 
-            $this->error("✗ Failed: {$job->job_name} - " . $e->getMessage());
-            Log::error("Cron job failed: {$job->job_name}", [
-                'job_id' => $job->id,
+            $this->error("✗ Failed: {$job->{$this->cronJobService->jobName()}} - " . $e->getMessage());
+            Log::error("Cron job failed: {$job->{$this->cronJobService->jobName()}}", [
+                'job_id' => $job->{$this->cronJobService->id()},
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
         }
     }
 
-    protected function isJobDue(CronJob $job)
+    protected function isJobDue($job)
     {
-        return !$job->next_run_at || $job->next_run_at <= now();
+        return !$job->{$this->cronJobService->nextRunAt()} || $job->{$this->cronJobService->nextRunAt()} <= now();
     }
 
-    protected function handleRetry(CronJob $job)
+    protected function handleRetry($job)
     {
         $retryCount = $job->executions()
             ->where('status', 'failed')
             ->where('created_at', '>=', now()->subHours(24))
             ->count();
 
-        if ($retryCount < ($job->max_retries ?? 3)) {
+        if ($retryCount < ($job->{$this->cronJobService->maxRetries()} ?? 3)) {
             $job->update([
-                'next_run_at' => now()->addMinutes($job->retry_delay_minutes ?? 5),
-                'last_run_status' => 'failed',
+                $this->cronJobService->nextRunAt() => now()->addMinutes($job->{$this->cronJobService->retryDelayMinutes()} ?? 5),
+                $this->cronJobService->lastRunStatus() => 'failed',
             ]);
         } else {
-            $job->update(['is_active' => 0, 'last_run_status' => 'failed']);
-            Log::warning("Cron job disabled: {$job->job_name} (max retries)");
+            $job->update([$this->cronJobService->isActive() => 0, $this->cronJobService->lastRunStatus() => 'failed']);
+            Log::warning("Cron job disabled: {$job->{$this->cronJobService->jobName()}} (max retries)");
         }
     }
 }

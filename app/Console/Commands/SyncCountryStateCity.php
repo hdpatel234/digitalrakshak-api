@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\CountryStateCityService;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\City;
+use App\Services\CountryService;
+use App\Services\StateService;
+use App\Services\CityService;
 use Exception;
 
 class SyncCountryStateCity extends Command
@@ -26,6 +26,14 @@ class SyncCountryStateCity extends Command
     protected $description = 'Sync Country, State, and City data from the CountryStateCity API';
 
     protected $apiService;
+
+    public function __construct(
+        protected CountryService $countryService,
+        protected StateService $stateService,
+        protected CityService $cityService
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -62,18 +70,18 @@ class SyncCountryStateCity extends Command
         $countries = $this->apiService->getCountries();
 
         $this->withProgressBar($countries, function ($countryData) {
-            Country::updateOrCreate(
-                ['iso_code_2' => $countryData['iso2']],
+            $this->countryService->query()->updateOrCreate(
+                [$this->countryService->isoCode2() => $countryData['iso2']],
                 [
-                    'name' => $countryData['name'],
-                    'iso_code_3' => $countryData['iso3'] ?? null,
-                    'phone_code' => $countryData['phonecode'] ?? null,
-                    'currency_code' => $countryData['currency'] ?? null,
-                    'capital' => $countryData['capital'] ?? null,
-                    'continent' => $countryData['region'] ?? null,
-                    'latitude' => $countryData['latitude'] ?? null,
-                    'longitude' => $countryData['longitude'] ?? null,
-                    'timezones' => $countryData['timezones'] ?? null,
+                    $this->countryService->name() => $countryData['name'],
+                    $this->countryService->isoCode3() => $countryData['iso3'] ?? null,
+                    $this->countryService->phoneCode() => $countryData['phonecode'] ?? null,
+                    $this->countryService->currencyCode() => $countryData['currency'] ?? null,
+                    $this->countryService->capital() => $countryData['capital'] ?? null,
+                    $this->countryService->continent() => $countryData['region'] ?? null,
+                    $this->countryService->latitude() => $countryData['latitude'] ?? null,
+                    $this->countryService->longitude() => $countryData['longitude'] ?? null,
+                    $this->countryService->timezones() => $countryData['timezones'] ?? null,
                 ]
             );
         });
@@ -85,25 +93,25 @@ class SyncCountryStateCity extends Command
     protected function syncStates()
     {
         $this->info("Fetching states...");
-        $countries = Country::all();
+        $countries = $this->countryService->all();
 
         foreach ($countries as $country) {
             try {
-                $states = $this->apiService->getStates($country->iso_code_2);
+                $states = $this->apiService->getStates($country->{$this->countryService->isoCode2()});
 
                 if (!empty($states)) {
-                    $this->info("Syncing states for {$country->name}...");
+                    $this->info("Syncing states for {$country->{$this->countryService->name()}}...");
                     
                     foreach ($states as $stateData) {
-                        State::updateOrCreate(
+                        $this->stateService->query()->updateOrCreate(
                             [
-                                'country_id' => $country->id,
-                                'name' => $stateData['name'],
+                                $this->stateService->countryId() => $country->{$this->countryService->id()},
+                                $this->stateService->name() => $stateData['name'],
                             ],
                             [
-                                'code' => $stateData['iso2'] ?? null,
-                                'latitude' => $stateData['latitude'] ?? null,
-                                'longitude' => $stateData['longitude'] ?? null,
+                                $this->stateService->code() => $stateData['iso2'] ?? null,
+                                $this->stateService->latitude() => $stateData['latitude'] ?? null,
+                                $this->stateService->longitude() => $stateData['longitude'] ?? null,
                             ]
                         );
                     }
@@ -113,7 +121,7 @@ class SyncCountryStateCity extends Command
                 if (str_contains($e->getMessage(), 'daily limit')) {
                     throw $e;
                 }
-                $this->error("Failed to fetch states for {$country->name}: " . $e->getMessage());
+                $this->error("Failed to fetch states for {$country->{$this->countryService->name()}}: " . $e->getMessage());
             }
         }
         $this->info("States synced.");
@@ -123,41 +131,41 @@ class SyncCountryStateCity extends Command
     {
         $this->info("Fetching cities...");
         // Order by cities_synced_at ascending so we prioritize states that haven't been synced recently
-        $states = State::whereNotNull('code')->orderBy('cities_synced_at', 'asc')->get();
+        $states = $this->stateService->query()->whereNotNull($this->stateService->code())->orderBy($this->stateService->citiesSyncedAt(), 'asc')->get();
 
         foreach ($states as $state) {
-            $country = Country::find($state->country_id);
-            if (!$country || !$country->iso_code_2) continue;
+            $country = $this->countryService->find($state->{$this->stateService->countryId()});
+            if (!$country || !$country->{$this->countryService->isoCode2()}) continue;
 
             try {
-                $cities = $this->apiService->getCities($country->iso_code_2, $state->code);
+                $cities = $this->apiService->getCities($country->{$this->countryService->isoCode2()}, $state->{$this->stateService->code()});
 
                 if (!empty($cities)) {
-                    $this->info("Syncing cities for {$state->name}, {$country->name}...");
+                    $this->info("Syncing cities for {$state->{$this->stateService->name()}}, {$country->{$this->countryService->name()}}...");
                     
                     foreach ($cities as $cityData) {
-                        City::updateOrCreate(
+                        $this->cityService->query()->updateOrCreate(
                             [
-                                'state_id' => $state->id,
-                                'name' => $cityData['name'],
+                                $this->cityService->stateId() => $state->{$this->stateService->id()},
+                                $this->cityService->name() => $cityData['name'],
                             ],
                             [
-                                'country_id' => $country->id,
-                                'latitude' => $cityData['latitude'] ?? null,
-                                'longitude' => $cityData['longitude'] ?? null,
+                                $this->cityService->countryId() => $country->{$this->countryService->id()},
+                                $this->cityService->latitude() => $cityData['latitude'] ?? null,
+                                $this->cityService->longitude() => $cityData['longitude'] ?? null,
                             ]
                         );
                     }
                 }
 
                 // Mark the state as synced
-                $state->update(['cities_synced_at' => now()]);
+                $state->update([$this->stateService->citiesSyncedAt() => now()]);
             } catch (Exception $e) {
                 if (str_contains($e->getMessage(), 'daily limit')) {
-                    $this->warn("API Limit reached. Will continue from {$state->name} next time.");
+                    $this->warn("API Limit reached. Will continue from {$state->{$this->stateService->name()}} next time.");
                     throw $e;
                 }
-                $this->error("Failed to fetch cities for {$state->name}: " . $e->getMessage());
+                $this->error("Failed to fetch cities for {$state->{$this->stateService->name()}}: " . $e->getMessage());
             }
         }
         $this->info("Cities synced.");
