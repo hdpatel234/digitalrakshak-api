@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Services\ServiceCategoryService;
 use App\Services\ServiceService;
 use App\Services\ServicesFieldService;
+use App\Enums\ServiceCode;
 
 class SeedEmploymentVerificationService extends Command
 {
@@ -49,13 +50,13 @@ class SeedEmploymentVerificationService extends Command
         }
 
         // Check if service already exists
-        $service = $this->serviceService->query()->where($this->serviceService->serviceCode(), 'EMP_VER')->first();
+        $service = $this->serviceService->query()->where($this->serviceService->serviceCode(), ServiceCode::EMP_VER->value)->first();
 
         if (!$service) {
             $service = $this->serviceService->create([
                 $this->serviceService->serviceCategory() => $category->{$this->serviceCategoryService->id()},
                 $this->serviceService->serviceName() => 'Employment Verification',
-                $this->serviceService->serviceCode() => 'EMP_VER',
+                $this->serviceService->serviceCode() => ServiceCode::EMP_VER->value,
                 $this->serviceService->description() => 'Verification of employment history',
                 $this->serviceService->basePrice() => 0,
                 $this->serviceService->status() => 1,
