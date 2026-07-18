@@ -5,16 +5,23 @@ namespace App\Services\Webhook;
 use App\Models\Client;
 use App\Models\ClientWebhook;
 use App\Models\ClientWebhookLog;
+use App\Services\ClientWebhookService;
+use App\Services\ClientWebhookLogService;
+use App\Jobs\RetryWebhookJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ClientWebhookManager
 {
     protected $client;
+    protected ClientWebhookService $webhookService;
+    protected ClientWebhookLogService $webhookLogService;
 
     public function __construct(Client $client)
     {
         $this->client = $client;
+        $this->webhookService = app(ClientWebhookService::class);
+        $this->webhookLogService = app(ClientWebhookLogService::class);
     }
 
     /**
@@ -23,9 +30,10 @@ class ClientWebhookManager
     public function dispatch(string $eventCode, array $payload, array $metadata = []): void
     {
         // Get all active webhooks subscribed to this event
-        $webhooks = ClientWebhook::where('client_id', $this->client->id)
-            ->where('is_active', true)
-            ->whereJsonContains('events', $eventCode)
+        $webhooks = $this->webhookService->query()
+            ->where($this->webhookService->clientId(), $this->client->id)
+            ->where($this->webhookService->isActive(), true)
+            ->whereJsonContains($this->webhookService->events(), $eventCode)
             ->get();
 
         foreach ($webhooks as $webhook) {
@@ -39,12 +47,12 @@ class ClientWebhookManager
     protected function sendWebhook(ClientWebhook $webhook, string $eventCode, array $payload): void
     {
         // Create webhook log
-        $log = ClientWebhookLog::create([
-            'client_id' => $this->client->id,
-            'webhook_id' => $webhook->id,
-            'event_type' => $eventCode,
-            'payload' => $payload,
-            'status' => 'pending'
+        $log = $this->webhookLogService->create([
+            $this->webhookLogService->clientId() => $this->client->id,
+            $this->webhookLogService->webhookId() => $webhook->id,
+            $this->webhookLogService->eventType() => $eventCode,
+            $this->webhookLogService->payload() => $payload,
+            $this->webhookLogService->status() => 'pending'
         ]);
 
         try {
@@ -77,27 +85,27 @@ class ClientWebhookManager
             $responseTime = round((microtime(true) - $startTime) * 1000);
 
             // Update log
-            $log->update([
-                'response_code' => $response->status(),
-                'response_body' => substr($response->body(), 0, 5000), // Truncate long responses
-                'response_time_ms' => $responseTime,
-                'status' => $response->successful() ? 'success' : 'failed',
-                'updated_at' => now()
+            $this->webhookLogService->update($log->id, [
+                $this->webhookLogService->responseCode() => $response->status(),
+                $this->webhookLogService->responseBody() => substr($response->body(), 0, 5000),
+                $this->webhookLogService->responseTimeMs() => $responseTime,
+                $this->webhookLogService->status() => $response->successful() ? 'success' : 'failed',
+                $this->webhookLogService->updatedAt() => now()
             ]);
 
             // Update webhook stats
             if ($response->successful()) {
-                $webhook->increment('total_success');
-                $webhook->update([
-                    'last_success_at' => now(),
-                    'last_triggered_at' => now()
+                $this->webhookService->update($webhook->id, [
+                    $this->webhookService->totalSuccess() => $webhook->total_success + 1,
+                    $this->webhookService->lastSuccessAt() => now(),
+                    $this->webhookService->lastTriggeredAt() => now()
                 ]);
             } else {
-                $webhook->increment('total_failures');
-                $webhook->update([
-                    'last_failure_at' => now(),
-                    'last_triggered_at' => now(),
-                    'last_error' => "HTTP {$response->status()}: " . substr($response->body(), 0, 200)
+                $this->webhookService->update($webhook->id, [
+                    $this->webhookService->totalFailures() => $webhook->{$this->webhookService->totalFailures()} + 1,
+                    $this->webhookService->lastFailureAt() => now(),
+                    $this->webhookService->lastTriggeredAt() => now(),
+                    $this->webhookService->lastError() => "HTTP {$response->status()}: " . substr($response->body(), 0, 200)
                 ]);
 
                 // Handle retry logic
@@ -105,19 +113,18 @@ class ClientWebhookManager
                     $this->scheduleRetry($log, $webhook);
                 }
             }
-
         } catch (\Exception $e) {
-            $log->update([
-                'status' => 'failed',
-                'error_message' => $e->getMessage(),
-                'updated_at' => now()
+            $this->webhookLogService->update($log->id, [
+                $this->webhookLogService->status() => 'failed',
+                $this->webhookLogService->errorMessage() => $e->getMessage(),
+                $this->webhookLogService->updatedAt() => now()
             ]);
 
-            $webhook->increment('total_failures');
-            $webhook->update([
-                'last_failure_at' => now(),
-                'last_triggered_at' => now(),
-                'last_error' => $e->getMessage()
+            $this->webhookService->update($webhook->id, [
+                $this->webhookService->totalFailures() => $webhook->{$this->webhookService->totalFailures()} + 1,
+                $this->webhookService->lastFailureAt() => now(),
+                $this->webhookService->lastTriggeredAt() => now(),
+                $this->webhookService->lastError() => $e->getMessage()
             ]);
 
             Log::error("Webhook delivery failed", [
@@ -140,15 +147,14 @@ class ClientWebhookManager
     {
         if ($log->attempt < $webhook->max_retries) {
             $nextRetry = now()->addSeconds($webhook->retry_delay_seconds * $log->attempt);
-            
-            $log->update([
-                'status' => 'retrying',
-                'next_retry_at' => $nextRetry
+
+            $this->webhookLogService->update($log->id, [
+                $this->webhookLogService->status() => 'retrying',
+                $this->webhookLogService->nextRetryAt() => $nextRetry
             ]);
 
             // Dispatch job for retry
-            RetryWebhookJob::dispatch($log, $webhook)
-                ->delay($nextRetry);
+            RetryWebhookJob::dispatch($log, $webhook)->delay($nextRetry);
         }
     }
 
@@ -191,7 +197,6 @@ class ClientWebhookManager
                 'response_time' => $responseTime,
                 'error' => null
             ];
-
         } catch (\Exception $e) {
             return [
                 'success' => false,
