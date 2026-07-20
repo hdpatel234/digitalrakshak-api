@@ -57,6 +57,18 @@ class ConfigurationService extends BaseService
         return $value !== null ? $value : $default;
     }
 
+    public function getValues(array $keys): array
+    {
+        $configKeys = array_map(function ($key) {
+            return $key instanceof ConfigurationKey ? $key->value : $key;
+        }, $keys);
+
+        return $this->query()
+            ->whereIn($this->configKey(), $configKeys)
+            ->pluck($this->configValue(), $this->configKey())
+            ->toArray();
+    }
+
     public function getIntValue(ConfigurationKey|string $key, int $default = 0): int
     {
         $value = $this->getValue($key, $default);

@@ -9,16 +9,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CandidateServiceLog extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
-    use HasFactory, SoftDeletes;
+    public const CANDIDATE_ID = 'candidate_id';
+    public const CANDIDATE_SERVICE_ID = 'candidate_service_id';
+    public const TITLE = 'title';
+    public const DESCRIPTION = 'description';
+    public const STATUS = 'status';
 
     protected $fillable = [
-        'candidate_id',
-        'candidate_service_id',
-        'title',
-        'description',
-        'status',
+        self::CANDIDATE_ID,
+        self::CANDIDATE_SERVICE_ID,
+        self::TITLE,
+        self::DESCRIPTION,
+        self::STATUS,
     ];
 
     public function candidate(): BelongsTo

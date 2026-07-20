@@ -1,0 +1,90 @@
+<style>
+    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; margin: 0; padding: 0; color: #333; }
+    .page-break { page-break-after: always; }
+    
+    /* Header & Logo */
+    .header-banner { background-color: #38c8c4; color: white; text-align: center; padding: 15px; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+    .logo-container { text-align: center; margin-bottom: 20px; margin-top: 20px; }
+    .logo-container img { height: 40px; }
+    .report-title-banner { background-color: #38c8c4; color: white; text-align: center; padding: 12px; font-size: 18px; text-transform: uppercase; margin-bottom: 20px; margin-top: 0;}
+    
+    /* Candidate Info Box */
+    .info-box { border: 1px solid #c2e0e0; margin: 20px 40px; padding: 20px; position: relative; }
+    .profile-img-col { width: 150px; text-align: center; float: left; }
+    .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #eee; display: inline-block; overflow: hidden; background-color: #f5f5f5; }
+    .profile-name { font-size: 18px; font-weight: bold; margin-top: 10px; }
+    
+    .details-col { margin-left: 170px; }
+    .detail-row { margin-bottom: 15px; overflow: hidden; }
+    .detail-item { float: left; width: 45%; margin-right: 5%; }
+    .detail-label { color: #888; font-size: 11px; margin-bottom: 2px;}
+    .detail-label img { vertical-align: middle; width: 12px; margin-right: 5px; }
+    .detail-value { font-size: 13px; font-weight: bold; background-color: #e5e5e5; padding: 8px; margin-top: 5px; min-height: 20px; }
+    .detail-value-transparent { font-size: 13px; font-weight: bold; margin-top: 5px; padding: 8px 0; }
+    
+    /* Status row */
+    .status-row { margin: 20px 40px; display: table; width: calc(100% - 80px); }
+    .status-box { display: table-cell; border: 1px solid #c2e0e0; font-size: 14px; text-align: center; width: 33%; vertical-align: middle;}
+    .status-box .lbl { padding: 10px; display: inline-block; font-weight: bold; background-color: #f9f9f9; }
+    .status-box .val { padding: 10px; display: inline-block; font-weight: bold; }
+    .bg-success { background-color: #00ff00 !important; color: #000; }
+    
+    /* Clearfix */
+    .clearfix::after { content: ""; clear: both; display: table; }
+
+    /* Document Uploads */
+    .doc-uploads { margin: 20px 40px; border: 1px solid #c2e0e0; display: table; width: calc(100% - 80px); }
+    .doc-col-header { display: table-cell; width: 20%; background-color: #f5f9fc; padding: 15px; vertical-align: middle; text-align: center; border-right: 1px solid #c2e0e0; }
+    .doc-col-header span { font-weight: bold; font-size: 14px; }
+    .doc-col-content { display: table-cell; width: 80%; padding: 15px; vertical-align: middle; }
+    
+    .doc-item { float: left; width: 30%; font-size: 12px; margin-right: 15px;}
+    .doc-item-title { font-weight: bold; color: #333; margin-bottom: 5px; }
+    .doc-item-subtitle { color: #888; font-size: 11px; line-height: 1.3;}
+    
+    /* Verifications Table */
+    .verifications-wrapper { margin: 20px 40px; }
+    .verifications-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .verifications-table th { border-bottom: 1px solid #eee; padding: 12px 10px; text-align: center; font-size: 11px; color: #000; font-weight: bold; }
+    .verifications-table th:first-child { text-align: left; }
+    .verifications-table td { padding: 12px 10px; border-bottom: 1px solid #f9f9f9; font-size: 12px; text-align: center; }
+    .verifications-table td:first-child { text-align: left; font-weight: bold; font-size: 13px; }
+    
+    .status-badge { background-color: #38c8c4; color: white; padding: 3px 10px; border-radius: 12px; font-size: 10px; display: inline-block; margin-top: 3px; }
+    .status-text { color: #00ff00; font-weight: bold; font-size: 14px; }
+    .status-icon { color: #38c8c4; margin-right: 8px; font-size: 16px; vertical-align: middle; display: inline-block; width: 20px; text-align: center; }
+
+    /* Report Details Page */
+    .report-page { margin: 20px 40px; }
+    .report-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #ddd;}
+    .report-table th, .report-table td { padding: 10px 12px; border: 1px solid #ddd; text-align: left; font-size: 12px; }
+    .report-table th { background-color: #f9f9f9; width: 35%; color: #333; font-weight: bold; text-transform: uppercase; font-size: 11px;}
+    .report-result-row td { font-weight: bold; font-size: 13px; }
+    .report-result-success { background-color: #00ff00; color: #000; text-transform: uppercase; text-align: left !important; }
+    
+    /* Footer */
+    .footer { position: fixed; bottom: 0px; left: 0px; right: 0px; height: 60px; background-color: #f4f4f4; border-top: 1px solid #ddd; }
+    .footer-disclaimer { font-size: 8px; color: #555; text-align: justify; padding: 15px 40px; margin: 0;}
+
+    /* Page Setup */
+    @page { margin: 20px 0px 80px 0px; }
+    .content { padding: 0px 0px; }
+    
+    /* Table Headers specific styles */
+    .sub-header-row th { background-color: #f2f2f2; font-weight: bold; text-align: left !important; text-transform: uppercase; font-size: 10px; padding: 8px 12px; }
+
+    .image-container { text-align: center; margin-top: 20px; }
+    .image-container img { max-width: 100%; max-height: 700px; border: 1px solid #ddd; }
+
+    /* Static Pages Styles */
+    .cover-page { text-align: center; margin-top: 250px; }
+    .cover-title { font-size: 36px; color: #38c8c4; font-weight: bold; text-transform: uppercase; }
+    
+    .disclaimer-page { margin: 40px; }
+    .disclaimer-title { font-size: 18px; color: #333; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; text-align: center;}
+    .disclaimer-text { font-size: 11px; color: #555; text-align: justify; line-height: 1.6; margin-bottom: 15px; }
+
+    .end-page-content { text-align: center; margin-top: 200px; padding: 0 40px; }
+    .end-title { font-size: 24px; color: #333; font-weight: bold; margin-bottom: 15px; }
+    .end-text { font-size: 14px; color: #666; line-height: 1.5; }
+</style>

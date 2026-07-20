@@ -11,6 +11,7 @@ use App\Services\CandidateServiceService;
 use App\Services\CandidateService as CandidateModelService;
 use App\Services\ServiceService;
 use App\Services\CandidateReportService;
+use App\Services\CandidateServiceLogService;
 use App\Enums\OrderStatus;
 
 class ProcessCandidateServicesCommand extends Command
@@ -36,7 +37,8 @@ class ProcessCandidateServicesCommand extends Command
         protected CandidateOrderService $candidateOrderService,
         protected CandidateServiceService $candidateServiceService,
         protected CandidateModelService $candidateModelService,
-        protected ServiceService $serviceService
+        protected ServiceService $serviceService,
+        protected CandidateServiceLogService $candidateServiceLogService
     ) {
         parent::__construct();
     }
@@ -73,14 +75,14 @@ class ProcessCandidateServicesCommand extends Command
                         $freshService = $candidateService->fresh();
                         if ($freshService->{$this->candidateServiceService->status()} !== OrderStatus::COMPLETED->value) {
                         } else {
-                            $existingLog = CandidateServiceLog::where('candidate_service_id', $candidateService->{$this->candidateServiceService->id()})->first();
+                            $existingLog = $this->candidateServiceLogService->query()->where($this->candidateServiceLogService->candidateServiceId(), $candidateService->{$this->candidateServiceService->id()})->first();
                             if (!$existingLog) {
-                                CandidateServiceLog::create([
-                                    'candidate_id' => $candidate->{$this->candidateModelService->id()},
-                                    'candidate_service_id' => $candidateService->{$this->candidateServiceService->id()},
-                                    'title' => "Provider Service Approved: " . ($candidateService->service->{$this->serviceService->serviceName()} ?? 'Service Verification'),
-                                    'description' => "Verified via " . ($candidateService->service->{$this->serviceService->serviceCode()} ?? 'Internal Gateway'),
-                                    'status' => OrderStatus::COMPLETED->value
+                                $this->candidateServiceLogService->create([
+                                    $this->candidateServiceLogService->candidateId() => $candidate->{$this->candidateModelService->id()},
+                                    $this->candidateServiceLogService->candidateServiceId() => $candidateService->{$this->candidateServiceService->id()},
+                                    $this->candidateServiceLogService->title() => "Provider Service Approved: " . ($candidateService->service->{$this->serviceService->serviceName()} ?? 'Service Verification'),
+                                    $this->candidateServiceLogService->description() => "Verified via " . ($candidateService->service->{$this->serviceService->serviceCode()} ?? 'Internal Gateway'),
+                                    $this->candidateServiceLogService->status() => OrderStatus::COMPLETED->value
                                 ]);
                             }
                         }
@@ -108,12 +110,12 @@ class ProcessCandidateServicesCommand extends Command
                             $candidate->save();
                             $this->info("Generated report for Candidate ID {$candidate->{$this->candidateModelService->id()}} at {$reportPath}");
 
-                            CandidateServiceLog::create([
-                                'candidate_id' => $candidate->{$this->candidateModelService->id()},
-                                'candidate_service_id' => null,
-                                'title' => "Verification Report Cryptographically Sealed",
-                                'description' => "System Automated Agent",
-                                'status' => OrderStatus::COMPLETED->value
+                            $this->candidateServiceLogService->create([
+                                $this->candidateServiceLogService->candidateId() => $candidate->{$this->candidateModelService->id()},
+                                $this->candidateServiceLogService->candidateServiceId() => null,
+                                $this->candidateServiceLogService->title() => "Verification Report Cryptographically Sealed",
+                                $this->candidateServiceLogService->description() => "System Automated Agent",
+                                $this->candidateServiceLogService->status() => OrderStatus::COMPLETED->value
                             ]);
                         } else {
                             $this->error("Failed to generate report for Candidate ID {$candidate->{$this->candidateModelService->id()}}");
