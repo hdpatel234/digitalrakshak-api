@@ -39,4 +39,12 @@ class ServicesField extends BaseModel
         self::UPDATED_BY,
         self::DELETED_BY,
     ];
+
+    /**
+     * Get the service that owns the field.
+     */
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'service_id');
+    }
 }
