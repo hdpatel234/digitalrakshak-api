@@ -143,6 +143,11 @@ class PaymentGatewayConfigRepository extends BaseRepository
     }
 
 
+    public function isActive()
+    {
+        return PaymentGatewayConfig::STATUS;
+    }
+
     public function lastUsedAt()
     {
         return PaymentGatewayConfig::LAST_USED_AT;
