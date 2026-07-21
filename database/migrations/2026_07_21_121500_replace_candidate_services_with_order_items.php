@@ -37,6 +37,40 @@ return new class extends Migration
             });
         }
 
+        // Alter employment_verifications table if it exists
+        if (Schema::hasTable('employment_verifications')) {
+            Schema::table('employment_verifications', function (Blueprint $table) {
+                // Drop the foreign key constraint
+                $table->dropForeign(['candidate_service_id']);
+                
+                if (Schema::hasColumn('employment_verifications', 'candidate_service_id')) {
+                    $table->renameColumn('candidate_service_id', 'order_item_id');
+                } else if (!Schema::hasColumn('employment_verifications', 'order_item_id')) {
+                    $table->unsignedBigInteger('order_item_id')->after('id')->index();
+                }
+
+                // Add the new foreign key
+                $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
+            });
+        }
+
+        // Alter verification_reports table if it exists
+        if (Schema::hasTable('verification_reports')) {
+            Schema::table('verification_reports', function (Blueprint $table) {
+                // Drop the foreign key constraint
+                $table->dropForeign(['candidate_service_id']);
+                
+                if (Schema::hasColumn('verification_reports', 'candidate_service_id')) {
+                    $table->renameColumn('candidate_service_id', 'order_item_id');
+                } else if (!Schema::hasColumn('verification_reports', 'order_item_id')) {
+                    $table->unsignedBigInteger('order_item_id')->after('id')->index();
+                }
+
+                // Add the new foreign key
+                $table->foreign('order_item_id')->references('id')->on('order_items');
+            });
+        }
+
         // Finally, drop the legacy candidate_services table
         Schema::dropIfExists('candidate_services');
     }
@@ -72,6 +106,26 @@ return new class extends Migration
                 if (Schema::hasColumn('candidate_service_logs', 'order_item_id')) {
                     $table->renameColumn('order_item_id', 'candidate_service_id');
                 }
+            });
+        }
+
+        if (Schema::hasTable('employment_verifications')) {
+            Schema::table('employment_verifications', function (Blueprint $table) {
+                $table->dropForeign(['order_item_id']);
+                if (Schema::hasColumn('employment_verifications', 'order_item_id')) {
+                    $table->renameColumn('order_item_id', 'candidate_service_id');
+                }
+                $table->foreign('candidate_service_id')->references('id')->on('candidate_services')->onDelete('cascade');
+            });
+        }
+
+        if (Schema::hasTable('verification_reports')) {
+            Schema::table('verification_reports', function (Blueprint $table) {
+                $table->dropForeign(['order_item_id']);
+                if (Schema::hasColumn('verification_reports', 'order_item_id')) {
+                    $table->renameColumn('order_item_id', 'candidate_service_id');
+                }
+                $table->foreign('candidate_service_id')->references('id')->on('candidate_services');
             });
         }
     }
