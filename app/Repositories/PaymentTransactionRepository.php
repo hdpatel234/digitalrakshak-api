@@ -12,11 +12,6 @@ class PaymentTransactionRepository extends BaseRepository
     }
 
     // column constants
-    public function transactionUuid()
-    {
-        return PaymentTransaction::TRANSACTION_UUID;
-    }
-
     public function clientId()
     {
         return PaymentTransaction::CLIENT_ID;
@@ -35,11 +30,6 @@ class PaymentTransactionRepository extends BaseRepository
     public function gatewayConfigId()
     {
         return PaymentTransaction::GATEWAY_CONFIG_ID;
-    }
-
-    public function clientGatewayId()
-    {
-        return PaymentTransaction::CLIENT_GATEWAY_ID;
     }
 
     public function methodTypeId()
@@ -85,16 +75,6 @@ class PaymentTransactionRepository extends BaseRepository
     public function gatewayPaymentId()
     {
         return PaymentTransaction::GATEWAY_PAYMENT_ID;
-    }
-
-    public function bankReference()
-    {
-        return PaymentTransaction::BANK_REFERENCE;
-    }
-
-    public function paymentMethod()
-    {
-        return PaymentTransaction::PAYMENT_METHOD;
     }
 
     public function paymentDetails()
@@ -152,11 +132,6 @@ class PaymentTransactionRepository extends BaseRepository
         return PaymentTransaction::GATEWAY_RESPONSE;
     }
 
-    public function gatewayWebhook()
-    {
-        return PaymentTransaction::GATEWAY_WEBHOOK;
-    }
-
     public function errorCode()
     {
         return PaymentTransaction::ERROR_CODE;
@@ -165,21 +140,6 @@ class PaymentTransactionRepository extends BaseRepository
     public function errorMessage()
     {
         return PaymentTransaction::ERROR_MESSAGE;
-    }
-
-    public function refundAmount()
-    {
-        return PaymentTransaction::REFUND_AMOUNT;
-    }
-
-    public function refundReason()
-    {
-        return PaymentTransaction::REFUND_REASON;
-    }
-
-    public function refundTransactionId()
-    {
-        return PaymentTransaction::REFUND_TRANSACTION_ID;
     }
 
     public function ipAddress()
@@ -192,29 +152,5 @@ class PaymentTransactionRepository extends BaseRepository
         return PaymentTransaction::USER_AGENT;
     }
 
-    public function customerName()
-    {
-        return PaymentTransaction::CUSTOMER_NAME;
-    }
-
-    public function customerEmail()
-    {
-        return PaymentTransaction::CUSTOMER_EMAIL;
-    }
-
-    public function customerPhone()
-    {
-        return PaymentTransaction::CUSTOMER_PHONE;
-    }
-
-    public function createdBy()
-    {
-        return PaymentTransaction::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return PaymentTransaction::UPDATED_BY;
-    }
     // functions
 }

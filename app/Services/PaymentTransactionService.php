@@ -15,11 +15,6 @@ class PaymentTransactionService extends BaseService
     }
 
     // column constants
-    public function transactionUuid()
-    {
-        return $this->repository->transactionUuid();
-    }
-
     public function clientId()
     {
         return $this->repository->clientId();
@@ -38,11 +33,6 @@ class PaymentTransactionService extends BaseService
     public function gatewayConfigId()
     {
         return $this->repository->gatewayConfigId();
-    }
-
-    public function clientGatewayId()
-    {
-        return $this->repository->clientGatewayId();
     }
 
     public function methodTypeId()
@@ -88,16 +78,6 @@ class PaymentTransactionService extends BaseService
     public function gatewayPaymentId()
     {
         return $this->repository->gatewayPaymentId();
-    }
-
-    public function bankReference()
-    {
-        return $this->repository->bankReference();
-    }
-
-    public function paymentMethod()
-    {
-        return $this->repository->paymentMethod();
     }
 
     public function paymentDetails()
@@ -155,11 +135,6 @@ class PaymentTransactionService extends BaseService
         return $this->repository->gatewayResponse();
     }
 
-    public function gatewayWebhook()
-    {
-        return $this->repository->gatewayWebhook();
-    }
-
     public function errorCode()
     {
         return $this->repository->errorCode();
@@ -168,21 +143,6 @@ class PaymentTransactionService extends BaseService
     public function errorMessage()
     {
         return $this->repository->errorMessage();
-    }
-
-    public function refundAmount()
-    {
-        return $this->repository->refundAmount();
-    }
-
-    public function refundReason()
-    {
-        return $this->repository->refundReason();
-    }
-
-    public function refundTransactionId()
-    {
-        return $this->repository->refundTransactionId();
     }
 
     public function ipAddress()
@@ -195,29 +155,5 @@ class PaymentTransactionService extends BaseService
         return $this->repository->userAgent();
     }
 
-    public function customerName()
-    {
-        return $this->repository->customerName();
-    }
-
-    public function customerEmail()
-    {
-        return $this->repository->customerEmail();
-    }
-
-    public function customerPhone()
-    {
-        return $this->repository->customerPhone();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
     // functions
 }

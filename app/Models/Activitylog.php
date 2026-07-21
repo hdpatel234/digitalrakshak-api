@@ -10,11 +10,13 @@ class Activitylog extends BaseModel
 
     protected $table = "activity_log";
 
+    const TYPE = "type";
     const DESCRIPTION = "description";
     const USER_ID = "user_id";
     const DATE = "date";
     const IP_ADDRESS = "ip_address";
     protected $fillable = [
+        self::TYPE,
         self::DESCRIPTION,
         self::USER_ID,
         self::DATE,

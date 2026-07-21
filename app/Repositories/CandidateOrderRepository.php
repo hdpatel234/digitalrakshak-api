@@ -17,44 +17,14 @@ class CandidateOrderRepository extends BaseRepository
         return CandidateOrder::ORDER_NUMBER;
     }
 
-    public function clientOrderNumber()
-    {
-        return CandidateOrder::CLIENT_ORDER_NUMBER;
-    }
-
     public function clientId()
     {
         return CandidateOrder::CLIENT_ID;
     }
 
-    public function billingConfigId()
-    {
-        return CandidateOrder::BILLING_CONFIG_ID;
-    }
-
-    public function invoiceId()
-    {
-        return CandidateOrder::INVOICE_ID;
-    }
-
-    public function billingSyncStatus()
-    {
-        return CandidateOrder::BILLING_SYNC_STATUS;
-    }
-
-    public function billingSyncMessage()
-    {
-        return CandidateOrder::BILLING_SYNC_MESSAGE;
-    }
-
     public function packageId()
     {
         return CandidateOrder::PACKAGE_ID;
-    }
-
-    public function orderType()
-    {
-        return CandidateOrder::ORDER_TYPE;
     }
 
     public function subtotal()
@@ -97,29 +67,9 @@ class CandidateOrderRepository extends BaseRepository
         return CandidateOrder::PAYMENT_REFERENCE;
     }
 
-    public function paymentDueDate()
-    {
-        return CandidateOrder::PAYMENT_DUE_DATE;
-    }
-
-    public function invoiceNumber()
-    {
-        return CandidateOrder::INVOICE_NUMBER;
-    }
-
-    public function invoiceGeneratedAt()
-    {
-        return CandidateOrder::INVOICE_GENERATED_AT;
-    }
-
     public function notes()
     {
         return CandidateOrder::NOTES;
-    }
-
-    public function internalNotes()
-    {
-        return CandidateOrder::INTERNAL_NOTES;
     }
 
     public function orderDate()
@@ -147,26 +97,6 @@ class CandidateOrderRepository extends BaseRepository
         return CandidateOrder::CANCELLATION_REASON;
     }
 
-    public function status()
-    {
-        return CandidateOrder::STATUS;
-    }
-
-    public function createdBy()
-    {
-        return CandidateOrder::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return CandidateOrder::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return CandidateOrder::DELETED_BY;
-    }
-    
     // functions
     public function getTotalRevenue(string $paymentStatus)
     {

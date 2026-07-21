@@ -20,11 +20,6 @@ class PaymentRefundService extends BaseService
         return $this->repository->transactionId();
     }
 
-    public function refundUuid()
-    {
-        return $this->repository->refundUuid();
-    }
-
     public function gatewayRefundId()
     {
         return $this->repository->gatewayRefundId();
@@ -74,5 +69,6 @@ class PaymentRefundService extends BaseService
     {
         return $this->repository->approvedAt();
     }
+
     // functions
 }

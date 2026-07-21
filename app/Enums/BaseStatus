@@ -6,6 +6,7 @@ enum BaseStatus: string
 {
     case ACTIVE = 'active';
     case INACTIVE = 'inactive';
+    case PENDING = 'pending';
 
     /**
      * @return array<int, string>

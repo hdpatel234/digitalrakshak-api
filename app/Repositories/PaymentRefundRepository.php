@@ -17,11 +17,6 @@ class PaymentRefundRepository extends BaseRepository
         return PaymentRefund::TRANSACTION_ID;
     }
 
-    public function refundUuid()
-    {
-        return PaymentRefund::REFUND_UUID;
-    }
-
     public function gatewayRefundId()
     {
         return PaymentRefund::GATEWAY_REFUND_ID;
@@ -71,5 +66,6 @@ class PaymentRefundRepository extends BaseRepository
     {
         return PaymentRefund::APPROVED_AT;
     }
+
     // functions
 }

@@ -27,44 +27,5 @@ class OrderCandidateRepository extends BaseRepository
         return OrderCandidate::CANDIDATE_DATA;
     }
 
-    public function subtotal()
-    {
-        return OrderCandidate::SUBTOTAL;
-    }
-
-    public function discountAmount()
-    {
-        return OrderCandidate::DISCOUNT_AMOUNT;
-    }
-
-    public function taxAmount()
-    {
-        return OrderCandidate::TAX_AMOUNT;
-    }
-
-    public function totalAmount()
-    {
-        return OrderCandidate::TOTAL_AMOUNT;
-    }
-
-    public function status()
-    {
-        return OrderCandidate::STATUS;
-    }
-
-    public function createdBy()
-    {
-        return OrderCandidate::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return OrderCandidate::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return OrderCandidate::DELETED_BY;
-    }
     // functions
 }

@@ -58,34 +58,23 @@ class CandidateRepository extends BaseRepository
     {
         return Candidate::CITY_ID;
     }
-    public function locationVerifed()
-    {
-        return Candidate::LOCATION_VERIFIED;
-    }
 
-    public function locationVerifiedAt()
+    public function country()
     {
-        return Candidate::LOCATION_VERIFIED_AT;
+        return Candidate::COUNTRY;
     }
-
+    public function state()
+    {
+        return Candidate::STATE;
+    }
     public function city()
     {
         return Candidate::CITY;
     }
 
-    public function state()
-    {
-        return Candidate::STATE;
-    }
-
     public function pincode()
     {
         return Candidate::PINCODE;
-    }
-
-    public function country()
-    {
-        return Candidate::COUNTRY;
     }
 
     public function dateOfBirth()
@@ -108,47 +97,8 @@ class CandidateRepository extends BaseRepository
         return Candidate::STATUS;
     }
 
-    public function invitationSentAt()
-    {
-        return Candidate::INVITATION_SENT_AT;
-    }
-
-    public function invitationAcceptedAt()
-    {
-        return Candidate::INVITATION_ACCEPTED_AT;
-    }
-
-    public function lastOrderId()
-    {
-        return Candidate::LAST_ORDER_ID;
-    }
-
-    public function totalOrders()
-    {
-        return Candidate::TOTAL_ORDERS;
-    }
-
-    public function totalOrderValue()
-    {
-        return Candidate::TOTAL_ORDER_VALUE;
-    }
-
-    public function createdBy()
-    {
-        return Candidate::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return Candidate::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return Candidate::DELETED_BY;
-    }
     // functions
-    public function countBetweenDates($start, $end)
+    public function countBetweenDates(string $start, string $end)
     {
         return $this->query()->whereBetween($this->createdAt(), [$start, $end])->count();
     }

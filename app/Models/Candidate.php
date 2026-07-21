@@ -37,25 +37,13 @@ class Candidate extends BaseModel
     const COUNTRY_ID = "country_id";
     const STATE_ID = "state_id";
     const CITY_ID = "city_id";
-    const LOCATION_VERIFIED = "location_verified";
-    const LOCATION_VERIFIED_AT = "location_verified_at";
-    const CITY = "city";
-    const STATE = "state";
     const PINCODE = "pincode";
-    const COUNTRY = "country";
     const DATE_OF_BIRTH = "date_of_birth";
     const GENDER = "gender";
     const SOURCE = "source";
-    const STATUS = "status";
-    const INVITATION_SENT_AT = "invitation_sent_at";
-    const INVITATION_ACCEPTED_AT = "invitation_accepted_at";
-    const LAST_ORDER_ID = "last_order_id";
-    const TOTAL_ORDERS = "total_orders";
-    const TOTAL_ORDER_VALUE = "total_order_value";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
-    const DELETED_BY = "deleted_by";
-    const REPORT_PATH = "report_path";
+    const COUNTRY = "country";
+    const STATE = "state";
+    const CITY = "city";
     protected $fillable = [
         self::CLIENT_ID,
         self::FIRST_NAME,
@@ -67,35 +55,16 @@ class Candidate extends BaseModel
         self::COUNTRY_ID,
         self::STATE_ID,
         self::CITY_ID,
-        self::LOCATION_VERIFIED,
-        self::LOCATION_VERIFIED_AT,
-        self::CITY,
-        self::STATE,
         self::PINCODE,
-        self::COUNTRY,
         self::DATE_OF_BIRTH,
         self::GENDER,
         self::SOURCE,
-        self::STATUS,
-        self::INVITATION_SENT_AT,
-        self::INVITATION_ACCEPTED_AT,
-        self::LAST_ORDER_ID,
-        self::TOTAL_ORDERS,
-        self::TOTAL_ORDER_VALUE,
-        self::CREATED_BY,
-        self::UPDATED_BY,
-        self::DELETED_BY,
-        self::REPORT_PATH,
+        self::STATUS
     ];
 
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class, self::CLIENT_ID);
-    }
-
-    public function lastOrder(): BelongsTo
-    {
-        return $this->belongsTo(CandidateOrder::class, self::LAST_ORDER_ID);
     }
 
     public function candidateInvitations(): HasMany

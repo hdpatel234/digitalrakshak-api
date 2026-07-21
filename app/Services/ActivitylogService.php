@@ -9,13 +9,17 @@ use App\Repositories\ActivitylogRepository;
  */
 class ActivitylogService extends BaseService
 {
-    
     public function __construct(ActivitylogRepository $repository)
     {
         $this->repository = $repository;
     }
 
     // column constants
+    public function type()
+    {
+        return $this->repository->type();
+    }
+
     public function description()
     {
         return $this->repository->description();
@@ -35,5 +39,6 @@ class ActivitylogService extends BaseService
     {
         return $this->repository->ipAddress();
     }
+
     // functions
 }

@@ -9,7 +9,7 @@ use App\Repositories\OrderCandidateRepository;
  */
 class OrderCandidateService extends BaseService
 {
-    
+
     public function __construct(OrderCandidateRepository $repository)
     {
         $this->repository = $repository;
@@ -31,44 +31,5 @@ class OrderCandidateService extends BaseService
         return $this->repository->candidateData();
     }
 
-    public function subtotal()
-    {
-        return $this->repository->subtotal();
-    }
-
-    public function discountAmount()
-    {
-        return $this->repository->discountAmount();
-    }
-
-    public function taxAmount()
-    {
-        return $this->repository->taxAmount();
-    }
-
-    public function totalAmount()
-    {
-        return $this->repository->totalAmount();
-    }
-
-    public function status()
-    {
-        return $this->repository->status();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
-    }
     // functions
 }

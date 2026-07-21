@@ -12,6 +12,11 @@ class ActivitylogRepository extends BaseRepository
     }
 
     // column constants
+    public function type()
+    {
+        return Activitylog::TYPE;
+    }
+
     public function description()
     {
         return Activitylog::DESCRIPTION;
@@ -31,5 +36,6 @@ class ActivitylogRepository extends BaseRepository
     {
         return Activitylog::IP_ADDRESS;
     }
+
     // functions
 }

@@ -8,11 +8,9 @@ class PaymentRefund extends BaseModel
 {
     use SoftDeletes;
 
-    
     protected $table = "payment_refunds";
-    
+
     const TRANSACTION_ID = "transaction_id";
-    const REFUND_UUID = "refund_uuid";
     const GATEWAY_REFUND_ID = "gateway_refund_id";
     const AMOUNT = "amount";
     const REASON = "reason";
@@ -25,7 +23,6 @@ class PaymentRefund extends BaseModel
     const APPROVED_AT = "approved_at";
     protected $fillable = [
         self::TRANSACTION_ID,
-        self::REFUND_UUID,
         self::GATEWAY_REFUND_ID,
         self::AMOUNT,
         self::REASON,

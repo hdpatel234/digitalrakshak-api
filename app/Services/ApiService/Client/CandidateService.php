@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseStatus;
 use App\Enums\CandidateStatus;
 use App\Repositories\CandidateRepository;
 use App\Services\CandidateService as CoreCandidateService;
@@ -13,6 +14,7 @@ use App\Services\Webhook\ClientWebhookDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use ZipArchive;
+use App\Services\BaseService;
 
 class CandidateService extends BaseService
 {
@@ -50,9 +52,6 @@ class CandidateService extends BaseService
                     $this->candidateRepo->email(),
                     $this->candidateRepo->phone(),
                     $this->candidateRepo->alternatePhone(),
-                    $this->candidateRepo->city(),
-                    $this->candidateRepo->state(),
-                    $this->candidateRepo->country(),
                     $this->candidateRepo->source(),
                 ],
                 'status_column' => $this->candidateRepo->status(),
@@ -168,7 +167,7 @@ class CandidateService extends BaseService
                         $services = collect($row['candidate_services']);
                         $total = $services->count();
                         if ($total > 0) {
-                            $completed = $services->filter(function($s) {
+                            $completed = $services->filter(function ($s) {
                                 $status = strtolower(trim((string) ($s['status'] ?? '')));
                                 $pStatus = strtolower(trim((string) ($s['processing_status'] ?? '')));
                                 $completedStatuses = ['completed', 'verified', 'approved', 'success'];
@@ -237,33 +236,33 @@ class CandidateService extends BaseService
         $storedPath = $file->store('candidate-imports');
 
         $import = $this->candidateImportHistoryRepo->query()->create([
-            'client_id' => $clientId,
-            'filename' => $file->getClientOriginalName(),
-            'total_records' => 0,
-            'successful_imports' => 0,
-            'failed_imports' => 0,
-            'imported_by' => $user?->id,
-            'status' => 'pending',
-            'error_log' => json_encode([
+            $this->candidateImportHistoryRepo->clientId() => $clientId,
+            $this->candidateImportHistoryRepo->filename() => $file->getClientOriginalName(),
+            $this->candidateImportHistoryRepo->totalRecords() => 0,
+            $this->candidateImportHistoryRepo->successfulImports() => 0,
+            $this->candidateImportHistoryRepo->failedImports() => 0,
+            $this->candidateImportHistoryRepo->importedBy() => $user?->id,
+            $this->candidateImportHistoryRepo->status() => BaseStatus::PENDING,
+            $this->candidateImportHistoryRepo->errorLog() => json_encode([
                 'stored_path' => $storedPath,
                 'original_name' => $file->getClientOriginalName(),
                 'uploaded_at' => now()->toDateTimeString(),
             ]),
         ]);
 
-        $this->clientWebhookDispatcher->dispatchForClient(
-            $clientId,
-            ClientWebhookDispatcher::EVENT_CANDIDATE_IMPORT_QUEUED,
-            [
-                'import_id' => $import->id,
-                'filename' => $import->filename,
-                'status' => $import->status,
-                'uploaded_by' => $user?->id,
-            ],
-            [
-                'triggered_by' => 'candidate.import',
-            ]
-        );
+        // $this->clientWebhookDispatcher->dispatchForClient(
+        //     $clientId,
+        //     ClientWebhookDispatcher::EVENT_CANDIDATE_IMPORT_QUEUED,
+        //     [
+        //         'import_id' => $import->id,
+        //         'filename' => $import->filename,
+        //         'status' => $import->status,
+        //         'uploaded_by' => $user?->id,
+        //     ],
+        //     [
+        //         'triggered_by' => 'candidate.import',
+        //     ]
+        // );
 
         return [
             'import_id' => $import->id,

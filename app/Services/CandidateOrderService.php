@@ -9,7 +9,7 @@ use App\Repositories\CandidateOrderRepository;
  */
 class CandidateOrderService extends BaseService
 {
-    
+
     public function __construct(CandidateOrderRepository $repository)
     {
         $this->repository = $repository;
@@ -21,44 +21,14 @@ class CandidateOrderService extends BaseService
         return $this->repository->orderNumber();
     }
 
-    public function clientOrderNumber()
-    {
-        return $this->repository->clientOrderNumber();
-    }
-
     public function clientId()
     {
         return $this->repository->clientId();
     }
 
-    public function billingConfigId()
-    {
-        return $this->repository->billingConfigId();
-    }
-
-    public function invoiceId()
-    {
-        return $this->repository->invoiceId();
-    }
-
-    public function billingSyncStatus()
-    {
-        return $this->repository->billingSyncStatus();
-    }
-
-    public function billingSyncMessage()
-    {
-        return $this->repository->billingSyncMessage();
-    }
-
     public function packageId()
     {
         return $this->repository->packageId();
-    }
-
-    public function orderType()
-    {
-        return $this->repository->orderType();
     }
 
     public function subtotal()
@@ -101,29 +71,9 @@ class CandidateOrderService extends BaseService
         return $this->repository->paymentReference();
     }
 
-    public function paymentDueDate()
-    {
-        return $this->repository->paymentDueDate();
-    }
-
-    public function invoiceNumber()
-    {
-        return $this->repository->invoiceNumber();
-    }
-
-    public function invoiceGeneratedAt()
-    {
-        return $this->repository->invoiceGeneratedAt();
-    }
-
     public function notes()
     {
         return $this->repository->notes();
-    }
-
-    public function internalNotes()
-    {
-        return $this->repository->internalNotes();
     }
 
     public function orderDate()
@@ -151,24 +101,5 @@ class CandidateOrderService extends BaseService
         return $this->repository->cancellationReason();
     }
 
-    public function status()
-    {
-        return $this->repository->status();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
-    }
     // functions
 }
