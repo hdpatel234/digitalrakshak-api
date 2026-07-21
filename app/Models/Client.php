@@ -68,9 +68,9 @@ class Client extends BaseModel
         return $this->hasMany(CandidateInvitation::class, CandidateInvitation::CLIENT_ID);
     }
 
-    public function candidateImportHistories(): HasMany
+    public function candidateImports(): HasMany
     {
-        return $this->hasMany(CandidateImportHistory::class, CandidateImportHistory::CLIENT_ID);
+        return $this->hasMany(CandidateImport::class, CandidateImport::CLIENT_ID);
     }
 
     public function candidateOrders(): HasMany

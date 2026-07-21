@@ -45,5 +45,6 @@ class CandidateServiceDataService extends BaseService
     {
         return $this->repository->verifiedBy();
     }
+
     // functions
 }

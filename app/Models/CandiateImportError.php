@@ -9,9 +9,8 @@ class CandiateImportError extends BaseModel
 {
     use SoftDeletes;
 
-    
     protected $table = "candiate_import_errors";
-    
+
     const IMPORT_ID = "import_id";
     const ROW_NUMBER = "row_number";
     const ERROR_MESSAGE = "error_message";
@@ -33,6 +32,6 @@ class CandiateImportError extends BaseModel
 
     public function importHistory(): BelongsTo
     {
-        return $this->belongsTo(CandidateImportHistory::class, self::IMPORT_ID);
+        return $this->belongsTo(CandidateImport::class, self::IMPORT_ID);
     }
 }

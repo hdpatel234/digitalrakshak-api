@@ -15,6 +15,11 @@ abstract class BaseService
         return $this->repository->id();
     }
 
+    public function status()
+    {
+        return $this->repository->status();
+    }
+
     public function createdBy()
     {
         return $this->repository->createdBy();

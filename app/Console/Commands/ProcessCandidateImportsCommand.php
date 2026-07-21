@@ -7,7 +7,7 @@ use App\Enums\ImportStatus;
 use App\Services\CountryService;
 use App\Services\StateService;
 use App\Services\CityService;
-use App\Services\CandidateImportHistoryService;
+use App\Services\CandidateImportService;
 use App\Services\CandiateImportErrorService;
 use App\Services\CandidateService;
 use Illuminate\Console\Command;
@@ -29,7 +29,7 @@ class ProcessCandidateImportsCommand extends Command
         protected CountryService $countryService,
         protected StateService $stateService,
         protected CityService $cityService,
-        protected CandidateImportHistoryService $candidateImportHistoryService,
+        protected CandidateImportService $candidateImportService,
         protected CandiateImportErrorService $candiateImportErrorService
     ) {
         parent::__construct();
@@ -39,9 +39,9 @@ class ProcessCandidateImportsCommand extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
-        $imports = $this->candidateImportHistoryService->query()
-            ->whereIn($this->candidateImportHistoryService->status(), [ImportStatus::PENDING->value, ImportStatus::QUEUED->value])
-            ->orderBy($this->candidateImportHistoryService->id())
+        $imports = $this->candidateImportService->query()
+            ->whereIn($this->candidateImportService->status(), [ImportStatus::PENDING->value, ImportStatus::QUEUED->value])
+            ->orderBy($this->candidateImportService->id())
             ->limit($limit)
             ->get();
 
@@ -56,7 +56,7 @@ class ProcessCandidateImportsCommand extends Command
 
     protected function processImport($import): void
     {
-        $meta = $this->decodeMeta($import->{$this->candidateImportHistoryService->errorLog()});
+        $meta = $this->decodeMeta($import->{$this->candidateImportService->jsonData()});
         $storedPath = $meta['stored_path'] ?? null;
 
         if (!is_string($storedPath) || $storedPath === '') {
@@ -70,8 +70,8 @@ class ProcessCandidateImportsCommand extends Command
         }
 
         $import->update([
-            $this->candidateImportHistoryService->status() => ImportStatus::PROCESSING->value,
-            $this->candidateImportHistoryService->reason() => null,
+            $this->candidateImportService->status() => ImportStatus::PROCESSING->value,
+            $this->candidateImportService->reason() => null,
         ]);
 
         try {
@@ -98,7 +98,7 @@ class ProcessCandidateImportsCommand extends Command
                     $failedCount++;
                     $errorMessage = implode('; ', $validator->errors()->all());
                     $firstFailureReason ??= $errorMessage;
-                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorMessage, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportService->id()}, $rowNumber, $errorMessage, $mapped);
                     continue;
                 }
 
@@ -111,7 +111,7 @@ class ProcessCandidateImportsCommand extends Command
 
                     $this->candidateService->createWithAssociations(
                         array_merge($payload, $location, [$this->candidateService->source() => CandidateSource::IMPORT_FILE->value]),
-                        (int) $import->{$this->candidateImportHistoryService->clientId()},
+                        (int) $import->{$this->candidateImportService->clientId()},
                         null
                     );
                     $successCount++;
@@ -122,12 +122,12 @@ class ProcessCandidateImportsCommand extends Command
                         ? implode('; ', array_merge(...array_values($errors)))
                         : $e->getMessage();
                     $firstFailureReason ??= $errorText;
-                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorText, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportService->id()}, $rowNumber, $errorText, $mapped);
                 } catch (Throwable $e) {
                     $failedCount++;
                     $errorMessage = $e->getMessage();
                     $firstFailureReason ??= $errorMessage;
-                    $this->storeRowError($import->{$this->candidateImportHistoryService->id()}, $rowNumber, $errorMessage, $mapped);
+                    $this->storeRowError($import->{$this->candidateImportService->id()}, $rowNumber, $errorMessage, $mapped);
                 }
             }
 
@@ -148,16 +148,16 @@ class ProcessCandidateImportsCommand extends Command
             }
 
             $import->update([
-                $this->candidateImportHistoryService->totalRecords() => $totalRecords,
-                $this->candidateImportHistoryService->successfulImports() => $successCount,
-                $this->candidateImportHistoryService->failedImports() => $failedCount,
-                $this->candidateImportHistoryService->status() => $status,
-                $this->candidateImportHistoryService->reason() => $reason,
-                $this->candidateImportHistoryService->errorLog() => json_encode($meta),
+                $this->candidateImportService->totalRecords() => $totalRecords,
+                $this->candidateImportService->successfulImports() => $successCount,
+                $this->candidateImportService->failedImports() => $failedCount,
+                $this->candidateImportService->status() => $status,
+                $this->candidateImportService->reason() => $reason,
+                $this->candidateImportService->errorLog() => json_encode($meta),
             ]);
         } catch (Throwable $e) {
             Log::error('Candidate import processing failed', [
-                'import_id' => $import->{$this->candidateImportHistoryService->id()},
+                'import_id' => $import->{$this->candidateImportService->id()},
                 'error' => $e->getMessage(),
             ]);
 
@@ -181,9 +181,9 @@ class ProcessCandidateImportsCommand extends Command
         $meta['processed_at'] = now()->toDateTimeString();
 
         $import->update([
-            $this->candidateImportHistoryService->status() => ImportStatus::FAILED->value,
-            $this->candidateImportHistoryService->reason() => mb_substr($reason, 0, 1000),
-            $this->candidateImportHistoryService->errorLog() => json_encode($meta),
+            $this->candidateImportService->status() => ImportStatus::FAILED->value,
+            $this->candidateImportService->reason() => mb_substr($reason, 0, 1000),
+            $this->candidateImportService->errorLog() => json_encode($meta),
         ]);
     }
 

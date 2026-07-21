@@ -42,11 +42,6 @@ class CandidateInvitationRepository extends BaseRepository
         return CandidateInvitation::FORM_LINK;
     }
 
-    public function formData()
-    {
-        return CandidateInvitation::FORM_DATA;
-    }
-
     public function invitedBy()
     {
         return CandidateInvitation::INVITED_BY;
@@ -106,5 +101,6 @@ class CandidateInvitationRepository extends BaseRepository
     {
         return CandidateInvitation::DELETED_BY;
     }
+
     // functions
 }

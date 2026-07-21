@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\CandidateImportHistoryRepository;
+use App\Repositories\CandidateImportRepository;
 
 /**
- * @property CandidateImportHistoryRepository $repository
+ * @property CandidateImportRepository $repository
  */
-class CandidateImportHistoryService extends BaseService
+class CandidateImportService extends BaseService
 {
-    
-    public function __construct(CandidateImportHistoryRepository $repository)
+
+    public function __construct(CandidateImportRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -46,6 +46,11 @@ class CandidateImportHistoryService extends BaseService
         return $this->repository->importedBy();
     }
 
+    public function jsonData()
+    {
+        return $this->repository->jsonData();
+    }
+
     public function errorLog()
     {
         return $this->repository->errorLog();
@@ -61,19 +66,5 @@ class CandidateImportHistoryService extends BaseService
         return $this->repository->reason();
     }
 
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
-    }
     // functions
 }

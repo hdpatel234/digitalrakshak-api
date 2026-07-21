@@ -61,7 +61,6 @@ class CandidateInvitationService extends BaseService
         $packageIdColumn = $this->invitationRepo->packageId();
         $clientIdColumn = $this->invitationRepo->clientId();
         $statusColumn = $this->invitationRepo->status();
-        $formDataColumn = $this->invitationRepo->formData();
 
         $query = $this->invitationRepo->query()
             ->where($invitationTable . '.' . $clientIdColumn, $clientId);
@@ -113,24 +112,13 @@ class CandidateInvitationService extends BaseService
             ->get()
             ->keyBy($invitationIdColumn);
 
-        $allPackageIds = collect($list)->map(function ($item) use ($formDataColumn, $packageIdColumn) {
-            $formData = $item[$formDataColumn] ?? [];
-            if (is_string($formData)) {
-                $decoded = json_decode($formData, true);
-                $formData = is_array($decoded) ? $decoded : [];
-            }
-            if (!is_array($formData)) {
-                $formData = [];
-            }
-            $ids = collect($formData['package_ids'] ?? [])
+        $allPackageIds = collect($list)->map(function ($item) use ($packageIdColumn) {
+            $ids = collect($item[$packageIdColumn] ?? [])
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
                 ->values()
                 ->all();
-            if ($ids === [] && !empty($item[$packageIdColumn])) {
-                $ids = [(int) $item[$packageIdColumn]];
-            }
             return $ids;
         })->flatten()->unique()->values()->all();
 
@@ -149,30 +137,16 @@ class CandidateInvitationService extends BaseService
         $baseUrl = rtrim($clientAppUrl, '/');
 
         $normalized = $list
-            ->map(function ($item) use ($packageIdColumn, $formDataColumn, $invitationsById, $invitationIdColumn, $baseUrl, $packagesById) {
+            ->map(function ($item) use ($packageIdColumn, $invitationsById, $invitationIdColumn, $baseUrl, $packagesById) {
                 $invitation = $item;
                 $invitationModel = $invitationsById->get((int) ($invitation[$invitationIdColumn] ?? 0));
 
-                $formData = $invitation[$formDataColumn] ?? [];
-                if (is_string($formData)) {
-                    $decoded = json_decode($formData, true);
-                    $formData = is_array($decoded) ? $decoded : [];
-                }
-
-                if (!is_array($formData)) {
-                    $formData = [];
-                }
-
-                $packageIds = collect($formData['package_ids'] ?? [])
+                $packageIds = collect($item[$packageIdColumn] ?? [])
                     ->map(static fn($id) => (int) $id)
                     ->filter(static fn($id) => $id > 0)
                     ->unique()
                     ->values()
                     ->all();
-
-                if ($packageIds === [] && !empty($invitation[$packageIdColumn])) {
-                    $packageIds = [(int) $invitation[$packageIdColumn]];
-                }
 
                 $candidate = $invitationModel?->candidate;
                 $package = $invitationModel?->package;
@@ -314,10 +288,6 @@ class CandidateInvitationService extends BaseService
                     $this->invitationRepo->invitationType() => $invitationType,
                     $this->invitationRepo->invitationToken() => $token,
                     $this->invitationRepo->formLink() => $formLink,
-                    $this->invitationRepo->formData() => array_merge($baseFormData, [
-                        'package_ids' => $packageIds,
-                        'candidate_id' => $candidate->{$this->candidateRepo->id()},
-                    ]),
                     $this->invitationRepo->invitedBy() => $user?->id,
                     $this->invitationRepo->invitedAt() => $now,
                     $this->invitationRepo->expiresAt() => $expiresAt,
@@ -408,8 +378,7 @@ class CandidateInvitationService extends BaseService
                 $this->candidateRepo->update(
                     $invitation->{$this->invitationRepo->candidateId()},
                     [
-                        $this->candidateRepo->status() => CandidateStatus::SENT->value,
-                        $this->candidateRepo->invitationSentAt() => now(),
+                        $this->candidateRepo->status() => CandidateStatus::SENT->value
                     ]
                 );
             }
@@ -521,7 +490,7 @@ class CandidateInvitationService extends BaseService
             throw new \Exception('Invitation has expired.', 410);
         }
 
-        [$formData, $packageIds, $packageServices, $serviceIds, $serviceFieldsByServiceId, $serviceMetaByServiceId] = $this->buildInvitationContext($invitation);
+        [$packageIds, $serviceIds, $serviceFieldsByServiceId, $serviceMetaByServiceId] = $this->buildInvitationContext($invitation);
         $candidate = $invitation->candidate;
         $fieldValuesByFieldId = $this->getCandidateFieldValuesByFieldId(
             (int) ($candidate?->{$this->candidateRepo->id()} ?? 0),
@@ -587,7 +556,6 @@ class CandidateInvitationService extends BaseService
             : ($relativeLink ? '/' . ltrim($relativeLink, '/') : null);
 
         $invitationData['package_ids'] = $packageIds->values()->all();
-        $invitationData['form_data'] = $formData;
         $candidateData = $candidate?->toArray();
 
         $invitationData['candidate'] = $candidateData;
@@ -663,8 +631,7 @@ class CandidateInvitationService extends BaseService
                 $this->candidateRepo->stateId() => !empty($candidateDetails['state_id']) ? (int) $candidateDetails['state_id'] : null,
                 $this->candidateRepo->cityId() => !empty($candidateDetails['city_id']) ? (int) $candidateDetails['city_id'] : null,
                 $this->candidateRepo->pincode() => !empty($candidateDetails['pincode']) ? (string) $candidateDetails['pincode'] : null,
-                $this->candidateRepo->status() => CandidateStatus::ACTIVE->value,
-                $this->candidateRepo->invitationAcceptedAt() => now(),
+                $this->candidateRepo->status() => CandidateStatus::ACTIVE->value
             ]);
 
             $candidateServices = collect();
@@ -736,8 +703,7 @@ class CandidateInvitationService extends BaseService
                 $this->candidateServiceDataRepo->create([
                     $this->candidateServiceDataRepo->candidateServiceId() => $candidateServiceId,
                     $this->candidateServiceDataRepo->fieldId() => $fieldId,
-                    $this->candidateServiceDataRepo->fieldValue() => $normalizedValue,
-                    $this->candidateServiceDataRepo->status() => CandidateStatus::ACTIVE->value,
+                    $this->candidateServiceDataRepo->fieldValue() => $normalizedValue
                 ]);
             }
 
@@ -889,26 +855,10 @@ class CandidateInvitationService extends BaseService
 
     protected function buildInvitationContext($invitation): array
     {
-        $formData = $invitation->{$this->invitationRepo->formData()} ?? [];
-        if (is_string($formData)) {
-            $decoded = json_decode($formData, true);
-            $formData = is_array($decoded) ? $decoded : [];
-        }
-        if (!is_array($formData)) {
-            $formData = [];
-        }
-
-        $packageIds = collect($formData['package_ids'] ?? [])
-            ->map(static fn($id) => (int) $id)
-            ->filter(static fn($id) => $id > 0)
-            ->unique()
-            ->values();
-
-        if ($packageIds->isEmpty()) {
-            $primaryPackageId = (int) ($invitation->{$this->invitationRepo->packageId()} ?? 0);
-            if ($primaryPackageId > 0) {
-                $packageIds = collect([$primaryPackageId]);
-            }
+        $packageIds = [];
+        $primaryPackageId = (int) ($invitation->{$this->invitationRepo->packageId()} ?? 0);
+        if ($primaryPackageId > 0) {
+            $packageIds = collect([$primaryPackageId]);
         }
 
         $packageServices = collect();
@@ -955,7 +905,7 @@ class CandidateInvitationService extends BaseService
                 ];
             });
 
-        return [$formData, $packageIds, $packageServices, $serviceIds, $serviceFieldsByServiceId, $serviceMetaByServiceId];
+        return [$packageIds, $serviceIds, $serviceFieldsByServiceId, $serviceMetaByServiceId];
     }
 
     protected function getCandidateFieldValuesByFieldId(int $candidateId, Collection $serviceIds): Collection

@@ -8,19 +8,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class CandidateInvitation extends BaseModel
 {
     use SoftDeletes;
-    
+
     protected $table = "candidate_invitations";
-    protected $casts = [
-        self::FORM_DATA => 'array',
-    ];
-    
+
     const CANDIDATE_ID = "candidate_id";
     const CLIENT_ID = "client_id";
     const PACKAGE_ID = "package_id";
     const INVITATION_TYPE = "invitation_type";
     const INVITATION_TOKEN = "invitation_token";
     const FORM_LINK = "form_link";
-    const FORM_DATA = "form_data";
     const INVITED_BY = "invited_by";
     const INVITED_AT = "invited_at";
     const VIEWED_AT = "viewed_at";
@@ -40,7 +36,6 @@ class CandidateInvitation extends BaseModel
         self::INVITATION_TYPE,
         self::INVITATION_TOKEN,
         self::FORM_LINK,
-        self::FORM_DATA,
         self::INVITED_BY,
         self::INVITED_AT,
         self::VIEWED_AT,

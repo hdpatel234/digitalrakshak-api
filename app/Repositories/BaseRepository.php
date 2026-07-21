@@ -17,6 +17,11 @@ abstract class BaseRepository
         return $this->model->getKeyName();
     }
 
+    public function status()
+    {
+        return BaseModel::STATUS;
+    }
+
     public function createdBy()
     {
         return BaseModel::CREATED_BY;

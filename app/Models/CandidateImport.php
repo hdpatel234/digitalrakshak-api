@@ -5,25 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CandidateImportHistory extends BaseModel
+class CandidateImport extends BaseModel
 {
     use SoftDeletes;
 
-    
-    protected $table = "candidate_import_history";
-    
+    protected $table = "candidate_imports";
+
     const CLIENT_ID = "client_id";
     const FILENAME = "filename";
     const TOTAL_RECORDS = "total_records";
     const SUCCESSFUL_IMPORTS = "successful_imports";
     const FAILED_IMPORTS = "failed_imports";
     const IMPORTED_BY = "imported_by";
+    const JSON_DATA = "json_data";
     const ERROR_LOG = "error_log";
     const STATUS = "status";
     const REASON = "reason";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
-    const DELETED_BY = "deleted_by";
     protected $fillable = [
         self::CLIENT_ID,
         self::FILENAME,
@@ -31,6 +28,7 @@ class CandidateImportHistory extends BaseModel
         self::SUCCESSFUL_IMPORTS,
         self::FAILED_IMPORTS,
         self::IMPORTED_BY,
+        self::JSON_DATA,
         self::ERROR_LOG,
         self::STATUS,
         self::REASON,

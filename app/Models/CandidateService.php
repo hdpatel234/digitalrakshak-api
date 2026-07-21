@@ -9,15 +9,11 @@ class CandidateService extends BaseModel
 {
     use SoftDeletes;
 
-    
     protected $table = "candidate_services";
-    
+
     const CANDIDATE_ID = "candidate_id";
     const SERVICE_ID = "service_id";
     const ORDER_ID = "order_id";
-    const ORDER_ITEM_ID = "order_item_id";
-    const PRICE_PAID = "price_paid";
-    const PROCESSING_RULE_ID = "processing_rule_id";
     const PROCESSING_STATUS = "processing_status";
     const PROCESSING_ATTEMPTS = "processing_attempts";
     const PROCESSED_AT = "processed_at";
@@ -31,9 +27,6 @@ class CandidateService extends BaseModel
         self::CANDIDATE_ID,
         self::SERVICE_ID,
         self::ORDER_ID,
-        self::ORDER_ITEM_ID,
-        self::PRICE_PAID,
-        self::PROCESSING_RULE_ID,
         self::PROCESSING_STATUS,
         self::PROCESSING_ATTEMPTS,
         self::PROCESSED_AT,

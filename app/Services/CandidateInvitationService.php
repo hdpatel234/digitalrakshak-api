@@ -9,7 +9,7 @@ use App\Repositories\CandidateInvitationRepository;
  */
 class CandidateInvitationService extends BaseService
 {
-    
+
     public function __construct(CandidateInvitationRepository $repository)
     {
         $this->repository = $repository;
@@ -44,11 +44,6 @@ class CandidateInvitationService extends BaseService
     public function formLink()
     {
         return $this->repository->formLink();
-    }
-
-    public function formData()
-    {
-        return $this->repository->formData();
     }
 
     public function invitedBy()

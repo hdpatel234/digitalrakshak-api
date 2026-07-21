@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseStatus;
 use App\Enums\EmailPriority;
 use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
@@ -61,8 +62,7 @@ class OrderService extends BaseService
         $statusColumn = $this->candidateOrderRepo->status();
         $clientIdColumn = $this->candidateOrderRepo->clientId();
         $orderNumberColumn = $this->candidateOrderRepo->orderNumber();
-        $clientOrderNumberColumn = $this->candidateOrderRepo->clientOrderNumber();
-        $invoiceNumberColumn = $this->candidateOrderRepo->invoiceNumber();
+        $clientOrderNumberColumn = $this->candidateOrderRepo->orderNumber();
         $paymentStatusColumn = $this->candidateOrderRepo->paymentStatus();
         $paymentMethodColumn = $this->candidateOrderRepo->paymentMethod();
         $orderDateColumn = $this->candidateOrderRepo->orderDate();
@@ -87,7 +87,6 @@ class OrderService extends BaseService
                 'searchable' => [
                     $orderTable . '.' . $orderNumberColumn,
                     $orderTable . '.' . $clientOrderNumberColumn,
-                    $orderTable . '.' . $invoiceNumberColumn,
                 ],
                 'status_column' => $qualifiedStatusColumn,
                 'date_column' => $orderTable . '.' . $this->candidateOrderRepo->createdAt(),
@@ -176,8 +175,15 @@ class OrderService extends BaseService
             $orderList = collect($result['list'])
                 ->map(static fn($item) => is_array($item) ? $item : $item->toArray());
 
-            $billingConfigIds = $orderList
-                ->pluck($this->candidateOrderRepo->billingConfigId())
+            $orderIds = $orderList->pluck($this->candidateOrderRepo->id())->filter()->values()->all();
+
+            $transactions = $this->paymentTransactionRepo->query()
+                ->whereIn($this->paymentTransactionRepo->orderId(), $orderIds)
+                ->whereNotNull($this->paymentTransactionRepo->gatewayConfigId())
+                ->get()
+                ->keyBy($this->paymentTransactionRepo->orderId());
+
+            $billingConfigIds = $transactions->pluck($this->paymentTransactionRepo->gatewayConfigId())
                 ->map(static fn($id) => (int) $id)
                 ->filter(static fn($id) => $id > 0)
                 ->unique()
@@ -223,7 +229,7 @@ class OrderService extends BaseService
                 ->keyBy($this->paymentGatewayConfigRepo->id());
 
             $result['list'] = $orderList
-                ->map(function (array $row) use ($paymentMethodNameById, $paymentMethodColumn, $gatewayConfigsById) {
+                ->map(function (array $row) use ($paymentMethodNameById, $paymentMethodColumn, $gatewayConfigsById, $transactions) {
                     $methodId = (int) ($row[$paymentMethodColumn] ?? 0);
                     $row['payment_method_name'] = $paymentMethodNameById->get($methodId);
 
@@ -233,7 +239,9 @@ class OrderService extends BaseService
                         return $row;
                     }
 
-                    $billingConfigId = (int) ($row[$this->candidateOrderRepo->billingConfigId()] ?? 0);
+                    $orderId = (int) ($row[$this->candidateOrderRepo->id()] ?? 0);
+                    $transaction = $transactions->get($orderId);
+                    $billingConfigId = $transaction ? (int) $transaction->{$this->paymentTransactionRepo->gatewayConfigId()} : 0;
                     $gatewayConfig = $billingConfigId > 0 ? $gatewayConfigsById->get($billingConfigId) : null;
 
                     if (!$gatewayConfig) {
@@ -292,9 +300,7 @@ class OrderService extends BaseService
 
     public function createOrder(array $payload, int $clientId, ?object $user): array
     {
-        $client = $this->clientRepo->query()
-            ->where($this->clientRepo->id(), $clientId)
-            ->first();
+        $client = $this->clientRepo->query()->where($this->clientRepo->id(), $clientId)->first();
 
         $orderId = (int) ($payload['id'] ?? 0);
         $packageId = (int) ($payload['package_id'] ?? 0);
@@ -421,10 +427,6 @@ class OrderService extends BaseService
                 $updateData[$this->candidateOrderRepo->paymentMethod()] = (string) $paymentMethodId;
             }
 
-            if ($gatewayConfig) {
-                $updateData[$this->candidateOrderRepo->billingConfigId()] = $gatewayConfig->{$this->paymentGatewayConfigRepo->id()};
-            }
-
             if ($hasCandidateIds) {
                 $updateData[$this->candidateOrderRepo->subtotal()] = $subtotal;
                 $updateData[$this->candidateOrderRepo->discountAmount()] = 0;
@@ -444,11 +446,7 @@ class OrderService extends BaseService
                     $this->orderCandidateRepo->create([
                         $this->orderCandidateRepo->orderId() => $orderRow->{$this->candidateOrderRepo->id()},
                         $this->orderCandidateRepo->candidateId() => $candidateId,
-                        $this->orderCandidateRepo->subtotal() => $unitPrice,
-                        $this->orderCandidateRepo->discountAmount() => 0,
-                        $this->orderCandidateRepo->taxAmount() => $unitPrice * ($taxPercentage / 100),
-                        $this->orderCandidateRepo->totalAmount() => $unitPrice + ($unitPrice * ($taxPercentage / 100)),
-                        $this->orderCandidateRepo->status() => 'pending',
+                        $this->orderCandidateRepo->status() => BaseStatus::PENDING,
                         $this->orderCandidateRepo->createdBy() => $user?->id,
                     ]);
                 }
@@ -461,8 +459,6 @@ class OrderService extends BaseService
                 'payment_provider_id' => $gatewayConfig ? $gatewayConfig->{$this->paymentGatewayConfigRepo->id()} : null,
                 'payment_provider_name' => $gatewayConfig?->gateway?->{$this->paymentGatewayRepo->gatewayName()},
                 'payment_method_id' => $paymentMethodId > 0 ? $paymentMethodId : (int) ($orderRow->{$this->candidateOrderRepo->paymentMethod()} ?? 0),
-                'billing_config_id' => $orderRow->{$this->candidateOrderRepo->billingConfigId()},
-                'order_type' => $orderRow->{$this->candidateOrderRepo->orderType()},
                 'subtotal' => (float) $orderRow->{$this->candidateOrderRepo->subtotal()},
                 'total_amount' => (float) $orderRow->{$this->candidateOrderRepo->totalAmount()},
                 'total_amount_in_paise' => (int) round((float) $orderRow->{$this->candidateOrderRepo->totalAmount()} * 100),
@@ -481,15 +477,13 @@ class OrderService extends BaseService
                 $this->candidateOrderRepo->orderNumber() => $orderNumber,
                 $this->candidateOrderRepo->clientId() => $clientId,
                 $this->candidateOrderRepo->packageId() => $package->{$this->packageRepo->id()},
-                $this->candidateOrderRepo->orderType() => 'package',
                 $this->candidateOrderRepo->subtotal() => $subtotal,
                 $this->candidateOrderRepo->discountAmount() => 0,
                 $this->candidateOrderRepo->taxAmount() => $taxAmount,
                 $this->candidateOrderRepo->taxPercentage() => $taxPercentage,
                 $this->candidateOrderRepo->totalAmount() => $totalAmount,
-                $this->candidateOrderRepo->paymentStatus() => 'pending',
+                $this->candidateOrderRepo->paymentStatus() => BaseStatus::PENDING,
                 $this->candidateOrderRepo->paymentMethod() => (string) $paymentMethodId,
-                $this->candidateOrderRepo->billingConfigId() => $gatewayConfig ? $gatewayConfig->{$this->paymentGatewayConfigRepo->id()} : 0,
                 $this->candidateOrderRepo->status() => $orderStatus,
                 $this->candidateOrderRepo->createdBy() => $user?->id,
             ]);
@@ -499,11 +493,7 @@ class OrderService extends BaseService
                 $candidateRows[] = $this->orderCandidateRepo->create([
                     $this->orderCandidateRepo->orderId() => $order->{$this->candidateOrderRepo->id()},
                     $this->orderCandidateRepo->candidateId() => $candidateId,
-                    $this->orderCandidateRepo->subtotal() => $unitPrice,
-                    $this->orderCandidateRepo->discountAmount() => 0,
-                    $this->orderCandidateRepo->taxAmount() => $unitPrice * ($taxPercentage / 100),
-                    $this->orderCandidateRepo->totalAmount() => $unitPrice + ($unitPrice * ($taxPercentage / 100)),
-                    $this->orderCandidateRepo->status() => 'pending',
+                    $this->orderCandidateRepo->status() => BaseStatus::PENDING,
                     $this->orderCandidateRepo->createdBy() => $user?->id,
                 ]);
             }
@@ -556,7 +546,6 @@ class OrderService extends BaseService
             $localInvoice = $this->invoiceRepo->create([
                 $this->invoiceRepo->clientId() => $client->{$this->clientRepo->id()},
                 $this->invoiceRepo->orderId() => $order->{$this->candidateOrderRepo->id()},
-                $this->invoiceRepo->billingConfigId() => $order->{$this->candidateOrderRepo->billingConfigId()},
                 $this->invoiceRepo->externalInvoiceId() => null,
                 $this->invoiceRepo->externalInvoiceNumber() => null,
                 $this->invoiceRepo->invoiceNumber() => $invoiceNumber,
@@ -580,13 +569,6 @@ class OrderService extends BaseService
                 $this->invoiceItemRepo->totalPrice() => $totalAmount,
                 $this->invoiceItemRepo->externalItemId() => null,
             ]);
-
-            $order->update([
-                $this->candidateOrderRepo->invoiceId() => $localInvoice->id,
-                $this->candidateOrderRepo->invoiceNumber() => $invoiceNumber,
-                $this->candidateOrderRepo->billingSyncStatus() => 'manual',
-                $this->candidateOrderRepo->invoiceGeneratedAt() => now(),
-            ]);
         } catch (\Throwable $e) {
             Log::error("Failed to generate local invoice for order {$order->{$this->candidateOrderRepo->id()}}: " . $e->getMessage());
         }
@@ -598,8 +580,6 @@ class OrderService extends BaseService
             'payment_provider_id' => $paymentProviderId,
             'payment_provider_name' => $gatewayConfig ? $gatewayConfig->gateway->{$this->paymentGatewayRepo->gatewayName()} : null,
             'payment_method_id' => $paymentMethodId,
-            'billing_config_id' => $order->{$this->candidateOrderRepo->billingConfigId()},
-            'order_type' => $order->{$this->candidateOrderRepo->orderType()},
             'subtotal' => (float) $order->{$this->candidateOrderRepo->subtotal()},
             'total_amount' => (float) $order->{$this->candidateOrderRepo->totalAmount()},
             'total_amount_in_paise' => (int) round((float) $order->{$this->candidateOrderRepo->totalAmount()} * 100),
@@ -661,10 +641,6 @@ class OrderService extends BaseService
                     'id' => (int) ($row->{$this->orderCandidateRepo->id()} ?? 0),
                     'order_id' => (int) ($row->{$this->orderCandidateRepo->orderId()} ?? 0),
                     'candidate_id' => $candidateId,
-                    'subtotal' => $row->{$this->orderCandidateRepo->subtotal()},
-                    'discount_amount' => $row->{$this->orderCandidateRepo->discountAmount()},
-                    'tax_amount' => $row->{$this->orderCandidateRepo->taxAmount()},
-                    'total_amount' => $row->{$this->orderCandidateRepo->totalAmount()},
                     'status' => $row->{$this->orderCandidateRepo->status()},
                     'candidate' => $candidateData ?? ($candidate ? $candidate->toArray() : null),
                     'candidate_data' => $candidateData,
@@ -702,8 +678,16 @@ class OrderService extends BaseService
             }
         }
 
+        $transactionsCollection = $this->paymentTransactionRepo->query()
+            ->where($this->paymentTransactionRepo->orderId(), $orderId)
+            ->where($this->paymentTransactionRepo->clientId(), $clientId)
+            ->orderByDesc($this->paymentTransactionRepo->id())
+            ->get();
+
+        $firstTransaction = $transactionsCollection->first();
+        $gatewayConfigId = $firstTransaction ? (int) $firstTransaction->{$this->paymentTransactionRepo->gatewayConfigId()} : 0;
+
         $paymentGateway = null;
-        $gatewayConfigId = (int) ($orderRow->{$this->candidateOrderRepo->billingConfigId()} ?? 0);
         if ($gatewayConfigId > 0) {
             $gatewayConfig = $this->paymentGatewayConfigRepo->query()
                 ->select([
@@ -773,14 +757,7 @@ class OrderService extends BaseService
             }
         }
 
-        $transactions = $this->paymentTransactionRepo->query()
-            ->where($this->paymentTransactionRepo->orderId(), $orderId)
-            ->where($this->paymentTransactionRepo->clientId(), $clientId)
-            ->orderByDesc($this->paymentTransactionRepo->id())
-            ->get()
-            ->map(static fn($row) => $row->toArray())
-            ->values()
-            ->all();
+        $transactions = $transactionsCollection->map(static fn($row) => $row->toArray())->values()->all();
 
         if (!empty($candidates)) {
             $candidateIdsForServiceData = array_filter(array_map(function ($item) {
@@ -863,7 +840,13 @@ class OrderService extends BaseService
             throw new \Exception('Payment is already completed for this order.', 422);
         }
 
-        $gatewayConfigId = (int) ($orderRow->{$this->candidateOrderRepo->billingConfigId()} ?? 0);
+        $transaction = $this->paymentTransactionRepo->query()
+            ->where($this->paymentTransactionRepo->orderId(), $orderId)
+            ->where($this->paymentTransactionRepo->clientId(), $clientId)
+            ->orderByDesc($this->paymentTransactionRepo->id())
+            ->first();
+
+        $gatewayConfigId = $transaction ? (int) $transaction->{$this->paymentTransactionRepo->gatewayConfigId()} : 0;
         if ($gatewayConfigId <= 0) {
             throw new \Exception('Payment gateway configuration not found for this order.', 422);
         }
@@ -934,7 +917,6 @@ class OrderService extends BaseService
         }
 
         $transactionPayload = [
-            $this->paymentTransactionRepo->transactionUuid() => (string) Str::uuid(),
             $this->paymentTransactionRepo->clientId() => $clientId,
             $this->paymentTransactionRepo->orderId() => $orderId,
             $this->paymentTransactionRepo->invoiceId() => 0,
@@ -942,7 +924,7 @@ class OrderService extends BaseService
             $this->paymentTransactionRepo->amount() => $amount,
             $this->paymentTransactionRepo->currency() => $currency,
             $this->paymentTransactionRepo->paymentStatus() => 'initiated',
-            $this->paymentTransactionRepo->status() => 'pending',
+            $this->paymentTransactionRepo->status() => BaseStatus::PENDING,
             $this->paymentTransactionRepo->initiatedAt() => now(),
             $this->paymentTransactionRepo->gatewayOrderId() => $gatewayResponse['gateway_order_id'] ?? null,
             $this->paymentTransactionRepo->gatewayRequest() => json_encode($gatewayPayload),
@@ -957,11 +939,10 @@ class OrderService extends BaseService
             $transactionPayload[$this->paymentTransactionRepo->methodTypeId()] = $paymentMethodId;
         }
 
-        $transaction = $this->paymentTransactionRepo->create($transactionPayload);
+        $this->paymentTransactionRepo->create($transactionPayload);
 
         return [
             'order_id' => $orderId,
-            'transaction_uuid' => $transaction->{$this->paymentTransactionRepo->transactionUuid()} ?? null,
             'payment_provider' => [
                 'name' => $gatewayName,
                 'code' => $gatewayCode,
@@ -995,7 +976,6 @@ class OrderService extends BaseService
         $gatewayData = $payload['gateway_data'] ?? [];
 
         $transaction = $this->paymentTransactionRepo->query()
-            ->where($this->paymentTransactionRepo->transactionUuid(), $transactionUuid)
             ->where($this->paymentTransactionRepo->orderId(), $orderId)
             ->where($this->paymentTransactionRepo->clientId(), $clientId)
             ->first();
@@ -1015,8 +995,7 @@ class OrderService extends BaseService
         $currentStatus = strtolower(trim((string) ($transaction->{$this->paymentTransactionRepo->paymentStatus()} ?? '')));
         if (in_array($currentStatus, ['paid', 'success', 'completed'], true)) {
             return [
-                'order_id' => $orderId,
-                'transaction_uuid' => $transaction->{$this->paymentTransactionRepo->transactionUuid()},
+                'order_id' => $orderId
             ];
         }
 
@@ -1067,7 +1046,6 @@ class OrderService extends BaseService
             'order_id' => $orderId,
             'order_status' => $orderRow->{$this->candidateOrderRepo->status()},
             'payment_status' => $orderRow->{$this->candidateOrderRepo->paymentStatus()},
-            'transaction_uuid' => $transaction->{$this->paymentTransactionRepo->transactionUuid()},
             'gateway_payment_id' => $gatewayPaymentId,
             'gateway_order_id' => $gatewayOrderId,
         ];

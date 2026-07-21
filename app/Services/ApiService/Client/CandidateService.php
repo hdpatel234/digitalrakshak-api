@@ -9,7 +9,7 @@ use App\Services\CandidateService as CoreCandidateService;
 use App\Repositories\CityRepository;
 use App\Repositories\CountryRepository;
 use App\Repositories\StateRepository;
-use App\Repositories\CandidateImportHistoryRepository;
+use App\Repositories\CandidateImportRepository;
 use App\Services\Webhook\ClientWebhookDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ class CandidateService extends BaseService
         protected CountryRepository $countryRepo,
         protected StateRepository $stateRepo,
         protected CityRepository $cityRepo,
-        protected CandidateImportHistoryRepository $candidateImportHistoryRepo,
+        protected CandidateImportRepository $candidateImportRepo,
         protected ClientWebhookDispatcher $clientWebhookDispatcher
     ) {}
 
@@ -235,15 +235,15 @@ class CandidateService extends BaseService
         $file = $request->file('file');
         $storedPath = $file->store('candidate-imports');
 
-        $import = $this->candidateImportHistoryRepo->query()->create([
-            $this->candidateImportHistoryRepo->clientId() => $clientId,
-            $this->candidateImportHistoryRepo->filename() => $file->getClientOriginalName(),
-            $this->candidateImportHistoryRepo->totalRecords() => 0,
-            $this->candidateImportHistoryRepo->successfulImports() => 0,
-            $this->candidateImportHistoryRepo->failedImports() => 0,
-            $this->candidateImportHistoryRepo->importedBy() => $user?->id,
-            $this->candidateImportHistoryRepo->status() => BaseStatus::PENDING,
-            $this->candidateImportHistoryRepo->errorLog() => json_encode([
+        $import = $this->candidateImportRepo->query()->create([
+            $this->candidateImportRepo->clientId() => $clientId,
+            $this->candidateImportRepo->filename() => $file->getClientOriginalName(),
+            $this->candidateImportRepo->totalRecords() => 0,
+            $this->candidateImportRepo->successfulImports() => 0,
+            $this->candidateImportRepo->failedImports() => 0,
+            $this->candidateImportRepo->importedBy() => $user?->id,
+            $this->candidateImportRepo->status() => BaseStatus::PENDING,
+            $this->candidateImportRepo->jsonData() => json_encode([
                 'stored_path' => $storedPath,
                 'original_name' => $file->getClientOriginalName(),
                 'uploaded_at' => now()->toDateTimeString(),
@@ -273,7 +273,7 @@ class CandidateService extends BaseService
 
     public function getImportHistory(int $clientId): array
     {
-        return $this->candidateImportHistoryRepo->query()
+        return $this->candidateImportRepo->query()
             ->where('client_id', $clientId)
             ->orderByDesc('id')
             ->get()
