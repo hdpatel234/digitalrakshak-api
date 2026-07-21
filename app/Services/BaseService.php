@@ -7,12 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseService
 {
-    protected BaseRepository $repository;
-
-    public function __construct(BaseRepository $repository)
-    {
-        $this->repository = $repository;
-    }
+    public function __construct(protected BaseRepository $repository) {}
 
     // column constants
     public function id()
@@ -20,6 +15,18 @@ abstract class BaseService
         return $this->repository->id();
     }
 
+    public function createdBy()
+    {
+        return $this->repository->createdBy();
+    }
+    public function updatedBy()
+    {
+        return $this->repository->updatedBy();
+    }
+    public function deletedBy()
+    {
+        return $this->repository->deletedBy();
+    }
     public function createdAt()
     {
         return $this->repository->createdAt();
@@ -27,6 +34,10 @@ abstract class BaseService
     public function updatedAt()
     {
         return $this->repository->updatedAt();
+    }
+    public function deletedAt()
+    {
+        return $this->repository->deletedAt();
     }
 
     // functions

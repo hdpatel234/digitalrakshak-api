@@ -31,11 +31,6 @@ class CandidateServiceDataService extends BaseService
         return $this->repository->fieldValue();
     }
 
-    public function documentId()
-    {
-        return $this->repository->documentId();
-    }
-
     public function isVerified()
     {
         return $this->repository->isVerified();
@@ -49,26 +44,6 @@ class CandidateServiceDataService extends BaseService
     public function verifiedBy()
     {
         return $this->repository->verifiedBy();
-    }
-
-    public function status()
-    {
-        return $this->repository->status();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
     }
     // functions
 }

@@ -5,15 +5,11 @@ namespace App\Repositories;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 abstract class BaseRepository
 {
-    protected Model $model;
-
-    public function __construct(Model $model)
-    {
-        $this->model = $model;
-    }
+    public function __construct(protected Model $model) {}
 
     // column constants
     public function id()
@@ -21,13 +17,30 @@ abstract class BaseRepository
         return $this->model->getKeyName();
     }
 
+    public function createdBy()
+    {
+        return BaseModel::CREATED_BY;
+    }
+    public function updatedBy()
+    {
+        return BaseModel::UPDATED_BY;
+    }
+    public function deletedBy()
+    {
+        return BaseModel::DELETED_BY;
+    }
+
     public function createdAt()
     {
-        return Model::CREATED_AT;
+        return BaseModel::CREATED_AT;
     }
     public function updatedAt()
     {
-        return Model::UPDATED_AT;
+        return BaseModel::UPDATED_AT;
+    }
+    public function deletedAt()
+    {
+        return BaseModel::DELETED_AT;
     }
 
     // functions

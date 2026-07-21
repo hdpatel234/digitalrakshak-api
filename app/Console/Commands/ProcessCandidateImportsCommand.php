@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Enums\CandidateSource;
 use App\Enums\ImportStatus;
-use App\Models\Candidate;
 use App\Services\CountryService;
 use App\Services\StateService;
 use App\Services\CityService;

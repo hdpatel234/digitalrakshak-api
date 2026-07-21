@@ -27,11 +27,6 @@ class CandidateServiceDataRepository extends BaseRepository
         return CandidateServiceData::FIELD_VALUE;
     }
 
-    public function documentId()
-    {
-        return CandidateServiceData::DOCUMENT_ID;
-    }
-
     public function isVerified()
     {
         return CandidateServiceData::IS_VERIFIED;
@@ -47,24 +42,5 @@ class CandidateServiceDataRepository extends BaseRepository
         return CandidateServiceData::VERIFIED_BY;
     }
 
-    public function status()
-    {
-        return CandidateServiceData::STATUS;
-    }
-
-    public function createdBy()
-    {
-        return CandidateServiceData::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return CandidateServiceData::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return CandidateServiceData::DELETED_BY;
-    }
     // functions
 }
