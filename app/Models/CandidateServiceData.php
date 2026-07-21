@@ -11,14 +11,14 @@ class CandidateServiceData extends BaseModel
 
     protected $table = "candidate_service_data";
 
-    const CANDIDATE_SERVICE_ID = "candidate_service_id";
+    const order_item_id = "order_item_id";
     const FIELD_ID = "field_id";
     const FIELD_VALUE = "field_value";
     const IS_VERIFIED = "is_verified";
     const VERIFIED_AT = "verified_at";
     const VERIFIED_BY = "verified_by";
     protected $fillable = [
-        self::CANDIDATE_SERVICE_ID,
+        self::order_item_id,
         self::FIELD_ID,
         self::FIELD_VALUE,
         self::IS_VERIFIED,
@@ -31,7 +31,7 @@ class CandidateServiceData extends BaseModel
 
     public function candidateService(): BelongsTo
     {
-        return $this->belongsTo(CandidateService::class, self::CANDIDATE_SERVICE_ID);
+        return $this->belongsTo(CandidateService::class, self::order_item_id);
     }
 
     public function field(): BelongsTo

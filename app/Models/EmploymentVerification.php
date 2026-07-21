@@ -9,7 +9,7 @@ class EmploymentVerification extends Model
 {
     use SoftDeletes;
 
-    const CANDIDATE_SERVICE_ID = 'candidate_service_id';
+    const order_item_id = 'order_item_id';
     const TOKEN = 'token';
     const COMPANY_EMAIL = 'company_email';
     const CANDIDATE_DATA = 'candidate_data';
@@ -18,7 +18,7 @@ class EmploymentVerification extends Model
     const VERIFIED_AT = 'verified_at';
 
     protected $fillable = [
-        self::CANDIDATE_SERVICE_ID,
+        self::order_item_id,
         self::TOKEN,
         self::COMPANY_EMAIL,
         self::CANDIDATE_DATA,

@@ -22,7 +22,7 @@ use App\Repositories\CandidateInvitationsLogRepository;
 use App\Repositories\PackageServiceRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\ServicesFieldRepository;
-use App\Repositories\CandidateServiceRepository;
+use App\Repositories\OrderItemRepository;
 use App\Repositories\CandidateServiceDataRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +48,7 @@ class CandidateInvitationService extends BaseService
         protected PackageServiceRepository $packageServiceRepo,
         protected ServiceRepository $serviceRepo,
         protected ServicesFieldRepository $servicesFieldRepo,
-        protected CandidateServiceRepository $candidateServiceRepo,
+        protected OrderItemRepository $orderItemRepo,
         protected CandidateServiceDataRepository $candidateServiceDataRepo,
         protected ResumeParserService $resumeParserService
     ) {}
@@ -634,13 +634,15 @@ class CandidateInvitationService extends BaseService
                 $this->candidateRepo->status() => CandidateStatus::ACTIVE->value
             ]);
 
-            $candidateServices = collect();
+            $orderItems = collect();
             if ($serviceIds->isNotEmpty()) {
-                $candidateServices = $this->candidateServiceRepo->query()
-                    ->where($this->candidateServiceRepo->candidateId(), $candidateId)
-                    ->whereIn($this->candidateServiceRepo->serviceId(), $serviceIds->all())
+                $orderItems = $this->orderItemRepo->query()
+                    ->join('order_candidates', 'order_items.order_candidate_id', '=', 'order_candidates.id')
+                    ->where('order_candidates.candidate_id', $candidateId)
+                    ->whereIn('order_items.service_id', $serviceIds->all())
+                    ->select('order_items.*')
                     ->get()
-                    ->keyBy($this->candidateServiceRepo->serviceId());
+                    ->keyBy('service_id');
             }
 
             foreach (($payload['fields'] ?? []) as $fieldInput) {
@@ -659,23 +661,18 @@ class CandidateInvitationService extends BaseService
                     continue;
                 }
 
-                $candidateService = $candidateServices->get($serviceId);
-                if (!$candidateService) {
-                    $candidateService = $this->candidateServiceRepo->create([
-                        $this->candidateServiceRepo->candidateId() => $candidateId,
-                        $this->candidateServiceRepo->serviceId() => $serviceId,
-                        $this->candidateServiceRepo->status() => CandidateStatus::ACTIVE->value,
-                    ]);
-                    $candidateServices->put($serviceId, $candidateService);
+                $orderItem = $orderItems->get($serviceId);
+                if (!$orderItem) {
+                    continue; // Skip if no order item exists for this service
                 }
 
-                $candidateServiceId = (int) ($candidateService->{$this->candidateServiceRepo->id()} ?? 0);
-                if ($candidateServiceId <= 0) {
+                $orderItemId = (int) ($orderItem->id ?? 0);
+                if ($orderItemId <= 0) {
                     continue;
                 }
 
                 $existingValue = $this->candidateServiceDataRepo->query()
-                    ->where($this->candidateServiceDataRepo->candidateServiceId(), $candidateServiceId)
+                    ->where('order_item_id', $orderItemId)
                     ->where($this->candidateServiceDataRepo->fieldId(), $fieldId)
                     ->first();
 
@@ -701,7 +698,7 @@ class CandidateInvitationService extends BaseService
                 }
 
                 $this->candidateServiceDataRepo->create([
-                    $this->candidateServiceDataRepo->candidateServiceId() => $candidateServiceId,
+                    'order_item_id' => $orderItemId,
                     $this->candidateServiceDataRepo->fieldId() => $fieldId,
                     $this->candidateServiceDataRepo->fieldValue() => $normalizedValue
                 ]);
@@ -914,19 +911,19 @@ class CandidateInvitationService extends BaseService
             return collect();
         }
 
-        $candidateServiceIds = $this->candidateServiceRepo->query()
-            ->where($this->candidateServiceRepo->candidateId(), $candidateId)
-            ->whereIn($this->candidateServiceRepo->serviceId(), $serviceIds->all())
-            ->get()
-            ->pluck($this->candidateServiceRepo->id())
+        $orderItemIds = $this->orderItemRepo->query()
+            ->join('order_candidates', 'order_items.order_candidate_id', '=', 'order_candidates.id')
+            ->where('order_candidates.candidate_id', $candidateId)
+            ->whereIn('order_items.service_id', $serviceIds->all())
+            ->pluck('order_items.id')
             ->all();
 
-        if ($candidateServiceIds === []) {
+        if ($orderItemIds === []) {
             return collect();
         }
 
         return $this->candidateServiceDataRepo->query()
-            ->whereIn($this->candidateServiceDataRepo->candidateServiceId(), $candidateServiceIds)
+            ->whereIn('order_item_id', $orderItemIds)
             ->get()
             ->pluck($this->candidateServiceDataRepo->fieldValue(), $this->candidateServiceDataRepo->fieldId());
     }

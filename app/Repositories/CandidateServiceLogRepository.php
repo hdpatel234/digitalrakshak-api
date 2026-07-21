@@ -18,7 +18,7 @@ class CandidateServiceLogRepository extends BaseRepository
 
     public function candidateServiceId()
     {
-        return CandidateServiceLog::CANDIDATE_SERVICE_ID;
+        return CandidateServiceLog::order_item_id;
     }
 
     public function title()

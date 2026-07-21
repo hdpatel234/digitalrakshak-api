@@ -9,7 +9,7 @@ class VerificationReport extends BaseModel
     use SoftDeletes;
     protected $table = "verification_reports";
 
-    const CANDIDATE_SERVICE_ID = "candidate_service_id";
+    const order_item_id = "order_item_id";
     const REPORT_TYPE = "report_type";
     const REPORT_DATA = "report_data";
     const SUMMARY = "summary";
@@ -24,7 +24,7 @@ class VerificationReport extends BaseModel
     const UPDATED_BY = "updated_by";
     const DELETED_BY = "deleted_by";
     protected $fillable = [
-        self::CANDIDATE_SERVICE_ID,
+        self::order_item_id,
         self::REPORT_TYPE,
         self::REPORT_DATA,
         self::SUMMARY,

@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\ProviderApiConfigRepository;
 use App\Repositories\ServiceProviderRepository;
-use App\Repositories\ApiProviderLogRepository;
 
 class ProteanService
 {
@@ -20,8 +19,7 @@ class ProteanService
     protected string $environment;
     public function __construct(
         protected ProviderApiConfigRepository $providerApiConfigRepository,
-        protected ServiceProviderRepository $serviceProviderRepository,
-        protected ApiProviderLogRepository $apiProviderLogRepository
+        protected ServiceProviderRepository $serviceProviderRepository
     ) {
         $this->loadConfiguration();
     }
@@ -397,18 +395,18 @@ class ProteanService
     protected function logApiCall(string $endpoint, string $method, array $request, array $response, int $code, float $duration): void
     {
         try {
-            $this->apiProviderLogRepository->create([
-                $this->apiProviderLogRepository->apiProviderId() => $this->config->provider_id,
-                $this->apiProviderLogRepository->endpoint() => $endpoint,
-                $this->apiProviderLogRepository->method() => $method,
-                $this->apiProviderLogRepository->request() => json_encode($request),
-                $this->apiProviderLogRepository->response() => json_encode($response),
-                $this->apiProviderLogRepository->responseCode() => $code,
-                $this->apiProviderLogRepository->duration() => $duration,
-                $this->apiProviderLogRepository->isSuccessful() => ($code >= 200 && $code < 300) ? 1 : 0,
-                $this->apiProviderLogRepository->createdAt() => now(),
-                $this->apiProviderLogRepository->updatedAt() => now(),
-            ]);
+            // $this->apiProviderLogRepository->create([
+            //     $this->apiProviderLogRepository->apiProviderId() => $this->config->provider_id,
+            //     $this->apiProviderLogRepository->endpoint() => $endpoint,
+            //     $this->apiProviderLogRepository->method() => $method,
+            //     $this->apiProviderLogRepository->request() => json_encode($request),
+            //     $this->apiProviderLogRepository->response() => json_encode($response),
+            //     $this->apiProviderLogRepository->responseCode() => $code,
+            //     $this->apiProviderLogRepository->duration() => $duration,
+            //     $this->apiProviderLogRepository->isSuccessful() => ($code >= 200 && $code < 300) ? 1 : 0,
+            //     $this->apiProviderLogRepository->createdAt() => now(),
+            //     $this->apiProviderLogRepository->updatedAt() => now(),
+            // ]);
 
             // Update stats on config
             $this->providerApiConfigRepository->query()

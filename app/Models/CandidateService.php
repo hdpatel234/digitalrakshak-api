@@ -55,6 +55,6 @@ class CandidateService extends BaseModel
 
     public function serviceData()
     {
-        return $this->hasMany(CandidateServiceData::class, CandidateServiceData::CANDIDATE_SERVICE_ID);
+        return $this->hasMany(CandidateServiceData::class, CandidateServiceData::order_item_id);
     }
 }

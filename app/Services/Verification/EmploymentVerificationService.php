@@ -2,7 +2,7 @@
 
 namespace App\Services\Verification;
 
-use App\Models\CandidateService;
+use App\Models\OrderItem;
 use App\Models\EmploymentVerification;
 use App\Models\CandidateServiceData;
 use App\Mail\EmploymentVerificationMail;
@@ -12,18 +12,18 @@ use Illuminate\Support\Str;
 
 class EmploymentVerificationService extends BaseVerificationService
 {
-    protected function performVerification(CandidateService $candidateService): void
+    protected function performVerification(OrderItem $OrderItem): void
     {
         if ($this->isTestMode()) {
-            Log::info("Simulating Employment Verification for candidate ID {$candidateService->candidate_id}");
+            Log::info("Simulating Employment Verification for candidate ID {$OrderItem->candidate_id}");
             // Sleep slightly to simulate processing
             usleep(100000); // 100ms
         } else {
-            Log::info("Actual Employment Verification for candidate ID {$candidateService->candidate_id}");
+            Log::info("Actual Employment Verification for candidate ID {$OrderItem->candidate_id}");
 
             // Gather candidate data for this service
             $serviceData = CandidateServiceData::with('field')
-                ->where('candidate_service_id', $candidateService->id)
+                ->where('order_item_id', $OrderItem->id)
                 ->get();
 
             // Format data and try to find an email
@@ -47,7 +47,7 @@ class EmploymentVerificationService extends BaseVerificationService
 
             // Create verification record
             $verification = EmploymentVerification::create([
-                'candidate_service_id' => $candidateService->id,
+                'order_item_id' => $OrderItem->id,
                 'token' => $token,
                 'company_email' => $companyEmail,
                 'candidate_data' => $formattedData,
@@ -58,7 +58,7 @@ class EmploymentVerificationService extends BaseVerificationService
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
             $verificationUrl = rtrim($frontendUrl, '/') . '/verify-employment/' . $token;
 
-            $candidateName = $candidateService->candidate->first_name . ' ' . $candidateService->candidate->last_name;
+            $candidateName = $OrderItem->candidate->first_name . ' ' . $OrderItem->candidate->last_name;
 
             $subject = 'Employment Verification Request - ' . $candidateName;
             $bodyHtml = view('emails.employment_verification', [
@@ -71,15 +71,15 @@ class EmploymentVerificationService extends BaseVerificationService
                 'to_email' => $companyEmail,
                 'subject' => $subject,
                 'body_html' => $bodyHtml,
-                'candidate_id' => $candidateService->candidate_id,
+                'candidate_id' => $OrderItem->candidate_id,
                 'email_type' => 'verification'
             ]);
 
             // Mark service as ON_HOLD while waiting for response
-            $candidateService->status = 'ON_HOLD'; // Assuming ON_HOLD is a valid status, if not we can use something else or keep it as PROCESSING. Let's use ON_HOLD.
-            $candidateService->save();
+            $OrderItem->status = 'ON_HOLD'; // Assuming ON_HOLD is a valid status, if not we can use something else or keep it as PROCESSING. Let's use ON_HOLD.
+            $OrderItem->save();
 
-            Log::info("Sent employment verification email to {$companyEmail} for candidate {$candidateService->candidate_id}");
+            Log::info("Sent employment verification email to {$companyEmail} for candidate {$OrderItem->candidate_id}");
         }
     }
 }

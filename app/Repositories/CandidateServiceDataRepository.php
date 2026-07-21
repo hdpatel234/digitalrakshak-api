@@ -14,7 +14,7 @@ class CandidateServiceDataRepository extends BaseRepository
     // column constants
     public function candidateServiceId()
     {
-        return CandidateServiceData::CANDIDATE_SERVICE_ID;
+        return CandidateServiceData::order_item_id;
     }
 
     public function fieldId()

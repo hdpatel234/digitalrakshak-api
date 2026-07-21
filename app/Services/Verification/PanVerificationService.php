@@ -2,19 +2,19 @@
 
 namespace App\Services\Verification;
 
-use App\Models\CandidateService;
+use App\Models\OrderItem;
 use Illuminate\Support\Facades\Log;
 
 class PanVerificationService extends BaseVerificationService
 {
-    protected function performVerification(CandidateService $candidateService): void
+    protected function performVerification(OrderItem $OrderItem): void
     {
         if ($this->isTestMode()) {
-            Log::info("Simulating PAN Verification for candidate ID {$candidateService->candidate_id}");
+            Log::info("Simulating PAN Verification for candidate ID {$OrderItem->candidate_id}");
             usleep(100000); // 100ms
         } else {
             // Actual API implementation goes here
-            Log::info("Actual PAN Verification for candidate ID {$candidateService->candidate_id}");
+            Log::info("Actual PAN Verification for candidate ID {$OrderItem->candidate_id}");
         }
     }
 }

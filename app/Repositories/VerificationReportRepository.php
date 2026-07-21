@@ -14,7 +14,7 @@ class VerificationReportRepository extends BaseRepository
     // column constants
     public function candidateServiceId()
     {
-        return VerificationReport::CANDIDATE_SERVICE_ID;
+        return VerificationReport::order_item_id;
     }
 
     public function reportType()

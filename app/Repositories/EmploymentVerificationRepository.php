@@ -13,7 +13,7 @@ class EmploymentVerificationRepository extends BaseRepository
 
     public function candidateServiceId()
     {
-        return EmploymentVerification::CANDIDATE_SERVICE_ID;
+        return EmploymentVerification::order_item_id;
     }
 
     public function token()

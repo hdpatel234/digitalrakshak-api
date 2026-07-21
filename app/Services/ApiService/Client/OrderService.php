@@ -26,6 +26,8 @@ use App\Repositories\InvoiceItemRepository;
 use App\Repositories\ConfigurationRepository;
 use App\Repositories\CandidateServiceRepository;
 use App\Repositories\CandidateServiceDataRepository;
+use App\Repositories\PackageServiceRepository;
+use App\Repositories\OrderItemRepository;
 use App\Services\EmailTemplateService;
 use App\Services\PaymentGateway\PaymentGatewayDriverFactory;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +55,9 @@ class OrderService extends BaseService
         protected ConfigurationRepository $configurationRepo,
         protected CandidateServiceRepository $candidateServiceRepo,
         protected CandidateServiceDataRepository $candidateServiceDataRepo,
-        protected EmailTemplateService $emailTemplateService
+        protected EmailTemplateService $emailTemplateService,
+        protected PackageServiceRepository $packageServiceRepo,
+        protected OrderItemRepository $orderItemRepo
     ) {}
 
     public function getOrders(array $params, int $clientId): array
@@ -441,14 +445,34 @@ class OrderService extends BaseService
                 $this->orderCandidateRepo->query()
                     ->where($this->orderCandidateRepo->orderId(), $orderRow->{$this->candidateOrderRepo->id()})
                     ->delete();
+                $this->orderItemRepo->query()
+                    ->where($this->orderItemRepo->orderId(), $orderRow->{$this->candidateOrderRepo->id()})
+                    ->delete();
+
+                $packageServices = $this->packageServiceRepo->query()
+                    ->where($this->packageServiceRepo->packageId(), $package->{$this->packageRepo->id()})
+                    ->get();
 
                 foreach ($candidateIds as $candidateId) {
-                    $this->orderCandidateRepo->create([
+                    $orderCandidate = $this->orderCandidateRepo->create([
                         $this->orderCandidateRepo->orderId() => $orderRow->{$this->candidateOrderRepo->id()},
                         $this->orderCandidateRepo->candidateId() => $candidateId,
                         $this->orderCandidateRepo->status() => BaseStatus::PENDING,
                         $this->orderCandidateRepo->createdBy() => $user?->id,
                     ]);
+
+                    foreach ($packageServices as $packageService) {
+                        $this->orderItemRepo->create([
+                            $this->orderItemRepo->orderId() => $orderRow->{$this->candidateOrderRepo->id()},
+                            $this->orderItemRepo->orderCandidateId() => $orderCandidate->{$this->orderCandidateRepo->id()},
+                            $this->orderItemRepo->serviceId() => $packageService->{$this->packageServiceRepo->serviceId()},
+                            $this->orderItemRepo->unitPrice() => $packageService->{$this->packageServiceRepo->priceOverride()} ?? 0,
+                            $this->orderItemRepo->totalPrice() => $packageService->{$this->packageServiceRepo->priceOverride()} ?? 0,
+                            $this->orderItemRepo->quantity() => 1,
+                            $this->orderItemRepo->status() => BaseStatus::PENDING,
+                            $this->orderItemRepo->createdBy() => $user?->id,
+                        ]);
+                    }
                 }
             }
 
@@ -468,7 +492,11 @@ class OrderService extends BaseService
             ];
         }
 
-        $created = DB::transaction(function () use ($package, $candidateIds, $clientId, $user, $unitPrice, $subtotal, $gatewayConfig, $paymentMethodId, $isDraft, $taxAmount, $taxPercentage, $totalAmount) {
+        $packageServices = $this->packageServiceRepo->query()
+            ->where($this->packageServiceRepo->packageId(), $package->{$this->packageRepo->id()})
+            ->get();
+
+        $created = DB::transaction(function () use ($package, $candidateIds, $clientId, $user, $unitPrice, $subtotal, $gatewayConfig, $paymentMethodId, $isDraft, $taxAmount, $taxPercentage, $totalAmount, $packageServices) {
             $orderNumber = $this->generateOrderNumber($clientId);
 
             $orderStatus = $isDraft ? OrderStatus::DRAFT->value : OrderStatus::PENDING->value;
@@ -490,12 +518,26 @@ class OrderService extends BaseService
 
             $candidateRows = [];
             foreach ($candidateIds as $candidateId) {
-                $candidateRows[] = $this->orderCandidateRepo->create([
+                $orderCandidate = $this->orderCandidateRepo->create([
                     $this->orderCandidateRepo->orderId() => $order->{$this->candidateOrderRepo->id()},
                     $this->orderCandidateRepo->candidateId() => $candidateId,
                     $this->orderCandidateRepo->status() => BaseStatus::PENDING,
                     $this->orderCandidateRepo->createdBy() => $user?->id,
                 ]);
+                $candidateRows[] = $orderCandidate;
+
+                foreach ($packageServices as $packageService) {
+                    $this->orderItemRepo->create([
+                        $this->orderItemRepo->orderId() => $order->{$this->candidateOrderRepo->id()},
+                        $this->orderItemRepo->orderCandidateId() => $orderCandidate->{$this->orderCandidateRepo->id()},
+                        $this->orderItemRepo->serviceId() => $packageService->{$this->packageServiceRepo->serviceId()},
+                        $this->orderItemRepo->unitPrice() => $packageService->{$this->packageServiceRepo->priceOverride()} ?? 0,
+                        $this->orderItemRepo->totalPrice() => $packageService->{$this->packageServiceRepo->priceOverride()} ?? 0,
+                        $this->orderItemRepo->quantity() => 1,
+                        $this->orderItemRepo->status() => BaseStatus::PENDING,
+                        $this->orderItemRepo->createdBy() => $user?->id,
+                    ]);
+                }
             }
 
             return [$order, $candidateRows];
@@ -775,7 +817,7 @@ class OrderService extends BaseService
 
                 $candidateServiceData = [];
                 if (!empty($candidateServiceIds)) {
-                    $candidateServiceData = $this->candidateServiceDataRepo->query()->whereIn('candidate_service_id', $candidateServiceIds)
+                    $candidateServiceData = $this->candidateServiceDataRepo->query()->whereIn('order_item_id', $candidateServiceIds)
                         ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
                         ->join('services', 'services_fields.service_id', '=', 'services.id')
                         ->select(
@@ -787,7 +829,7 @@ class OrderService extends BaseService
                             'services.service_code',
                             'candidate_services.candidate_id'
                         )
-                        ->join('candidate_services', 'candidate_service_data.candidate_service_id', '=', 'candidate_services.id')
+                        ->join('candidate_services', 'candidate_service_data.order_item_id', '=', 'candidate_services.id')
                         ->get()
                         ->groupBy('candidate_id');
                 }
