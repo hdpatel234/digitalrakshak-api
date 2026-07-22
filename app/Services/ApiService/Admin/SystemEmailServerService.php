@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\BaseStatus;
 use App\Services\EmailServerService;
 use App\Services\EmailServerConfigurationFieldService;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,7 @@ class SystemEmailServerService
 
     public function getServerTypes()
     {
-        return $this->typeRepo->query()->where($this->typeRepo->isActive(), true)->get();
+        return $this->typeRepo->query()->where($this->typeRepo->status(), '=', BaseStatus::ACTIVE)->get();
     }
 
     public function getStatuses()
@@ -217,8 +218,8 @@ class SystemEmailServerService
         $server = $this->emailServerService->query()->with('serverType')->findOrFail($id);
 
         try {
-            $tester = \App\Services\EmailServerTesting\EmailServerTesterFactory::make($server->serverType?->type_code);
-            $result = $tester->test($server);
+            $factory = new \App\Services\Email\EmailDriverFactory();
+            $result = $factory->testConnection($server);
 
             $healthStatus = $result['status'] === 'success' ? 'Success' : 'Failed';
             $status = $result['status'] === 'success' ? EmailServerStatus::ACTIVE->value : EmailServerStatus::FAILING->value;

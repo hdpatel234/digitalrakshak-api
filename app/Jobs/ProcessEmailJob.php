@@ -95,7 +95,7 @@ class ProcessEmailJob implements ShouldQueue
                 $emailQueue->update(['assigned_server_id' => $server->id]);
             }
 
-            $driver = $driverFactory->driver($server);
+            $driver = $driverFactory->make($server);
 
             $attachments = $emailQueue->attachments
                 ->map(fn ($attachment) => [

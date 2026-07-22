@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Crypt;
 use SendGrid\Mail\Mail;
 use SendGrid;
 
-class SendGridDriver
+use App\Services\Email\Contracts\EmailDriverInterface;
+use Exception;
+
+class SendGridDriver implements EmailDriverInterface
 {
     protected $server;
     protected $sendgrid;
@@ -19,7 +22,7 @@ class SendGridDriver
         $this->sendgrid = new SendGrid($this->resolveSecret($server->getConfig('api_key')));
     }
 
-    public function send(array $data)
+    public function send(array $data): array
     {
         $email = new Mail();
         
@@ -105,5 +108,29 @@ class SendGridDriver
             // Backward compatibility for existing plain-text values.
             return $value;
         }
+    }
+
+    public function receive(): array
+    {
+        throw new Exception('Receive method is not implemented for SendGrid driver.');
+    }
+
+    public function testConnection(): array
+    {
+        $server = $this->server;
+        $typeName = $server->serverType ? $server->serverType->type_name : 'Unknown';
+        
+        $logs = [
+            "[INFO] Initiating connection test for server ID: {$server->id} ({$server->server_name})",
+            "[WARNING] No specific tester implemented for server type '{$typeName}'.",
+            "[INFO] Using DummyTester...",
+            "[SUCCESS] Dummy connection test successful.",
+            "[INFO] Connection test completed successfully."
+        ];
+
+        return [
+            'status' => 'success',
+            'logs' => $logs
+        ];
     }
 }

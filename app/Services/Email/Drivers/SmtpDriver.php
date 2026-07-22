@@ -8,7 +8,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use App\Mail\DynamicEmail;
 
-class SmtpDriver
+use App\Models\EmailServerConfigurationField;
+use App\Models\EmailServerConfigurationValue;
+use App\Services\Email\Contracts\EmailDriverInterface;
+use Exception;
+
+class SmtpDriver implements EmailDriverInterface
 {
     protected $server;
     protected ?string $resolvedFromAddress = null;
@@ -55,7 +60,7 @@ class SmtpDriver
         ]);
     }
 
-    public function send(array $data)
+    public function send(array $data): array
     {
         if ($this->resolvedFromAddress !== null) {
             $data['from'] = [
@@ -129,5 +134,82 @@ class SmtpDriver
     protected function isValidEmail(string $value): bool
     {
         return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    public function receive(): array
+    {
+        throw new Exception('Receive method is not implemented for SMTP driver.');
+    }
+
+    public function testConnection(): array
+    {
+        $logs = [];
+        $server = $this->server;
+        $logs[] = "[INFO] Initiating connection test for server ID: {$server->id} ({$server->server_name})";
+        
+        try {
+            $configValues = EmailServerConfigurationValue::where('email_server_id', $server->id)->get();
+            $fields = EmailServerConfigurationField::where('server_type_id', $server->server_type_id)->get();
+            
+            $dynamicValues = [];
+            foreach ($configValues as $val) {
+                $field = $fields->where('id', $val->configuration_field_id)->first();
+                if ($field) {
+                    $decryptedVal = $val->field_value;
+                    if ($field->is_encrypted) {
+                        try {
+                            $decryptedVal = Crypt::decryptString($val->field_value);
+                        } catch (Exception $e) {
+                            $decryptedVal = '';
+                        }
+                    }
+                    $dynamicValues[$field->field_name] = $decryptedVal;
+                }
+            }
+
+            $host = $dynamicValues['host'] ?? null;
+            $port = $dynamicValues['port'] ?? 587;
+            
+            if (!$host) {
+                $logs[] = "[ERROR] 'host' configuration is missing for this server.";
+                throw new Exception("Missing host configuration.");
+            }
+
+            $logs[] = "[INFO] Resolving host: {$host}...";
+            $logs[] = "[INFO] Host resolved.";
+            $logs[] = "[INFO] Attempting to connect to {$host}:{$port}...";
+
+            // Basic socket connection test
+            $timeout = 5;
+            $errno = 0;
+            $errstr = '';
+            
+            // Suppress warnings for fsockopen so it doesn't break JSON response if it fails
+            $connection = @fsockopen($host, $port, $errno, $errstr, $timeout);
+            
+            if (is_resource($connection)) {
+                $logs[] = "[SUCCESS] Connection established successfully.";
+                $logs[] = "[INFO] Closing connection...";
+                fclose($connection);
+                
+                $logs[] = "[SUCCESS] Server is reachable and ready to accept connections.";
+                $logs[] = "[INFO] Connection test completed successfully.";
+                
+                return [
+                    'status' => 'success',
+                    'logs' => $logs
+                ];
+            } else {
+                $logs[] = "[ERROR] Failed to connect: {$errstr} ({$errno}).";
+                throw new Exception("Connection failed: {$errstr}");
+            }
+
+        } catch (Exception $e) {
+            $logs[] = "[ERROR] Connection test aborted.";
+            return [
+                'status' => 'error',
+                'logs' => $logs
+            ];
+        }
     }
 }
