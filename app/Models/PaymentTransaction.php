@@ -77,7 +77,7 @@ class PaymentTransaction extends BaseModel
 
     public function order()
     {
-        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+        return $this->belongsTo(Order::class, self::ORDER_ID);
     }
 
     public function invoice()

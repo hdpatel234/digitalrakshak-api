@@ -8,9 +8,9 @@ class Invoice extends BaseModel
 {
     use SoftDeletes;
 
-    
+
     protected $table = "invoices";
-    
+
     const CLIENT_ID = "client_id";
     const ORDER_ID = "order_id";
     const BILLING_CONFIG_ID = "billing_config_id";
@@ -72,6 +72,6 @@ class Invoice extends BaseModel
 
     public function order()
     {
-        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+        return $this->belongsTo(Order::class, self::ORDER_ID);
     }
 }

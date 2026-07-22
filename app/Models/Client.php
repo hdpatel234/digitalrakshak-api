@@ -62,7 +62,7 @@ class Client extends BaseModel
 
     public function candidateOrders(): HasMany
     {
-        return $this->hasMany(CandidateOrder::class, CandidateOrder::CLIENT_ID);
+        return $this->hasMany(Order::class, Order::CLIENT_ID);
     }
 
     public function clientApiKeys(): HasMany
@@ -98,11 +98,6 @@ class Client extends BaseModel
     public function emailRoutingRules(): HasMany
     {
         return $this->hasMany(EmailRoutingRule::class, EmailRoutingRule::CLIENT_ID);
-    }
-
-    public function generatedDocuments(): HasMany
-    {
-        return $this->hasMany(GeneratedDocument::class, GeneratedDocument::CLIENT_ID);
     }
 
     public function invoices(): HasMany

@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CandidateOrder extends BaseModel
+class Order extends BaseModel
 {
     use SoftDeletes;
 
-    protected $table = "candidate_orders";
+    protected $table = "orders";
 
     const ORDER_NUMBER = "order_number";
     const CLIENT_ID = "client_id";

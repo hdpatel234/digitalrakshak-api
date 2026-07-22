@@ -60,7 +60,7 @@ class SupportTicket extends BaseModel
 
     public function order(): BelongsTo
     {
-        return $this->belongsTo(CandidateOrder::class, self::ORDER_ID);
+        return $this->belongsTo(Order::class, self::ORDER_ID);
     }
 
     public function department(): BelongsTo

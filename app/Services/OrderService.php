@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\CandidateOrderRepository;
+use App\Repositories\OrderRepository;
 
 /**
- * @property CandidateOrderRepository $repository
+ * @property OrderRepository $repository
  */
 class CandidateOrderService extends BaseService
 {
 
-    public function __construct(CandidateOrderRepository $repository)
+    public function __construct(OrderRepository $repository)
     {
         $this->repository = $repository;
     }

@@ -2,11 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Models\CandidateOrder;
+use App\Models\Order;
 
-class CandidateOrderRepository extends BaseRepository
+class OrderRepository extends BaseRepository
 {
-    public function __construct(CandidateOrder $model)
+    public function __construct(Order $model)
     {
         parent::__construct($model);
     }
@@ -14,87 +14,87 @@ class CandidateOrderRepository extends BaseRepository
     // column constants
     public function orderNumber()
     {
-        return CandidateOrder::ORDER_NUMBER;
+        return Order::ORDER_NUMBER;
     }
 
     public function clientId()
     {
-        return CandidateOrder::CLIENT_ID;
+        return Order::CLIENT_ID;
     }
 
     public function packageId()
     {
-        return CandidateOrder::PACKAGE_ID;
+        return Order::PACKAGE_ID;
     }
 
     public function subtotal()
     {
-        return CandidateOrder::SUBTOTAL;
+        return Order::SUBTOTAL;
     }
 
     public function discountAmount()
     {
-        return CandidateOrder::DISCOUNT_AMOUNT;
+        return Order::DISCOUNT_AMOUNT;
     }
 
     public function taxAmount()
     {
-        return CandidateOrder::TAX_AMOUNT;
+        return Order::TAX_AMOUNT;
     }
 
     public function taxPercentage()
     {
-        return CandidateOrder::TAX_PERCENTAGE;
+        return Order::TAX_PERCENTAGE;
     }
 
     public function totalAmount()
     {
-        return CandidateOrder::TOTAL_AMOUNT;
+        return Order::TOTAL_AMOUNT;
     }
 
     public function paymentStatus()
     {
-        return CandidateOrder::PAYMENT_STATUS;
+        return Order::PAYMENT_STATUS;
     }
 
     public function paymentMethod()
     {
-        return CandidateOrder::PAYMENT_METHOD;
+        return Order::PAYMENT_METHOD;
     }
 
     public function paymentReference()
     {
-        return CandidateOrder::PAYMENT_REFERENCE;
+        return Order::PAYMENT_REFERENCE;
     }
 
     public function notes()
     {
-        return CandidateOrder::NOTES;
+        return Order::NOTES;
     }
 
     public function orderDate()
     {
-        return CandidateOrder::ORDER_DATE;
+        return Order::ORDER_DATE;
     }
 
     public function processedAt()
     {
-        return CandidateOrder::PROCESSED_AT;
+        return Order::PROCESSED_AT;
     }
 
     public function completedAt()
     {
-        return CandidateOrder::COMPLETED_AT;
+        return Order::COMPLETED_AT;
     }
 
     public function cancelledAt()
     {
-        return CandidateOrder::CANCELLED_AT;
+        return Order::CANCELLED_AT;
     }
 
     public function cancellationReason()
     {
-        return CandidateOrder::CANCELLATION_REASON;
+        return Order::CANCELLATION_REASON;
     }
 
     // functions

@@ -85,7 +85,7 @@ class Candidate extends BaseModel
     public function candidateOrders(): BelongsToMany
     {
         return $this->belongsToMany(
-            CandidateOrder::class,
+            Order::class,
             "order_candidates",
             OrderCandidate::CANDIDATE_ID,
             OrderCandidate::ORDER_ID
