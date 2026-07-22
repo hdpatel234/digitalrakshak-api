@@ -62,46 +62,6 @@ class ClientRepository extends BaseRepository
         return Client::PINCODE;
     }
 
-    public function currency()
-    {
-        return Client::CURRENCY;
-    }
-
-    public function creditLimit()
-    {
-        return Client::CREDIT_LIMIT;
-    }
-
-    public function creditBalance()
-    {
-        return Client::CREDIT_BALANCE;
-    }
-
-    public function paymentTerms()
-    {
-        return Client::PAYMENT_TERMS;
-    }
-
-
-    public function status()
-    {
-        return Client::STATUS;
-    }
-
-    public function createdBy()
-    {
-        return Client::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return Client::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return Client::DELETED_BY;
-    }
     // functions
     public function getClientsQuery(array $data)
     {
@@ -112,8 +72,8 @@ class ClientRepository extends BaseRepository
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
                 $q->where($this->companyName(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->email(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->phone(), 'LIKE', "%{$search}%");
+                    ->orWhere($this->email(), 'LIKE', "%{$search}%")
+                    ->orWhere($this->phone(), 'LIKE', "%{$search}%");
             });
         }
 

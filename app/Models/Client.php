@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -10,13 +9,10 @@ class Client extends BaseModel
 {
     use SoftDeletes;
 
-
     protected $table = "clients";
-
     const COMPANY_NAME = "company_name";
     const EMAIL = "email";
     const LOGO = "logo";
-    const PHONE_CODE = "phone_code";
     const PHONE = "phone";
     const GST_NUMBER = "gst_number";
     const PAN_NUMBER = "pan_number";
@@ -25,10 +21,6 @@ class Client extends BaseModel
     const STATE_ID = "state_id";
     const CITY_ID = "city_id";
     const PINCODE = "pincode";
-    const CURRENCY = "currency";
-    const CREDIT_LIMIT = "credit_limit";
-    const CREDIT_BALANCE = "credit_balance";
-    const PAYMENT_TERMS = "payment_terms";
     const STATUS = "status";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
@@ -37,7 +29,6 @@ class Client extends BaseModel
         self::COMPANY_NAME,
         self::EMAIL,
         self::LOGO,
-        self::PHONE_CODE,
         self::PHONE,
         self::GST_NUMBER,
         self::PAN_NUMBER,
@@ -46,10 +37,6 @@ class Client extends BaseModel
         self::STATE_ID,
         self::CITY_ID,
         self::PINCODE,
-        self::CURRENCY,
-        self::CREDIT_LIMIT,
-        self::CREDIT_BALANCE,
-        self::PAYMENT_TERMS,
         self::STATUS,
         self::CREATED_BY,
         self::UPDATED_BY,
@@ -86,11 +73,6 @@ class Client extends BaseModel
     public function clientApiLogs(): HasMany
     {
         return $this->hasMany(ClientApiLog::class, ClientApiLog::CLIENT_ID);
-    }
-
-    public function clientApiQuotas(): HasMany
-    {
-        return $this->hasMany(ClientApiQuota::class, ClientApiQuota::CLIENT_ID);
     }
 
     public function servicePricings(): HasMany

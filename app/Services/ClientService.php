@@ -66,44 +66,5 @@ class ClientService extends BaseService
         return $this->repository->pincode();
     }
 
-    public function currency()
-    {
-        return $this->repository->currency();
-    }
-
-    public function creditLimit()
-    {
-        return $this->repository->creditLimit();
-    }
-
-    public function creditBalance()
-    {
-        return $this->repository->creditBalance();
-    }
-    public function paymentTerms()
-    {
-        return $this->repository->paymentTerms();
-    }
-
-
-    public function status()
-    {
-        return $this->repository->status();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
-    }
     // functions
 }
