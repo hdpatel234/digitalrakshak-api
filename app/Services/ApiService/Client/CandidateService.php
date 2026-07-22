@@ -10,7 +10,6 @@ use App\Repositories\CityRepository;
 use App\Repositories\CountryRepository;
 use App\Repositories\StateRepository;
 use App\Repositories\CandidateImportRepository;
-use App\Services\Webhook\ClientWebhookDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use ZipArchive;
@@ -24,13 +23,12 @@ class CandidateService extends BaseService
         protected CountryRepository $countryRepo,
         protected StateRepository $stateRepo,
         protected CityRepository $cityRepo,
-        protected CandidateImportRepository $candidateImportRepo,
-        protected ClientWebhookDispatcher $clientWebhookDispatcher
+        protected CandidateImportRepository $candidateImportRepo
     ) {}
 
     public function getCandidates(array $params, ?object $user): array
     {
-        $query = $this->candidateRepo->query()->with(['packages', 'candidateRepos']);
+        $query = $this->candidateRepo->query()->with(['packages', 'candidateServices']);
 
         if ($user && isset($user->client_id) && $user->client_id !== null) {
             $query->where($this->candidateRepo->clientId(), $user->client_id);
@@ -212,21 +210,6 @@ class CandidateService extends BaseService
             $ipAddress
         );
 
-        $candidate = $created['candidate'] ?? null;
-
-        $this->clientWebhookDispatcher->dispatchForClient(
-            $clientId,
-            ClientWebhookDispatcher::EVENT_CANDIDATE_CREATED,
-            [
-                'candidate' => $candidate ? $candidate->toArray() : null,
-                'manager_emails' => $created['manager_emails'] ?? [],
-                'source' => $candidate?->source,
-            ],
-            [
-                'triggered_by' => 'candidate.store',
-            ]
-        );
-
         return $created;
     }
 
@@ -249,20 +232,6 @@ class CandidateService extends BaseService
                 'uploaded_at' => now()->toDateTimeString(),
             ]),
         ]);
-
-        // $this->clientWebhookDispatcher->dispatchForClient(
-        //     $clientId,
-        //     ClientWebhookDispatcher::EVENT_CANDIDATE_IMPORT_QUEUED,
-        //     [
-        //         'import_id' => $import->id,
-        //         'filename' => $import->filename,
-        //         'status' => $import->status,
-        //         'uploaded_by' => $user?->id,
-        //     ],
-        //     [
-        //         'triggered_by' => 'candidate.import',
-        //     ]
-        // );
 
         return [
             'import_id' => $import->id,

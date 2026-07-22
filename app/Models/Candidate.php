@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -72,9 +73,16 @@ class Candidate extends BaseModel
         return $this->hasMany(CandidateInvitation::class, CandidateInvitation::CANDIDATE_ID);
     }
 
-    public function candidateServices(): HasMany
+    public function candidateServices(): HasManyThrough
     {
-        return $this->hasMany(CandidateService::class, CandidateService::CANDIDATE_ID);
+        return $this->hasManyThrough(
+            OrderItem::class,
+            OrderCandidate::class,
+            OrderCandidate::CANDIDATE_ID,
+            OrderItem::ORDER_CANDIDATE_ID,
+            'id',
+            'id'
+        );
     }
 
     public function orderCandidates(): HasMany
