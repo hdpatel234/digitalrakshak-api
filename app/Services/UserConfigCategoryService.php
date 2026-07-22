@@ -9,7 +9,7 @@ use App\Repositories\UserConfigCategoryRepository;
  */
 class UserConfigCategoryService extends BaseService
 {
-    
+
     public function __construct(UserConfigCategoryRepository $repository)
     {
         $this->repository = $repository;
@@ -24,11 +24,6 @@ class UserConfigCategoryService extends BaseService
     public function categoryCode()
     {
         return $this->repository->categoryCode();
-    }
-
-    public function description()
-    {
-        return $this->repository->description();
     }
 
     public function displayOrder()
@@ -46,9 +41,5 @@ class UserConfigCategoryService extends BaseService
         return $this->repository->isSystem();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }

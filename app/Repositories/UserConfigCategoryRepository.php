@@ -22,11 +22,6 @@ class UserConfigCategoryRepository extends BaseRepository
         return UserConfigCategory::CATEGORY_CODE;
     }
 
-    public function description()
-    {
-        return UserConfigCategory::DESCRIPTION;
-    }
-
     public function displayOrder()
     {
         return UserConfigCategory::DISPLAY_ORDER;
@@ -42,9 +37,5 @@ class UserConfigCategoryRepository extends BaseRepository
         return UserConfigCategory::IS_SYSTEM;
     }
 
-    public function isActive()
-    {
-        return UserConfigCategory::IS_ACTIVE;
-    }
     // functions
 }
