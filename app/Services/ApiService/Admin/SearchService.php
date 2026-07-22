@@ -6,7 +6,7 @@ use App\Repositories\ClientRepository;
 use App\Repositories\CandidateRepository;
 use App\Repositories\SupportTicketRepository;
 use App\Repositories\InvoiceRepository;
-use App\Repositories\CandidateOrderRepository;
+use App\Repositories\OrderRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\PackageRepository;
 
@@ -17,7 +17,7 @@ class SearchService
         protected CandidateRepository $candidateRepo,
         protected SupportTicketRepository $supportTicketRepo,
         protected InvoiceRepository $invoiceRepo,
-        protected CandidateOrderRepository $candidateOrderRepo,
+        protected OrderRepository $orderRepo,
         protected ServiceRepository $serviceRepo,
         protected PackageRepository $packageRepo
     ) {}
@@ -30,11 +30,11 @@ class SearchService
         $results = [];
 
         // Search Clients
-        $clients = $this->clientRepo->query()->where('company_name', 'like', "%{$query}%")
-                         ->orWhere('email', 'like', "%{$query}%")
-                         ->orWhere('address', 'like', "%{$query}%")
-                         ->take(5)
-                         ->get();
+        $clients = $this->clientRepo->query()->where($this->clientRepo->companyName(), 'like', "%{$query}%")
+            ->orWhere($this->clientRepo->email(), 'like', "%{$query}%")
+            ->orWhere($this->clientRepo->address(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($clients->count() > 0) {
             $data = $clients->map(function ($client) {
                 return [
@@ -52,12 +52,12 @@ class SearchService
         }
 
         // Search Candidates
-        $candidates = $this->candidateRepo->query()->where('first_name', 'like', "%{$query}%")
-                         ->orWhere('last_name', 'like', "%{$query}%")
-                         ->orWhere('email', 'like', "%{$query}%")
-                         ->orWhere('address', 'like', "%{$query}%")
-                         ->take(5)
-                         ->get();
+        $candidates = $this->candidateRepo->query()->where($this->candidateRepo->firstName(), 'like', "%{$query}%")
+            ->orWhere($this->candidateRepo->lastName(), 'like', "%{$query}%")
+            ->orWhere($this->candidateRepo->email(), 'like', "%{$query}%")
+            ->orWhere($this->candidateRepo->address(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($candidates->count() > 0) {
             $data = $candidates->map(function ($candidate) {
                 return [
@@ -75,14 +75,14 @@ class SearchService
         }
 
         // Search Support Tickets
-        $tickets = $this->supportTicketRepo->query()->where('ticket_number', 'like', "%{$query}%")
-                         ->take(5)
-                         ->get();
+        $tickets = $this->supportTicketRepo->query()->where($this->supportTicketRepo->ticketNumber(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($tickets->count() > 0) {
             $data = $tickets->map(function ($ticket) {
                 return [
-                    'title' => $ticket->ticket_number,
-                    'url' => '/support/tickets/' . $ticket->id,
+                    'title' => $ticket->{$this->supportTicketRepo->ticketNumber()},
+                    'url' => '/support/tickets/' . $ticket->{$this->supportTicketRepo->id()},
                     'icon' => 'ticket',
                     'category' => 'Tickets',
                     'categoryTitle' => 'Tickets',
@@ -95,14 +95,14 @@ class SearchService
         }
 
         // Search Invoices
-        $invoices = $this->invoiceRepo->query()->where('invoice_number', 'like', "%{$query}%")
-                         ->take(5)
-                         ->get();
+        $invoices = $this->invoiceRepo->query()->where($this->invoiceRepo->invoiceNumber(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($invoices->count() > 0) {
             $data = $invoices->map(function ($invoice) {
                 return [
-                    'title' => $invoice->invoice_number,
-                    'url' => '/invoices/view/' . $invoice->id,
+                    'title' => $invoice->{$this->invoiceRepo->invoiceNumber()},
+                    'url' => '/invoices/view/' . $invoice->{$this->invoiceRepo->id()},
                     'icon' => 'file-text',
                     'category' => 'Invoices',
                     'categoryTitle' => 'Invoices',
@@ -115,14 +115,14 @@ class SearchService
         }
 
         // Search Orders
-        $orders = $this->candidateOrderRepo->query()->where('order_number', 'like', "%{$query}%")
-                         ->take(5)
-                         ->get();
+        $orders = $this->orderRepo->query()->where($this->orderRepo->orderNumber(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($orders->count() > 0) {
             $data = $orders->map(function ($order) {
                 return [
-                    'title' => $order->order_number,
-                    'url' => '/orders/view/' . $order->id,
+                    'title' => $order->{$this->orderRepo->orderNumber()},
+                    'url' => '/orders/view/' . $order->{$this->orderRepo->id()},
                     'icon' => 'shopping-cart',
                     'category' => 'Orders',
                     'categoryTitle' => 'Orders',
@@ -135,14 +135,14 @@ class SearchService
         }
 
         // Search Services
-        $services = $this->serviceRepo->query()->where('service_name', 'like', "%{$query}%")
-                           ->take(5)
-                           ->get();
+        $services = $this->serviceRepo->query()->where($this->serviceRepo->serviceName(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($services->count() > 0) {
             $data = $services->map(function ($service) {
                 return [
-                    'title' => $service->service_name,
-                    'url' => '/services/edit/' . $service->id,
+                    'title' => $service->{$this->serviceRepo->serviceName()},
+                    'url' => '/services/edit/' . $service->{$this->serviceRepo->id()},
                     'icon' => 'server',
                     'category' => 'Services',
                     'categoryTitle' => 'Services',
@@ -155,14 +155,14 @@ class SearchService
         }
 
         // Search Packages
-        $packages = $this->packageRepo->query()->where('package_name', 'like', "%{$query}%")
-                           ->take(5)
-                           ->get();
+        $packages = $this->packageRepo->query()->where($this->packageRepo->packageName(), 'like', "%{$query}%")
+            ->take(5)
+            ->get();
         if ($packages->count() > 0) {
             $data = $packages->map(function ($package) {
                 return [
-                    'title' => $package->package_name,
-                    'url' => '/packages/edit/' . $package->id,
+                    'title' => $package->{$this->packageRepo->packageName()},
+                    'url' => '/packages/edit/' . $package->{$this->packageRepo->id()},
                     'icon' => 'package',
                     'category' => 'Packages',
                     'categoryTitle' => 'Packages',

@@ -28,9 +28,7 @@ class BillingController extends BaseController
     {
         addInfoLog("Admin billing payment methods list request");
 
-        $methods = \App\Models\PaymentMethodType::where('is_active', 1)
-            ->orderBy('display_order', 'asc')
-            ->get(['id as value', 'method_name as label']);
+        $methods = $this->billingService->getPaymentMethodOptions();
 
         return $this->success('Admin payment methods fetched successfully.', $methods);
     }

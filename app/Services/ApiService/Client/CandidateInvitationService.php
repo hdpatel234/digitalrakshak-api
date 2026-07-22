@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseDisplayOrder;
+use App\Enums\BaseStatus;
 use App\Enums\CandidateInvitationStatus;
 use App\Enums\CandidateInvitationType;
 use App\Enums\CandidateStatus;
@@ -24,11 +26,11 @@ use App\Repositories\ServiceRepository;
 use App\Repositories\ServicesFieldRepository;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\CandidateServiceDataRepository;
+use App\Repositories\OrderCandidateRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\Services\Common\ResumeParserService;
 
 /**
  * @property CandidateInvitationRepository $invitationRepo
@@ -50,7 +52,7 @@ class CandidateInvitationService extends BaseService
         protected ServicesFieldRepository $servicesFieldRepo,
         protected OrderItemRepository $orderItemRepo,
         protected CandidateServiceDataRepository $candidateServiceDataRepo,
-        protected ResumeParserService $resumeParserService
+        protected OrderCandidateRepository $orderCandidateRepo
     ) {}
 
     public function getInvitations(array $params, int $clientId): array
@@ -227,7 +229,7 @@ class CandidateInvitationService extends BaseService
         $packageIdColumn = $this->packageRepo->id();
         $packageClientIdColumn = $this->packageRepo->clientId();
         $packageStatusColumn = $this->packageRepo->status();
-        $packageIsActiveColumn = $this->packageRepo->isActive();
+        $packageIsActiveColumn = $this->packageRepo->status();
 
         $packages = $this->packageRepo->query()
             ->whereIn($packageIdColumn, $packageIds)
@@ -236,11 +238,11 @@ class CandidateInvitationService extends BaseService
                     ->orWhere($packageClientIdColumn, 0);
             })
             ->where(function ($query) use ($packageStatusColumn) {
-                $query->where($packageStatusColumn, 'active')
+                $query->where($packageStatusColumn, BaseStatus::ACTIVE)
                     ->orWhere($packageStatusColumn, 1);
             })
             ->where(function ($query) use ($packageIsActiveColumn) {
-                $query->where($packageIsActiveColumn, 'active')
+                $query->where($packageIsActiveColumn, BaseStatus::ACTIVE)
                     ->orWhere($packageIsActiveColumn, 1);
             })
             ->get();
@@ -502,7 +504,7 @@ class CandidateInvitationService extends BaseService
             $services = $this->serviceRepo->query()
                 ->whereIn($this->serviceRepo->id(), $serviceIds->all())
                 ->where(function ($query) {
-                    $query->where($this->serviceRepo->status(), 'active')
+                    $query->where($this->serviceRepo->status(), BaseStatus::ACTIVE)
                         ->orWhere($this->serviceRepo->status(), 1);
                 })
                 ->get()
@@ -826,20 +828,20 @@ class CandidateInvitationService extends BaseService
         });
     }
 
-    public function parseResume(string $tempPath, string $extension, string $originalName, string $promptCode): array
-    {
-        try {
-            $result = $this->resumeParserService->parseResumeFile($tempPath, $extension, $originalName, $promptCode);
+    // public function parseResume(string $tempPath, string $extension, string $originalName, string $promptCode): array
+    // {
+    //     try {
+    //         $result = $this->resumeParserService->parseResumeFile($tempPath, $extension, $originalName, $promptCode);
 
-            if (!$result['success']) {
-                throw new \Exception($result['error'] ?? 'Resume parsing failed', $result['status_code'] ?? 422);
-            }
+    //         if (!$result['success']) {
+    //             throw new \Exception($result['error'] ?? 'Resume parsing failed', $result['status_code'] ?? 422);
+    //         }
 
-            return $result['data'] ?? [];
-        } finally {
-            $this->cleanupTempFile($tempPath);
-        }
-    }
+    //         return $result['data'] ?? [];
+    //     } finally {
+    //         $this->cleanupTempFile($tempPath);
+    //     }
+    // }
 
     protected function cleanupTempFile(?string $path): void
     {
@@ -864,10 +866,10 @@ class CandidateInvitationService extends BaseService
             $packageServices = $this->packageServiceRepo->query()
                 ->whereIn($this->packageServiceRepo->packageId(), $packageIds->all())
                 ->where(function ($query) {
-                    $query->where($this->packageServiceRepo->status(), 'active')
+                    $query->where($this->packageServiceRepo->status(), BaseStatus::ACTIVE)
                         ->orWhere($this->packageServiceRepo->status(), 1);
                 })
-                ->orderBy($this->packageServiceRepo->displayOrder(), 'asc')
+                ->orderBy($this->packageServiceRepo->displayOrder(), BaseDisplayOrder::ASC->value)
                 ->get();
 
             $serviceIds = $packageServices
@@ -883,10 +885,10 @@ class CandidateInvitationService extends BaseService
             $serviceFieldsByServiceId = $this->servicesFieldRepo->query()
                 ->whereIn($this->servicesFieldRepo->serviceId(), $serviceIds->all())
                 ->where(function ($query) {
-                    $query->where($this->servicesFieldRepo->status(), 'active')
+                    $query->where($this->servicesFieldRepo->status(), BaseStatus::ACTIVE)
                         ->orWhere($this->servicesFieldRepo->status(), 1);
                 })
-                ->orderBy($this->servicesFieldRepo->displayOrder(), 'asc')
+                ->orderBy($this->servicesFieldRepo->displayOrder(), BaseDisplayOrder::ASC->value)
                 ->get()
                 ->groupBy($this->servicesFieldRepo->serviceId());
         }
@@ -912,10 +914,13 @@ class CandidateInvitationService extends BaseService
         }
 
         $orderItemIds = $this->orderItemRepo->query()
-            ->join('order_candidates', 'order_items.order_candidate_id', '=', 'order_candidates.id')
-            ->where('order_candidates.candidate_id', $candidateId)
-            ->whereIn('order_items.service_id', $serviceIds->all())
-            ->pluck('order_items.id')
+            ->whereIn($this->orderItemRepo->orderCandidateId(), function ($query) use ($candidateId) {
+                $query->select($this->orderCandidateRepo->id())
+                    ->from($this->orderCandidateRepo->query()->getModel()->getTable())
+                    ->where($this->orderCandidateRepo->candidateId(), $candidateId);
+            })
+            ->whereIn($this->orderItemRepo->serviceId(), $serviceIds->all())
+            ->pluck($this->orderItemRepo->id())
             ->all();
 
         if ($orderItemIds === []) {

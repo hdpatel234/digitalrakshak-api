@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseDisplayOrder;
+use App\Enums\BaseStatus;
 use App\Services\BaseService;
 use App\Repositories\PaymentGatewayConfigRepository;
 use App\Repositories\PaymentGatewayRepository;
@@ -43,14 +45,14 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigRepo->baseUrl(),
                         $this->paymentGatewayConfigRepo->isActive(),
 
-                    ])->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                    ])->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
                 },
             ])
             ->where($this->paymentGatewayRepo->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                $query->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
             })
-            ->orderBy($this->paymentGatewayRepo->displayOrder(), 'asc')
+            ->orderBy($this->paymentGatewayRepo->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
 
         if ($gatewayRows->isEmpty()) {
@@ -75,17 +77,16 @@ class BillingService extends BaseService
 
                 return $this->paymentMethodTypeRepo->query()
                     ->whereIn($this->paymentMethodTypeRepo->id(), $ids->values()->all())
-                    ->where($this->paymentMethodTypeRepo->isActive(), 1)
+                    ->where($this->paymentMethodTypeRepo->status(), BaseStatus::ACTIVE)
                     ->select([
                         $this->paymentMethodTypeRepo->id(),
                         $this->paymentMethodTypeRepo->methodName(),
                         $this->paymentMethodTypeRepo->methodCode(),
                         $this->paymentMethodTypeRepo->category(),
                         $this->paymentMethodTypeRepo->icon(),
-                        $this->paymentMethodTypeRepo->description(),
                         $this->paymentMethodTypeRepo->displayOrder(),
                     ])
-                    ->orderBy($this->paymentMethodTypeRepo->displayOrder(), 'asc')
+                    ->orderBy($this->paymentMethodTypeRepo->displayOrder(), BaseDisplayOrder::ASC->value)
                     ->get()
                     ->keyBy($this->paymentMethodTypeRepo->id());
             });
@@ -112,7 +113,6 @@ class BillingService extends BaseService
                         'method_code' => $methodType->{$this->paymentMethodTypeRepo->methodCode()},
                         'category' => $methodType->{$this->paymentMethodTypeRepo->category()},
                         'icon' => $methodType->{$this->paymentMethodTypeRepo->icon()},
-                        'description' => $methodType->{$this->paymentMethodTypeRepo->description()},
                         'display_order' => $methodType->{$this->paymentMethodTypeRepo->displayOrder()},
                     ];
                 })
@@ -157,12 +157,12 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigRepo->minAmount(),
                         $this->paymentGatewayConfigRepo->maxAmount(),
                         $this->paymentGatewayConfigRepo->isActive(),
-                    ])->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                    ])->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
                 },
             ])
             ->where($this->paymentGatewayRepo->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                $query->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
             })
             ->get();
 
@@ -189,18 +189,16 @@ class BillingService extends BaseService
 
         $methodTypesById = $this->paymentMethodTypeRepo->query()
             ->whereIn($this->paymentMethodTypeRepo->id(), $methodTypeIds->all())
-            ->where($this->paymentMethodTypeRepo->isActive(), 1)
+            ->where($this->paymentMethodTypeRepo->status(), BaseStatus::ACTIVE)
             ->select([
                 $this->paymentMethodTypeRepo->id(),
                 $this->paymentMethodTypeRepo->methodName(),
                 $this->paymentMethodTypeRepo->methodCode(),
                 $this->paymentMethodTypeRepo->category(),
                 $this->paymentMethodTypeRepo->icon(),
-                $this->paymentMethodTypeRepo->description(),
-                $this->paymentMethodTypeRepo->configurationSchema(),
                 $this->paymentMethodTypeRepo->displayOrder(),
             ])
-            ->orderBy($this->paymentMethodTypeRepo->displayOrder(), 'asc')
+            ->orderBy($this->paymentMethodTypeRepo->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get()
             ->keyBy($this->paymentMethodTypeRepo->id());
 
@@ -227,7 +225,6 @@ class BillingService extends BaseService
                         'gateway_config_id' => (int) $gatewayConfig->{$this->paymentGatewayConfigRepo->id()},
                         'gateway_id' => (int) $gateway->{$this->paymentGatewayRepo->id()},
                         'display_name' => $methodType->{$this->paymentMethodTypeRepo->methodName()},
-                        'description' => $methodType->{$this->paymentMethodTypeRepo->description()},
                         'icon' => $methodType->{$this->paymentMethodTypeRepo->icon()},
                         'display_order' => (int) ($methodType->{$this->paymentMethodTypeRepo->displayOrder()} ?? 0),
                         'is_default' => 0,
@@ -240,8 +237,6 @@ class BillingService extends BaseService
                             'method_code' => $methodType->{$this->paymentMethodTypeRepo->methodCode()},
                             'category' => $methodType->{$this->paymentMethodTypeRepo->category()},
                             'icon' => $methodType->{$this->paymentMethodTypeRepo->icon()},
-                            'description' => $methodType->{$this->paymentMethodTypeRepo->description()},
-                            'configuration_schema' => $methodType->{$this->paymentMethodTypeRepo->configurationSchema()},
                             'display_order' => (int) ($methodType->{$this->paymentMethodTypeRepo->displayOrder()} ?? 0),
                         ],
                     ]);
@@ -283,14 +278,14 @@ class BillingService extends BaseService
                         $this->paymentGatewayConfigRepo->transactionFeePercentage(),
                         $this->paymentGatewayConfigRepo->isActive(),
 
-                    ])->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                    ])->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
                 },
             ])
             ->where($this->paymentGatewayRepo->isActive(), 1)
             ->whereHas('gatewayConfigs', function ($query) {
-                $query->where($this->paymentGatewayConfigRepo->isActive(), 'active');
+                $query->where($this->paymentGatewayConfigRepo->isActive(), BaseStatus::ACTIVE);
             })
-            ->orderBy($this->paymentGatewayRepo->displayOrder(), 'asc')
+            ->orderBy($this->paymentGatewayRepo->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
 
         if ($gatewayRows->isEmpty()) {
@@ -332,7 +327,7 @@ class BillingService extends BaseService
                         'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeType()},
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeePercentage()},
-                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->isActive()} === 'active' ? 1 : 0,
+                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->isActive()} === BaseStatus::ACTIVE ? 1 : 0,
 
                     ],
                     'gateway' => [
@@ -358,6 +353,17 @@ class BillingService extends BaseService
             ->with(['client', 'order', 'invoice', 'gatewayConfig', 'methodType']);
 
         return $this->paymentTransactionRepo->datatable($query, $params);
+    }
+
+    public function getPaymentMethodOptions()
+    {
+        return $this->paymentMethodTypeRepo->query()
+            ->where($this->paymentMethodTypeRepo->status(), BaseStatus::ACTIVE)
+            ->orderBy($this->paymentMethodTypeRepo->displayOrder(), BaseDisplayOrder::ASC->value)
+            ->get([
+                $this->paymentMethodTypeRepo->id() . ' as value',
+                $this->paymentMethodTypeRepo->methodName() . ' as label'
+            ]);
     }
 
     protected function extractMethodTypeIds($value): array

@@ -9,7 +9,7 @@ use App\Repositories\PackageRepository;
  */
 class PackageService extends BaseService
 {
-    
+
     public function __construct(PackageRepository $repository)
     {
         $this->repository = $repository;
@@ -61,29 +61,5 @@ class PackageService extends BaseService
         return $this->repository->finalPrice();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
-    public function status()
-    {
-        return $this->repository->status();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
-
-    public function deletedBy()
-    {
-        return $this->repository->deletedBy();
-    }
     // functions
 }

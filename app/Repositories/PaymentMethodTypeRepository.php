@@ -32,24 +32,10 @@ class PaymentMethodTypeRepository extends BaseRepository
         return PaymentMethodType::ICON;
     }
 
-    public function description()
-    {
-        return PaymentMethodType::DESCRIPTION;
-    }
-
-    public function configurationSchema()
-    {
-        return PaymentMethodType::CONFIGURATION_SCHEMA;
-    }
-
-    public function isActive()
-    {
-        return PaymentMethodType::IS_ACTIVE;
-    }
-
     public function displayOrder()
     {
         return PaymentMethodType::DISPLAY_ORDER;
     }
+
     // functions
 }

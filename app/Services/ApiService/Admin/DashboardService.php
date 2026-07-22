@@ -4,7 +4,7 @@ namespace App\Services\ApiService\Admin;
 
 use App\Repositories\ClientRepository;
 use App\Repositories\CandidateRepository;
-use App\Repositories\CandidateOrderRepository;
+use App\Repositories\OrderRepository;
 use Illuminate\Support\Carbon;
 
 class DashboardService
@@ -12,7 +12,7 @@ class DashboardService
     public function __construct(
         protected ClientRepository $clientRepo,
         protected CandidateRepository $candidateRepo,
-        protected CandidateOrderRepository $candidateOrderRepo
+        protected OrderRepository $orderRepo
     ) {}
 
     public function getOverview()
@@ -23,10 +23,10 @@ class DashboardService
         // Basic Counts
         $totalClients = $this->clientRepo->count();
         $totalCandidates = $this->candidateRepo->count();
-        $totalOrders = $this->candidateOrderRepo->count();
-        
+        $totalOrders = $this->orderRepo->count();
+
         // Using total_amount for revenue
-        $totalRevenue = $this->candidateOrderRepo->getTotalRevenue(\App\Enums\PaymentStatus::PAID->value);
+        $totalRevenue = $this->orderRepo->getTotalRevenue(\App\Enums\PaymentStatus::PAID->value);
 
         // Basic comparison (mocked percentages for now, can be calculated dynamically based on created_at if needed)
         $statisticData = [
@@ -56,16 +56,16 @@ class DashboardService
         $months = [];
         $verificationData = [];
         $clientGrowthData = [];
-        
+
         for ($i = 11; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
             $months[] = $month->format('M');
-            
+
             // Real counts for the specific month
             $start = $month->copy()->startOfMonth();
             $end = $month->copy()->endOfMonth();
-            
-            $verificationData[] = $this->candidateOrderRepo->countBetweenDates($start, $end);
+
+            $verificationData[] = $this->orderRepo->countBetweenDates($start, $end);
             $clientGrowthData[] = $this->clientRepo->countBetweenDates($start, $end);
         }
 
@@ -96,18 +96,18 @@ class DashboardService
         ];
 
         // Recent Orders
-        $recentOrdersRecords = $this->candidateOrderRepo->getRecentOrders(5);
+        $recentOrdersRecords = $this->orderRepo->getRecentOrders(5);
 
         $recentOrders = $recentOrdersRecords->map(function ($order) {
             $candidateName = $order->candidates->first() ? ($order->candidates->first()->first_name . ' ' . $order->candidates->first()->last_name) : 'Unknown';
             $clientName = $order->client ? ($order->client->company_name ?? $order->client->first_name) : 'Unknown';
             return [
-                'id' => $order->{$this->candidateOrderRepo->orderNumber()} ?? 'ORD-'.$order->{$this->candidateOrderRepo->id()},
+                'id' => $order->{$this->orderRepo->orderNumber()} ?? 'ORD-' . $order->{$this->orderRepo->id()},
                 'client' => $clientName,
                 'candidate' => $candidateName,
-                'status' => $order->{$this->candidateOrderRepo->status()} ?? 'Processing',
-                'date' => $order->{$this->candidateOrderRepo->createdAt()}->format('Y-m-d'),
-                'amount' => (float) $order->{$this->candidateOrderRepo->totalAmount()},
+                'status' => $order->{$this->orderRepo->status()} ?? 'Processing',
+                'date' => $order->{$this->orderRepo->createdAt()}->format('Y-m-d'),
+                'amount' => (float) $order->{$this->orderRepo->totalAmount()},
             ];
         });
 

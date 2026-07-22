@@ -103,7 +103,7 @@ class PackageController extends BaseController
         }
 
         try {
-            $result = $this->packageService->getPackageServices($package, $clientId);
+            $result = $this->packageService->getPackageServices($package, $clientId, $hidden = true);
 
             return $this->success('Package services fetched successfully.', $result);
         } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BaseDisplayOrder;
 use Illuminate\Console\Command;
 use App\Services\CountryStateCityService;
 use App\Services\CountryService;
@@ -85,7 +86,7 @@ class SyncCountryStateCity extends Command
                 ]
             );
         });
-        
+
         $this->newLine();
         $this->info("Countries synced.");
     }
@@ -101,7 +102,7 @@ class SyncCountryStateCity extends Command
 
                 if (!empty($states)) {
                     $this->info("Syncing states for {$country->{$this->countryService->name()}}...");
-                    
+
                     foreach ($states as $stateData) {
                         $this->stateService->query()->updateOrCreate(
                             [
@@ -131,7 +132,7 @@ class SyncCountryStateCity extends Command
     {
         $this->info("Fetching cities...");
         // Order by cities_synced_at ascending so we prioritize states that haven't been synced recently
-        $states = $this->stateService->query()->whereNotNull($this->stateService->code())->orderBy($this->stateService->citiesSyncedAt(), 'asc')->get();
+        $states = $this->stateService->query()->whereNotNull($this->stateService->code())->orderBy($this->stateService->citiesSyncedAt(), BaseDisplayOrder::ASC->value)->get();
 
         foreach ($states as $state) {
             $country = $this->countryService->find($state->{$this->stateService->countryId()});
@@ -142,7 +143,7 @@ class SyncCountryStateCity extends Command
 
                 if (!empty($cities)) {
                     $this->info("Syncing cities for {$state->{$this->stateService->name()}}, {$country->{$this->countryService->name()}}...");
-                    
+
                     foreach ($cities as $cityData) {
                         $this->cityService->query()->updateOrCreate(
                             [

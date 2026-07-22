@@ -2,6 +2,8 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\BaseDisplayOrder;
+use App\Enums\BaseStatus;
 use App\Services\CandidateOrderService;
 use App\Services\PaymentMethodTypeService;
 use App\Enums\OrderStatus;
@@ -19,15 +21,13 @@ class OrderService
         $orderTable = $this->candidateOrderService->query()->getModel()->getTable();
         $statusColumn = $this->candidateOrderService->status();
         $orderNumberColumn = $this->candidateOrderService->orderNumber();
-        $clientOrderNumberColumn = $this->candidateOrderService->clientOrderNumber();
-        $invoiceNumberColumn = $this->candidateOrderService->invoiceNumber();
         $paymentStatusColumn = $this->candidateOrderService->paymentStatus();
         $paymentMethodColumn = $this->candidateOrderService->paymentMethod();
         $orderDateColumn = $this->candidateOrderService->orderDate();
 
         $qualifiedStatusColumn = $orderTable . '.' . $statusColumn;
 
-        $query = $this->candidateOrderService->query()->with('client');
+        $query = $this->candidateOrderService->query()->with(['client', 'paymentTransactions.invoice']);
 
         if (isset($params['payment_method_id']) && !isset($params['filters']['payment_method_id'])) {
             $params['filters']['payment_method_id'] = $params['payment_method_id'];
@@ -42,8 +42,6 @@ class OrderService
             config: [
                 'searchable' => [
                     $orderTable . '.' . $orderNumberColumn,
-                    $orderTable . '.' . $clientOrderNumberColumn,
-                    $orderTable . '.' . $invoiceNumberColumn,
                 ],
                 'status_column' => $qualifiedStatusColumn,
                 'date_column' => $orderTable . '.' . $this->candidateOrderService->createdAt(),
@@ -70,7 +68,6 @@ class OrderService
                 'allowed_sorts' => [
                     $orderTable . '.' . $this->candidateOrderService->id(),
                     $orderTable . '.' . $orderNumberColumn,
-                    $orderTable . '.' . $clientOrderNumberColumn,
                     $orderTable . '.' . $paymentStatusColumn,
                     $orderTable . '.' . $this->candidateOrderService->totalAmount(),
                     $orderTable . '.' . $orderDateColumn,
@@ -92,17 +89,16 @@ class OrderService
         );
 
         $paymentMethodRows = $this->paymentMethodTypeService->query()
-            ->where($this->paymentMethodTypeService->isActive(), 1)
+            ->where($this->paymentMethodTypeService->status(), BaseStatus::ACTIVE)
             ->select([
                 $this->paymentMethodTypeService->id(),
                 $this->paymentMethodTypeService->methodName(),
                 $this->paymentMethodTypeService->methodCode(),
                 $this->paymentMethodTypeService->category(),
                 $this->paymentMethodTypeService->icon(),
-                $this->paymentMethodTypeService->description(),
                 $this->paymentMethodTypeService->displayOrder(),
             ])
-            ->orderBy($this->paymentMethodTypeService->displayOrder(), 'asc')
+            ->orderBy($this->paymentMethodTypeService->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
 
         $paymentMethods = $paymentMethodRows
@@ -113,7 +109,6 @@ class OrderService
                     'method_code' => $method->{$this->paymentMethodTypeService->methodCode()},
                     'category' => $method->{$this->paymentMethodTypeService->category()},
                     'icon' => $method->{$this->paymentMethodTypeService->icon()},
-                    'description' => $method->{$this->paymentMethodTypeService->description()},
                     'display_order' => (int) ($method->{$this->paymentMethodTypeService->displayOrder()} ?? 0),
                 ];
             })
@@ -136,10 +131,14 @@ class OrderService
                 ->map(function (array $row) use ($paymentMethodNameById, $paymentMethodColumn) {
                     $methodId = (int) ($row[$paymentMethodColumn] ?? 0);
                     $row['payment_method_name'] = $paymentMethodNameById->get($methodId);
-                    
+
                     if (isset($row['client'])) {
                         $row['client_name'] = $row['client']['company_name'] ?? $row['client']['name'] ?? '';
                     }
+
+                    $paymentTxn = collect($row['payment_transactions'] ?? [])->last();
+                    $row['client_order_number'] = $paymentTxn['gateway_order_id'] ?? null;
+                    $row['invoice_number'] = $paymentTxn['invoice']['invoice_number'] ?? null;
 
                     return $row;
                 })

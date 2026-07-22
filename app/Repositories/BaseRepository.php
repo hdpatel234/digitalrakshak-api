@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\BaseDisplayOrder;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -226,7 +227,7 @@ abstract class BaseRepository
 
         $sortBy = (string) ($params['sort_by'] ?? $defaultSortBy);
         $sortDirection = strtolower((string) ($params['sort_direction'] ?? ($config['default_sort_direction'] ?? 'desc')));
-        $sortDirection = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
+        $sortDirection = in_array($sortDirection, [BaseDisplayOrder::ASC->value, BaseDisplayOrder::DESC->value], true) ? $sortDirection : BaseDisplayOrder::DESC->value;
 
         $allowedSorts = (array) ($config['allowed_sorts'] ?? []);
         if ($allowedSorts !== [] && !in_array($sortBy, $allowedSorts, true)) {

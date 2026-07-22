@@ -57,30 +57,6 @@ class PackageRepository extends BaseRepository
         return Package::FINAL_PRICE;
     }
 
-    public function isActive()
-    {
-        return Package::IS_ACTIVE;
-    }
-
-    public function status()
-    {
-        return Package::STATUS;
-    }
-
-    public function createdBy()
-    {
-        return Package::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return Package::UPDATED_BY;
-    }
-
-    public function deletedBy()
-    {
-        return Package::DELETED_BY;
-    }
     // functions
     public function getClientPackagesQuery(array $data)
     {
@@ -91,24 +67,24 @@ class PackageRepository extends BaseRepository
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
                 $q->where($this->packageName(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->packageCode(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->description(), 'LIKE', "%{$search}%")
-                  ->orWhereHas('client', function($q) use ($search) {
-                      $q->where('name', 'LIKE', "%{$search}%")
-                        ->orWhere('company_name', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhere($this->packageCode(), 'LIKE', "%{$search}%")
+                    ->orWhere($this->description(), 'LIKE', "%{$search}%")
+                    ->orWhereHas('client', function ($q) use ($search) {
+                        $q->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('company_name', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
         // Sorting
         $sortBy = $data['sort_by'] ?? $this->createdAt();
         $sortDirection = $data['sort_direction'] ?? 'desc';
-        
+
         // Handle sorting by client name
         if ($sortBy === 'client_name') {
             $query->join('clients', $this->model->getTable() . '.' . $this->clientId(), '=', 'clients.id')
-                  ->select($this->model->getTable() . '.*')
-                  ->orderBy('clients.name', $sortDirection);
+                ->select($this->model->getTable() . '.*')
+                ->orderBy('clients.name', $sortDirection);
         } else {
             $query->orderBy($sortBy, $sortDirection);
         }
@@ -125,8 +101,8 @@ class PackageRepository extends BaseRepository
             $search = $data['search'];
             $query->where(function ($q) use ($search) {
                 $q->where($this->packageName(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->packageCode(), 'LIKE', "%{$search}%")
-                  ->orWhere($this->description(), 'LIKE', "%{$search}%");
+                    ->orWhere($this->packageCode(), 'LIKE', "%{$search}%")
+                    ->orWhere($this->description(), 'LIKE', "%{$search}%");
             });
         }
 

@@ -3,7 +3,7 @@
 namespace App\Services\ApiService\Admin;
 
 use App\Repositories\PaymentTransactionRepository;
-use App\Repositories\CandidateOrderRepository;
+use App\Repositories\OrderRepository;
 use App\Repositories\ServiceCategoryRepository;
 use App\Repositories\OrderItemRepository;
 use App\Repositories\ClientRepository;
@@ -15,7 +15,7 @@ class ReportService
 {
     public function __construct(
         protected PaymentTransactionRepository $paymentTransactionRepo,
-        protected CandidateOrderRepository $candidateOrderRepo,
+        protected OrderRepository $orderRepo,
         protected ServiceCategoryRepository $serviceCategoryRepo,
         protected OrderItemRepository $orderItemRepo,
         protected ClientRepository $clientRepo,
@@ -44,19 +44,19 @@ class ReportService
         }
 
         if ($platform !== 'all') {
-            $query->whereHas('gatewayConfig.gateway', function($q) use ($platform) {
+            $query->whereHas('gatewayConfig.gateway', function ($q) use ($platform) {
                 $q->where('gateway_code', $platform);
             });
         }
 
         $cloneQuery = clone $query;
         $totalRevenue = (clone $cloneQuery)->where('status', 'completed')->sum('amount');
-        
+
         // Mock logic for MRR or just subset of revenue
         $mrr = (clone $cloneQuery)->where('status', 'completed')->whereNotNull('invoice_id')->sum('amount') * 0.4; // Mock logic
 
         $refunds = (clone $cloneQuery)->where('status', 'refunded')->sum('amount');
-        
+
         $netProfit = $totalRevenue - $refunds;
 
         // Generate chart data (monthly grouping)
@@ -78,16 +78,16 @@ class ReportService
 
         $currentDate = $startDate->copy()->startOfMonth();
         $endMonth = $endDate->copy()->startOfMonth();
-        
+
         while ($currentDate <= $endMonth) {
             $categories[] = $currentDate->format('M');
-            
+
             $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
                 return $item->year == $currentDate->year && $item->month == $currentDate->month;
             });
-            
+
             $monthTotal = $monthData ? (float) $monthData->total : 0;
-            
+
             $revenueData[] = $monthTotal;
             $netProfitData[] = $monthTotal * 0.8; // Mock net profit
 
@@ -140,17 +140,17 @@ class ReportService
     public function getOrdersReport(array $data)
     {
         $startDate = isset($data['start_date']) && $data['start_date']
-            ? Carbon::parse($data['start_date'])->startOfDay() 
+            ? Carbon::parse($data['start_date'])->startOfDay()
             : Carbon::now()->subDays(30)->startOfDay();
-            
+
         $endDate = isset($data['end_date']) && $data['end_date']
-            ? Carbon::parse($data['end_date'])->endOfDay() 
+            ? Carbon::parse($data['end_date'])->endOfDay()
             : Carbon::now()->endOfDay();
 
         $status = $data['status'] ?? 'all';
         $paymentStatus = $data['payment_status'] ?? 'all';
 
-        $query = $this->candidateOrderRepo->query()
+        $query = $this->orderRepo->query()
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($status !== 'all') {
@@ -186,14 +186,14 @@ class ReportService
 
         $currentDate = $startDate->copy()->startOfMonth();
         $endMonth = $endDate->copy()->startOfMonth();
-        
+
         while ($currentDate <= $endMonth) {
             $categories[] = $currentDate->format('M');
-            
+
             $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
                 return $item->year == $currentDate->year && $item->month == $currentDate->month;
             });
-            
+
             $ordersCountData[] = $monthData ? (int) $monthData->total_count : 0;
             $ordersValueData[] = $monthData ? (float) $monthData->total_amount : 0;
 
@@ -244,7 +244,7 @@ class ReportService
 
     public function getServiceFilters()
     {
-        $categories = $this->serviceCategoryRepo->query()->where('status', 'active')->get()->map(function($cat) {
+        $categories = $this->serviceCategoryRepo->query()->where('status', 'active')->get()->map(function ($cat) {
             return ['value' => $cat->id, 'label' => $cat->category_name];
         })->toArray();
         array_unshift($categories, ['value' => 'all', 'label' => 'All Categories']);
@@ -267,11 +267,11 @@ class ReportService
     public function getServicesReport(array $data)
     {
         $startDate = isset($data['start_date']) && $data['start_date']
-            ? Carbon::parse($data['start_date'])->startOfDay() 
+            ? Carbon::parse($data['start_date'])->startOfDay()
             : Carbon::now()->subDays(30)->startOfDay();
-            
+
         $endDate = isset($data['end_date']) && $data['end_date']
-            ? Carbon::parse($data['end_date'])->endOfDay() 
+            ? Carbon::parse($data['end_date'])->endOfDay()
             : Carbon::now()->endOfDay();
 
         $status = $data['status'] ?? 'all';
@@ -284,7 +284,7 @@ class ReportService
 
         if ($status !== 'all') {
             $query->where('order_items.processing_status', $status)
-                  ->orWhere('order_items.status', $status);
+                ->orWhere('order_items.status', $status);
         }
 
         if ($category !== 'all') {
@@ -294,7 +294,7 @@ class ReportService
         $cloneQuery = clone $query;
         $totalServices = (clone $cloneQuery)->count();
         $activeServices = (clone $cloneQuery)->whereIn('order_items.processing_status', ['pending', 'in_progress'])->count();
-        
+
         $totalCategories = (clone $cloneQuery)->distinct('services.service_category')->count('services.service_category');
         $totalRevenue = (clone $cloneQuery)->sum('order_items.total_price');
 
@@ -319,14 +319,14 @@ class ReportService
 
         $currentDate = $startDate->copy()->startOfMonth();
         $endMonth = $endDate->copy()->startOfMonth();
-        
+
         while ($currentDate <= $endMonth) {
             $categoriesList[] = $currentDate->format('M');
-            
+
             $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
                 return $item->year == $currentDate->year && $item->month == $currentDate->month;
             });
-            
+
             $servicesCountData[] = $monthData ? (int) $monthData->total_count : 0;
             $revenueData[] = $monthData ? (float) $monthData->total_revenue : 0;
 
@@ -373,11 +373,11 @@ class ReportService
     public function getClientsReport(array $data)
     {
         $startDate = isset($data['start_date']) && $data['start_date']
-            ? Carbon::parse($data['start_date'])->startOfDay() 
+            ? Carbon::parse($data['start_date'])->startOfDay()
             : Carbon::now()->subDays(30)->startOfDay();
-            
+
         $endDate = isset($data['end_date']) && $data['end_date']
-            ? Carbon::parse($data['end_date'])->endOfDay() 
+            ? Carbon::parse($data['end_date'])->endOfDay()
             : Carbon::now()->endOfDay();
 
         $status = $data['status'] ?? 'all';
@@ -416,14 +416,14 @@ class ReportService
 
         $currentDate = $startDate->copy()->startOfMonth();
         $endMonth = $endDate->copy()->startOfMonth();
-        
+
         while ($currentDate <= $endMonth) {
             $categories[] = $currentDate->format('M');
-            
+
             $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
                 return $item->year == $currentDate->year && $item->month == $currentDate->month;
             });
-            
+
             $clientsCountData[] = $monthData ? (int) $monthData->total_count : 0;
 
             $currentDate->addMonth();
@@ -468,11 +468,11 @@ class ReportService
     public function getCandidatesReport(array $data)
     {
         $startDate = isset($data['start_date']) && $data['start_date']
-            ? Carbon::parse($data['start_date'])->startOfDay() 
+            ? Carbon::parse($data['start_date'])->startOfDay()
             : Carbon::now()->subDays(30)->startOfDay();
-            
+
         $endDate = isset($data['end_date']) && $data['end_date']
-            ? Carbon::parse($data['end_date'])->endOfDay() 
+            ? Carbon::parse($data['end_date'])->endOfDay()
             : Carbon::now()->endOfDay();
 
         $status = $data['status'] ?? 'all';
@@ -508,14 +508,14 @@ class ReportService
 
         $currentDate = $startDate->copy()->startOfMonth();
         $endMonth = $endDate->copy()->startOfMonth();
-        
+
         while ($currentDate <= $endMonth) {
             $categories[] = $currentDate->format('M');
-            
+
             $monthData = $chartDataQuery->firstWhere(function ($item) use ($currentDate) {
                 return $item->year == $currentDate->year && $item->month == $currentDate->month;
             });
-            
+
             $candidatesCountData[] = $monthData ? (int) $monthData->total_count : 0;
 
             $currentDate->addMonth();

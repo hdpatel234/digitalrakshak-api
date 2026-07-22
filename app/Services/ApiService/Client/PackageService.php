@@ -2,9 +2,11 @@
 
 namespace App\Services\ApiService\Client;
 
-use App\Enums\CandidateInvitationStatus;
+use App\Enums\BaseDisplayOrder;
+use App\Enums\BaseStatus;
 use App\Services\BaseService;
 use App\Services\CandidateInvitationService;
+use App\Services\CandidateService;
 use App\Services\PackageService as BasePackageService;
 use App\Services\PackageServiceService;
 use App\Services\ServiceService;
@@ -18,14 +20,14 @@ class PackageService extends BaseService
         protected BasePackageService $packageService,
         protected PackageServiceService $packageServiceService,
         protected ServiceService $serviceService,
-        protected CandidateInvitationService $candidateInvitationService
+        protected CandidateInvitationService $candidateInvitationService,
+        protected CandidateService $candidateService
     ) {}
 
     public function getPackages(array $params, int $clientId): array
     {
         $packageTable = $this->packageService->query()->getModel()->getTable();
         $statusColumn = $this->packageService->status();
-        $isActiveColumn = $this->packageService->isActive();
         $clientIdColumn = $this->packageService->clientId();
         $packageNameColumn = $this->packageService->packageName();
         $packageCodeColumn = $this->packageService->packageCode();
@@ -35,17 +37,12 @@ class PackageService extends BaseService
         $finalPriceColumn = $this->packageService->finalPrice();
 
         $qualifiedStatusColumn = $packageTable . '.' . $statusColumn;
-        $qualifiedIsActiveColumn = $packageTable . '.' . $isActiveColumn;
         $qualifiedClientIdColumn = $packageTable . '.' . $clientIdColumn;
 
         $query = $this->packageService->query()
             ->where(function ($builder) use ($qualifiedStatusColumn) {
                 $builder->where($qualifiedStatusColumn, 'active')
                     ->orWhere($qualifiedStatusColumn, 1);
-            })
-            ->where(function ($builder) use ($qualifiedIsActiveColumn) {
-                $builder->where($qualifiedIsActiveColumn, 'active')
-                    ->orWhere($qualifiedIsActiveColumn, 1);
             })
             ->where(function ($builder) use ($qualifiedClientIdColumn, $clientId) {
                 $builder->where($qualifiedClientIdColumn, $clientId)
@@ -78,7 +75,7 @@ class PackageService extends BaseService
                     $packageTable . '.' . $this->packageService->createdAt(),
                 ],
                 'default_sort_by' => $packageTable . '.' . $packageNameColumn,
-                'default_sort_direction' => 'asc',
+                'default_sort_direction' => BaseDisplayOrder::ASC->value,
                 'default_per_page' => 10,
                 'max_per_page' => 100,
             ]
@@ -96,13 +93,12 @@ class PackageService extends BaseService
         $availableCandidatesByPackageId = collect();
         $servicesByPackageId = collect();
         if ($packageIds !== []) {
-            $availableCandidatesByPackageId = DB::table('candidate_packages')
-                ->join('candidates', 'candidate_packages.candidate_id', '=', 'candidates.id')
-                ->select('candidate_packages.package_id', DB::raw('COUNT(DISTINCT candidate_id) as total'))
+            $availableCandidatesByPackageId = $this->candidateService->query()
+                ->join('candidate_packages', 'candidate_packages.candidate_id', '=', 'candidates.id')
+                ->select('candidate_packages.package_id', DB::raw('COUNT(DISTINCT candidate_packages.candidate_id) as total'))
                 ->whereIn('candidate_packages.package_id', $packageIds)
                 ->where('candidates.status', 'active')
                 ->whereNotIn('candidates.status', ['created', 'sent'])
-                ->whereNull('candidates.deleted_at')
                 ->groupBy('candidate_packages.package_id')
                 ->get()
                 ->pluck('total', 'package_id');
@@ -113,7 +109,7 @@ class PackageService extends BaseService
                     $builder->where($this->packageServiceService->status(), 'active')
                         ->orWhere($this->packageServiceService->status(), 1);
                 })
-                ->orderBy($this->packageServiceService->displayOrder(), 'asc')
+                ->orderBy($this->packageServiceService->displayOrder(), BaseDisplayOrder::ASC->value)
                 ->get();
 
             $serviceIds = $packageServiceRows
@@ -127,9 +123,9 @@ class PackageService extends BaseService
             $servicesById = $serviceIds === []
                 ? collect()
                 : $this->serviceService->query()
-                    ->whereIn($this->serviceService->id(), $serviceIds)
-                    ->get()
-                    ->keyBy($this->serviceService->id());
+                ->whereIn($this->serviceService->id(), $serviceIds)
+                ->get()
+                ->keyBy($this->serviceService->id());
 
             $servicesByPackageId = $packageServiceRows->groupBy($this->packageServiceService->packageId())
                 ->map(function ($rows) use ($servicesById) {
@@ -213,13 +209,12 @@ class PackageService extends BaseService
         $created = DB::transaction(function () use ($payload, $serviceIds, $clientId, $user, $totalPrice) {
             $package = $this->packageService->create([
                 $this->packageService->packageName() => trim((string) ($payload['package_name'] ?? '')),
-                $this->packageService->description() => trim((string) ($payload['description'] ??'')),
+                $this->packageService->description() => trim((string) ($payload['description'] ?? '')),
                 $this->packageService->packageCode() => $this->generatePackageCode($clientId),
                 $this->packageService->type() => 'client',
                 $this->packageService->clientId() => $clientId,
                 $this->packageService->totalPrice() => $totalPrice,
                 $this->packageService->finalPrice() => $totalPrice,
-                $this->packageService->isActive() => 1,
                 $this->packageService->status() => 'active',
                 $this->packageService->createdBy() => $user?->id,
             ]);
@@ -343,10 +338,6 @@ class PackageService extends BaseService
                 $builder->where($this->packageService->status(), 'active')
                     ->orWhere($this->packageService->status(), 1);
             })
-            ->where(function ($builder) {
-                $builder->where($this->packageService->isActive(), 'active')
-                    ->orWhere($this->packageService->isActive(), 1);
-            })
             ->where(function ($builder) use ($clientId) {
                 $builder->where($this->packageService->clientId(), $clientId)
                     ->orWhere($this->packageService->clientId(), 0);
@@ -362,12 +353,11 @@ class PackageService extends BaseService
         $finalPrice = $packageData[$this->packageService->finalPrice()] ?? null;
 
         $packageId = (int) ($packageData[$this->packageService->id()] ?? 0);
-        $availableCandidates = (int) DB::table('candidate_packages')
-            ->join('candidates', 'candidate_packages.candidate_id', '=', 'candidates.id')
+        $availableCandidates = (int) $this->candidateService->query()
+            ->join('candidate_packages', 'candidate_packages.candidate_id', '=', 'candidates.id')
             ->where('candidate_packages.package_id', $packageId)
             ->where('candidates.status', 'active')
             ->whereNotIn('candidates.status', ['created', 'sent'])
-            ->whereNull('candidates.deleted_at')
             ->distinct()
             ->count('candidate_packages.candidate_id');
 
@@ -378,17 +368,13 @@ class PackageService extends BaseService
         return $packageData;
     }
 
-    public function getPackageServices(int $packageId, int $clientId): array
+    public function getPackageServices(int $packageId, int $clientId, bool $hidden): array
     {
         $packageModel = $this->packageService->query()
             ->where($this->packageService->id(), $packageId)
             ->where(function ($builder) {
-                $builder->where($this->packageService->status(), 'active')
+                $builder->where($this->packageService->status(), BaseStatus::ACTIVE)
                     ->orWhere($this->packageService->status(), 1);
-            })
-            ->where(function ($builder) {
-                $builder->where($this->packageService->isActive(), 'active')
-                    ->orWhere($this->packageService->isActive(), 1);
             })
             ->where(function ($builder) use ($clientId) {
                 $builder->where($this->packageService->clientId(), $clientId)
@@ -403,10 +389,9 @@ class PackageService extends BaseService
         $packageServiceRows = $this->packageServiceService->query()
             ->where($this->packageServiceService->packageId(), $packageId)
             ->where(function ($builder) {
-                $builder->where($this->packageServiceService->status(), 'active')
-                    ->orWhere($this->packageServiceService->status(), 1);
+                $builder->where($this->packageServiceService->status(), BaseStatus::ACTIVE);
             })
-            ->orderBy($this->packageServiceService->displayOrder(), 'asc')
+            ->orderBy($this->packageServiceService->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
 
         $serviceIds = $packageServiceRows
@@ -420,20 +405,20 @@ class PackageService extends BaseService
         $servicesById = $serviceIds === []
             ? collect()
             : $this->serviceService->query()
-                ->whereIn($this->serviceService->id(), $serviceIds)
-                ->get()
-                ->keyBy($this->serviceService->id());
+            ->whereIn($this->serviceService->id(), $serviceIds)
+            ->get()
+            ->keyBy($this->serviceService->id());
 
         $fieldsByServiceId = $serviceIds === []
             ? collect()
             : ServicesField::whereIn(ServicesField::SERVICE_ID, $serviceIds)
-                ->where(function ($query) {
-                    $query->where(ServicesField::STATUS, 'active')
-                        ->orWhere(ServicesField::STATUS, 1);
-                })
-                ->orderBy(ServicesField::DISPLAY_ORDER, 'asc')
-                ->get()
-                ->groupBy(ServicesField::SERVICE_ID);
+            ->where(function ($query) {
+                $query->where(ServicesField::STATUS, 'active')
+                    ->orWhere(ServicesField::STATUS, 1);
+            })
+            ->orderBy(ServicesField::DISPLAY_ORDER, BaseDisplayOrder::ASC->value)
+            ->get()
+            ->groupBy(ServicesField::SERVICE_ID);
 
         $services = $packageServiceRows
             ->map(function ($row) use ($servicesById, $fieldsByServiceId) {
@@ -493,10 +478,6 @@ class PackageService extends BaseService
                 $builder->where($this->packageService->status(), 'active')
                     ->orWhere($this->packageService->status(), 1);
             })
-            ->where(function ($builder) {
-                $builder->where($this->packageService->isActive(), 'active')
-                    ->orWhere($this->packageService->isActive(), 1);
-            })
             ->where(function ($builder) use ($clientId) {
                 $builder->where($this->packageService->clientId(), $clientId)
                     ->orWhere($this->packageService->clientId(), 0);
@@ -510,19 +491,19 @@ class PackageService extends BaseService
         $candidates = \App\Models\Candidate::whereHas('packages', function ($q) use ($packageId) {
             $q->where('candidate_packages.package_id', $packageId);
         })
-        ->where('client_id', $clientId)
-        ->where('status', 'active')
-        ->whereNotIn('status', ['created', 'sent'])
-        ->orderByDesc('id')
-        ->get()
-        ->map(function ($candidate) {
-            return [
-                'candidate_id' => $candidate->id,
-                'candidate' => $candidate->toArray(),
-            ];
-        })
-        ->values()
-        ->all();
+            ->where('client_id', $clientId)
+            ->where('status', 'active')
+            ->whereNotIn('status', ['created', 'sent'])
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($candidate) {
+                return [
+                    'candidate_id' => $candidate->id,
+                    'candidate' => $candidate->toArray(),
+                ];
+            })
+            ->values()
+            ->all();
 
         return [
             'package_id' => (int) $packageModel->{$this->packageService->id()},

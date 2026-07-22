@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Enums\BaseDisplayOrder;
+use App\Enums\BaseStatus;
 use App\Models\PackageService;
 
 class PackageServiceRepository extends BaseRepository
@@ -62,7 +64,7 @@ class PackageServiceRepository extends BaseRepository
     {
         return $this->query()
             ->whereIn($this->packageId(), $packageIds)
-            ->whereIn($this->status(), ['active', 1])
+            ->whereIn($this->status(), [BaseStatus::ACTIVE, 1])
             ->get();
     }
 
@@ -70,8 +72,8 @@ class PackageServiceRepository extends BaseRepository
     {
         return $this->query()
             ->where($this->packageId(), $packageId)
-            ->whereIn($this->status(), ['active', 1])
-            ->orderBy($this->displayOrder(), 'asc')
+            ->whereIn($this->status(), [BaseStatus::ACTIVE, 1])
+            ->orderBy($this->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
     }
 

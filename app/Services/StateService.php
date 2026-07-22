@@ -61,24 +61,14 @@ class StateService extends BaseService
         return $this->repository->population();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function displayOrder()
     {
         return $this->repository->displayOrder();
     }
 
-    public function createdBy()
+    public function citiesSyncedAt()
     {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
+        return $this->repository->citiesSyncedAt();
     }
 
     // functions

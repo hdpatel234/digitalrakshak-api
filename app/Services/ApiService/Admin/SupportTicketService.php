@@ -2,13 +2,14 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\BaseDisplayOrder;
 use App\Repositories\SupportDepartmentRepository;
 use App\Repositories\SupportPriorityRepository;
 use App\Repositories\SupportTicketRepository;
 use App\Services\BaseService;
 use App\Services\UserService;
 use App\Repositories\SupportTicketConversationRepository;
-use App\Repositories\CandidateOrderRepository;
+use App\Repositories\OrderRepository;
 use Illuminate\Support\Str;
 
 /**
@@ -16,26 +17,14 @@ use Illuminate\Support\Str;
  */
 class SupportTicketService extends BaseService
 {
-    protected SupportDepartmentRepository $departmentRepository;
-    protected SupportPriorityRepository $priorityRepository;
-    protected UserService $userService;
-
-    protected SupportTicketConversationRepository $conversationRepository;
-    protected CandidateOrderRepository $candidateOrderRepository;
-
     public function __construct(
         SupportTicketRepository $repository,
-        SupportDepartmentRepository $departmentRepository,
-        SupportPriorityRepository $priorityRepository,
-        UserService $userService,
-        SupportTicketConversationRepository $conversationRepository,
-        CandidateOrderRepository $candidateOrderRepository
+        protected SupportDepartmentRepository $departmentRepository,
+        protected SupportPriorityRepository $priorityRepository,
+        protected UserService $userService,
+        protected SupportTicketConversationRepository $conversationRepository,
+        protected OrderRepository $orderRepository
     ) {
-        $this->departmentRepository = $departmentRepository;
-        $this->priorityRepository = $priorityRepository;
-        $this->userService = $userService;
-        $this->conversationRepository = $conversationRepository;
-        $this->candidateOrderRepository = $candidateOrderRepository;
         parent::__construct($repository);
     }
 
@@ -141,7 +130,7 @@ class SupportTicketService extends BaseService
 
         $statusCounts = $this->query()->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
         $totalTickets = array_sum($statusCounts);
-        
+
         $statistics = [
             'total' => $totalTickets,
             'open' => $statusCounts['open'] ?? 0,
@@ -199,8 +188,8 @@ class SupportTicketService extends BaseService
 
         $threads = [];
 
-        $conversations = $this->conversationRepository->query()->where($this->conversationRepository->ticketId(), $ticket->id)
-            ->orderBy($this->conversationRepository->createdAt(), 'asc')
+        $conversations = $this->conversationRepository->query()->where($this->conversationRepository->ticketId(), $ticket->{$this->repository->id()})
+            ->orderBy($this->conversationRepository->createdAt(), BaseDisplayOrder::ASC->value)
             ->get();
 
         foreach ($conversations as $conversation) {
@@ -293,12 +282,12 @@ class SupportTicketService extends BaseService
 
     public function getClientOrders(?int $clientId = null)
     {
-        $query = $this->candidateOrderRepository->query()
-            ->select($this->candidateOrderRepository->id(), $this->candidateOrderRepository->orderNumber())
-            ->orderBy($this->candidateOrderRepository->id(), 'desc');
+        $query = $this->orderRepository->query()
+            ->select($this->orderRepository->id(), $this->orderRepository->orderNumber())
+            ->orderBy($this->orderRepository->id(), 'desc');
 
         if ($clientId) {
-            $query->where($this->candidateOrderRepository->clientId(), $clientId);
+            $query->where($this->orderRepository->clientId(), $clientId);
         }
 
         return $query->get()->toArray();
@@ -308,7 +297,7 @@ class SupportTicketService extends BaseService
     {
         $email = $user->email ?? 'admin@example.com';
         $name = $user ? ($user->{$this->userService->firstName()} . ' ' . $user->{$this->userService->lastName()}) : 'Admin Support';
-        
+
         $ticketNumber = strtoupper(Str::random(3)) . rand(100, 999);
 
         $attachments = $payload['attachments'] ?? $payload['attachment'] ?? [];

@@ -2,11 +2,13 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseDisplayOrder;
 use App\Enums\BaseStatus;
 use App\Enums\EmailPriority;
 use App\Enums\EmailQueueStatus;
 use App\Enums\EmailTemplateCode;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\UserStatus;
 use App\Services\BaseService;
 use App\Repositories\ClientRepository;
@@ -28,6 +30,8 @@ use App\Repositories\CandidateServiceRepository;
 use App\Repositories\CandidateServiceDataRepository;
 use App\Repositories\PackageServiceRepository;
 use App\Repositories\OrderItemRepository;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServicesFieldRepository;
 use App\Services\EmailTemplateService;
 use App\Services\PaymentGateway\PaymentGatewayDriverFactory;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +61,9 @@ class OrderService extends BaseService
         protected CandidateServiceDataRepository $candidateServiceDataRepo,
         protected EmailTemplateService $emailTemplateService,
         protected PackageServiceRepository $packageServiceRepo,
-        protected OrderItemRepository $orderItemRepo
+        protected OrderItemRepository $orderItemRepo,
+        protected ServiceRepository $serviceRepo,
+        protected ServicesFieldRepository $servicesFieldRepo
     ) {}
 
     public function getOrders(array $params, int $clientId): array
@@ -139,17 +145,16 @@ class OrderService extends BaseService
         );
 
         $paymentMethodRows = $this->paymentMethodTypeRepo->query()
-            ->where($this->paymentMethodTypeRepo->isActive(), 1)
+            ->where($this->paymentMethodTypeRepo->status(), BaseStatus::ACTIVE)
             ->select([
                 $this->paymentMethodTypeRepo->id(),
                 $this->paymentMethodTypeRepo->methodName(),
                 $this->paymentMethodTypeRepo->methodCode(),
                 $this->paymentMethodTypeRepo->category(),
                 $this->paymentMethodTypeRepo->icon(),
-                $this->paymentMethodTypeRepo->description(),
                 $this->paymentMethodTypeRepo->displayOrder(),
             ])
-            ->orderBy($this->paymentMethodTypeRepo->displayOrder(), 'asc')
+            ->orderBy($this->paymentMethodTypeRepo->displayOrder(), BaseDisplayOrder::ASC->value)
             ->get();
 
         $paymentMethods = $paymentMethodRows
@@ -160,7 +165,6 @@ class OrderService extends BaseService
                     'method_code' => $method->{$this->paymentMethodTypeRepo->methodCode()},
                     'category' => $method->{$this->paymentMethodTypeRepo->category()},
                     'icon' => $method->{$this->paymentMethodTypeRepo->icon()},
-                    'description' => $method->{$this->paymentMethodTypeRepo->description()},
                     'display_order' => (int) ($method->{$this->paymentMethodTypeRepo->displayOrder()} ?? 0),
                 ];
             })
@@ -267,7 +271,7 @@ class OrderService extends BaseService
                         'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeType()},
                         'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeFixed()},
                         'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeePercentage()},
-                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->status()} === 'active' ? 1 : 0,
+                        'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->status()} === BaseStatus::ACTIVE ? 1 : 0,
 
                         'gateway' => $gateway ? [
                             'id' => (int) ($gateway->{$this->paymentGatewayRepo->id()} ?? 0),
@@ -322,12 +326,12 @@ class OrderService extends BaseService
         $package = $this->packageRepo->query()
             ->where($this->packageRepo->id(), $packageId)
             ->where(function ($builder) {
-                $builder->where($this->packageRepo->status(), 'active')
+                $builder->where($this->packageRepo->status(), BaseStatus::ACTIVE)
                     ->orWhere($this->packageRepo->status(), 1);
             })
             ->where(function ($builder) {
-                $builder->where($this->packageRepo->isActive(), 'active')
-                    ->orWhere($this->packageRepo->isActive(), 1);
+                $builder->where($this->packageRepo->status(), BaseStatus::ACTIVE)
+                    ->orWhere($this->packageRepo->status(), 1);
             })
             ->where(function ($builder) use ($clientId) {
                 $builder->where($this->packageRepo->clientId(), $clientId)
@@ -366,7 +370,7 @@ class OrderService extends BaseService
                     }
                 ])
                 ->where($this->paymentGatewayConfigRepo->id(), $paymentProviderId)
-                ->where($this->paymentGatewayConfigRepo->status(), 'active')
+                ->where($this->paymentGatewayConfigRepo->status(), BaseStatus::ACTIVE)
                 ->first();
 
             if (!$gatewayConfig || !$gatewayConfig->gateway) {
@@ -702,7 +706,6 @@ class OrderService extends BaseService
                     $this->paymentMethodTypeRepo->methodCode(),
                     $this->paymentMethodTypeRepo->category(),
                     $this->paymentMethodTypeRepo->icon(),
-                    $this->paymentMethodTypeRepo->description(),
                     $this->paymentMethodTypeRepo->displayOrder(),
                 ])
                 ->first();
@@ -714,7 +717,6 @@ class OrderService extends BaseService
                     'method_code' => $methodRow->{$this->paymentMethodTypeRepo->methodCode()},
                     'category' => $methodRow->{$this->paymentMethodTypeRepo->category()},
                     'icon' => $methodRow->{$this->paymentMethodTypeRepo->icon()},
-                    'description' => $methodRow->{$this->paymentMethodTypeRepo->description()},
                     'display_order' => (int) ($methodRow->{$this->paymentMethodTypeRepo->displayOrder()} ?? 0),
                 ];
             }
@@ -782,7 +784,7 @@ class OrderService extends BaseService
                     'transaction_fee_type' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeType()},
                     'transaction_fee_fixed' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeeFixed()},
                     'transaction_fee_percentage' => $gatewayConfig->{$this->paymentGatewayConfigRepo->transactionFeePercentage()},
-                    'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->status()} === 'active' ? 1 : 0,
+                    'is_active' => $gatewayConfig->{$this->paymentGatewayConfigRepo->status()} === BaseStatus::ACTIVE ? 1 : 0,
 
                     'gateway' => $gateway ? [
                         'id' => (int) ($gateway->{$this->paymentGatewayRepo->id()} ?? 0),
@@ -817,19 +819,23 @@ class OrderService extends BaseService
 
                 $candidateServiceData = [];
                 if (!empty($candidateServiceIds)) {
-                    $candidateServiceData = $this->candidateServiceDataRepo->query()->whereIn('order_item_id', $candidateServiceIds)
-                        ->join('services_fields', 'candidate_service_data.field_id', '=', 'services_fields.id')
-                        ->join('services', 'services_fields.service_id', '=', 'services.id')
+                    $candidateServiceData = $this->candidateServiceDataRepo->query()
+                        ->whereIn($this->candidateServiceDataRepo->orderItemId(), $candidateServiceIds)
+                        ->join($this->servicesFieldRepo->query()->getModel()->getTable(), $this->candidateServiceDataRepo->query()->getModel()->getTable() . '.' . $this->candidateServiceDataRepo->fieldId(), '=', $this->servicesFieldRepo->query()->getModel()->getTable() . '.' . $this->servicesFieldRepo->id())
+                        ->join($this->serviceRepo->query()->getModel()->getTable(), $this->servicesFieldRepo->query()->getModel()->getTable() . '.' . $this->servicesFieldRepo->serviceId(), '=', $this->serviceRepo->query()->getModel()->getTable() . '.' . $this->serviceRepo->id())
                         ->select(
-                            'candidate_service_data.*',
-                            'services_fields.field_name',
-                            'services_fields.field_label',
-                            'services_fields.field_type',
-                            'services.service_name',
-                            'services.service_code',
-                            'candidate_services.candidate_id'
+                            $this->candidateServiceDataRepo->query()->getModel()->getTable() . '.*',
+                            $this->servicesFieldRepo->query()->getModel()->getTable() . '.' . $this->servicesFieldRepo->fieldName(),
+                            $this->servicesFieldRepo->query()->getModel()->getTable() . '.' . $this->servicesFieldRepo->fieldLabel(),
+                            $this->servicesFieldRepo->query()->getModel()->getTable() . '.' . $this->servicesFieldRepo->fieldType(),
+                            $this->serviceRepo->query()->getModel()->getTable() . '.' . $this->serviceRepo->serviceName(),
+                            $this->serviceRepo->query()->getModel()->getTable() . '.' . $this->serviceRepo->serviceCode()
                         )
-                        ->join('candidate_services', 'candidate_service_data.order_item_id', '=', 'candidate_services.id')
+                        ->selectSub(function ($query) {
+                            $query->select($this->candidateServiceRepo->candidateId())
+                                ->from($this->candidateServiceRepo->query()->getModel()->getTable())
+                                ->whereColumn($this->candidateServiceRepo->query()->getModel()->getTable() . '.' . $this->candidateServiceRepo->id(), $this->candidateServiceDataRepo->query()->getModel()->getTable() . '.' . $this->candidateServiceDataRepo->orderItemId());
+                        }, 'candidate_id')
                         ->get()
                         ->groupBy('candidate_id');
                 }
@@ -1076,8 +1082,8 @@ class OrderService extends BaseService
         try {
             if ($localInvoice) {
                 $localInvoice->update([
-                    $this->invoiceRepo->paymentStatus() => 'paid',
-                    $this->invoiceRepo->status() => 'paid',
+                    $this->invoiceRepo->paymentStatus() => PaymentStatus::PAID,
+                    $this->invoiceRepo->status() => PaymentStatus::PAID,
                 ]);
             }
         } catch (\Throwable $e) {

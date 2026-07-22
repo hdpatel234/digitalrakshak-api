@@ -35,24 +35,10 @@ class PaymentMethodTypeService extends BaseService
         return $this->repository->icon();
     }
 
-    public function description()
-    {
-        return $this->repository->description();
-    }
-
-    public function configurationSchema()
-    {
-        return $this->repository->configurationSchema();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function displayOrder()
     {
         return $this->repository->displayOrder();
     }
+
     // functions
 }

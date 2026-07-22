@@ -57,24 +57,14 @@ class StateRepository extends BaseRepository
         return State::POPULATION;
     }
 
-    public function isActive()
-    {
-        return State::IS_ACTIVE;
-    }
-
     public function displayOrder()
     {
         return State::DISPLAY_ORDER;
     }
 
-    public function createdBy()
+    public function citiesSyncedAt()
     {
-        return State::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return State::UPDATED_BY;
+        return State::CITIES_SYNCED_AT;
     }
 
     // functions

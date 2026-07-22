@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\BaseDisplayOrder;
 use App\Repositories\ServicesFieldRepository;
 
 class ServiceFieldService
@@ -29,7 +30,7 @@ class ServiceFieldService
 
         // Sorting
         $sortBy = $data['sort_by'] ?? 'display_order';
-        $sortDirection = $data['sort_direction'] ?? 'asc';
+        $sortDirection = $data['sort_direction'] ?? BaseDisplayOrder::ASC->value;
         $query->orderBy($sortBy, $sortDirection);
 
         // Pagination

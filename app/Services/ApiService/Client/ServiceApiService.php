@@ -2,6 +2,7 @@
 
 namespace App\Services\ApiService\Client;
 
+use App\Enums\BaseStatus;
 use App\Models\ClientService;
 use App\Models\ClientServicePricing;
 use App\Models\ServiceCategory;
@@ -91,7 +92,7 @@ class ServiceApiService extends BaseService
                     $serviceTable . '.' . $this->service->createdAt(),
                 ],
                 'default_sort_by' => $serviceTable . '.' . $this->service->serviceName(),
-                'default_sort_direction' => 'asc',
+                'default_sort_direction' => BaseStatus::ACTIVE,
                 'default_per_page' => 10,
                 'max_per_page' => 100,
             ]

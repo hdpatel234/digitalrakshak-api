@@ -5,10 +5,12 @@ namespace App\Services\ApiService\Client;
 use App\Repositories\SupportDepartmentRepository;
 use App\Repositories\SupportPriorityRepository;
 use App\Repositories\SupportTicketRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\SupportTicketConversationRepository;
+use App\Enums\SupportTicketStatus;
 use App\Services\BaseService;
 use App\Services\ClientService;
 use App\Services\UserService;
-use App\Models\SupportTicketConversation;
 use Illuminate\Support\Str;
 
 /**
@@ -16,22 +18,15 @@ use Illuminate\Support\Str;
  */
 class SupportTicketService extends BaseService
 {
-    protected SupportDepartmentRepository $departmentRepository;
-    protected SupportPriorityRepository $priorityRepository;
-    protected ClientService $clientService;
-    protected UserService $userService;
-
     public function __construct(
         SupportTicketRepository $repository,
-        SupportDepartmentRepository $departmentRepository,
-        SupportPriorityRepository $priorityRepository,
-        ClientService $clientService,
-        UserService $userService
+        protected SupportDepartmentRepository $departmentRepository,
+        protected SupportPriorityRepository $priorityRepository,
+        protected OrderRepository $orderRepository,
+        protected SupportTicketConversationRepository $conversationRepository,
+        protected ClientService $clientService,
+        protected UserService $userService
     ) {
-        $this->departmentRepository = $departmentRepository;
-        $this->priorityRepository = $priorityRepository;
-        $this->clientService = $clientService;
-        $this->userService = $userService;
         parent::__construct($repository);
     }
 
@@ -48,7 +43,22 @@ class SupportTicketService extends BaseService
         $qualifiedClientIdColumn = $ticketTable . '.' . $clientIdColumn;
 
         $query = $this->query()
-            ->with(['order:id,order_number', 'department:id,name', 'priority:id,name'])
+            ->select($ticketTable . '.*')
+            ->selectSub(function ($q) {
+                $q->select($this->orderRepository->orderNumber())
+                    ->from($this->orderRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->orderRepository->query()->getModel()->getTable() . '.' . $this->orderRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->orderId());
+            }, 'order_number')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->departmentRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->departmentRepository->query()->getModel()->getTable() . '.' . $this->departmentRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->departmentId());
+            }, 'department_name')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->priorityRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->priorityRepository->query()->getModel()->getTable() . '.' . $this->priorityRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->priorityId());
+            }, 'priority_name')
             ->where($qualifiedClientIdColumn, $clientId);
 
         if (isset($params['limit']) && !isset($params['per_page'])) {
@@ -73,9 +83,11 @@ class SupportTicketService extends BaseService
                 'searchable' => [
                     $ticketTable . '.' . $ticketNumberColumn,
                     $ticketTable . '.' . $subjectColumn,
-                    function (\Illuminate\Database\Eloquent\Builder $builder, string $search) {
-                        $builder->orWhereHas('order', function ($q) use ($search) {
-                            $q->where('order_number', 'like', '%' . $search . '%');
+                    function (\Illuminate\Database\Eloquent\Builder $builder, string $search) use ($ticketTable) {
+                        $builder->orWhereIn($ticketTable . '.' . $this->repository->orderId(), function ($q) use ($search) {
+                            $q->select($this->orderRepository->id())
+                                ->from($this->orderRepository->query()->getModel()->getTable())
+                                ->where($this->orderRepository->orderNumber(), 'like', '%' . $search . '%');
                         });
                     }
                 ],
@@ -116,20 +128,14 @@ class SupportTicketService extends BaseService
 
         if (is_array($result) && isset($result['list'])) {
             $result['list'] = collect($result['list'])->map(function ($row) {
-                $item = is_array($row) ? $row : $row->toArray();
-                $item['order_number'] = $item['order']['order_number'] ?? null;
-                $item['department_name'] = $item['department']['name'] ?? null;
-                $item['priority_name'] = $item['priority']['name'] ?? null;
-                return $item;
+                return is_array($row) ? $row : $row->toArray();
             })->all();
         }
 
-        $statusList = [
-            ['key' => 'open', 'name' => 'Open'],
-            ['key' => 'pending', 'name' => 'Pending'],
-            ['key' => 'resolved', 'name' => 'Resolved'],
-            ['key' => 'closed', 'name' => 'Closed'],
-        ];
+        $statusList = collect(SupportTicketStatus::cases())->map(fn($status) => [
+            'key' => $status->value,
+            'name' => $status->name()
+        ])->toArray();
 
         $departments = $this->departmentRepository->getActiveDepartments()->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];
@@ -139,9 +145,10 @@ class SupportTicketService extends BaseService
             return ['id' => $p->id, 'name' => $p->name];
         })->values()->all();
 
-        $orders = \App\Models\CandidateOrder::where('client_id', $clientId)
-            ->select('id', 'order_number')
-            ->orderBy('id', 'desc')
+        $orders = $this->orderRepository->query()
+            ->where($this->orderRepository->clientId(), $clientId)
+            ->select($this->orderRepository->id(), $this->orderRepository->orderNumber())
+            ->orderBy($this->orderRepository->id(), 'desc')
             ->get()
             ->toArray();
 
@@ -164,7 +171,22 @@ class SupportTicketService extends BaseService
     public function getTicket(int $id, int $clientId): array
     {
         $ticket = $this->query()
-            ->with(['order:id,order_number', 'department:id,name', 'priority:id,name'])
+            ->select($this->repository->query()->getModel()->getTable() . '.*')
+            ->selectSub(function ($q) {
+                $q->select($this->orderRepository->orderNumber())
+                    ->from($this->orderRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->orderRepository->query()->getModel()->getTable() . '.' . $this->orderRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->orderId());
+            }, 'order_number')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->departmentRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->departmentRepository->query()->getModel()->getTable() . '.' . $this->departmentRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->departmentId());
+            }, 'department_name')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->priorityRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->priorityRepository->query()->getModel()->getTable() . '.' . $this->priorityRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->priorityId());
+            }, 'priority_name')
             ->where($this->repository->clientId(), $clientId)
             ->where($this->repository->id(), $id)
             ->first();
@@ -174,9 +196,6 @@ class SupportTicketService extends BaseService
         }
 
         $result = $ticket->toArray();
-        $result['order_number'] = $ticket->order->order_number ?? null;
-        $result['department_name'] = $ticket->department->name ?? null;
-        $result['priority_name'] = $ticket->priority->name ?? null;
         $result['created_at_human'] = \App\Models\BaseModel::formatTimeAgo($ticket->created_at);
 
         return $result;
@@ -185,7 +204,22 @@ class SupportTicketService extends BaseService
     public function getTicketConversations(int $id, int $clientId): array
     {
         $ticket = $this->query()
-            ->with(['order:id,order_number', 'department:id,name', 'priority:id,name'])
+            ->select($this->repository->query()->getModel()->getTable() . '.*')
+            ->selectSub(function ($q) {
+                $q->select($this->orderRepository->orderNumber())
+                    ->from($this->orderRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->orderRepository->query()->getModel()->getTable() . '.' . $this->orderRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->orderId());
+            }, 'order_number')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->departmentRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->departmentRepository->query()->getModel()->getTable() . '.' . $this->departmentRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->departmentId());
+            }, 'department_name')
+            ->selectSub(function ($q) {
+                $q->select('name')
+                    ->from($this->priorityRepository->query()->getModel()->getTable())
+                    ->whereColumn($this->priorityRepository->query()->getModel()->getTable() . '.' . $this->priorityRepository->id(), $this->repository->query()->getModel()->getTable() . '.' . $this->repository->priorityId());
+            }, 'priority_name')
             ->where($this->repository->clientId(), $clientId)
             ->where($this->repository->id(), $id)
             ->first();
@@ -196,8 +230,9 @@ class SupportTicketService extends BaseService
 
         $threads = [];
 
-        $conversations = SupportTicketConversation::where('ticket_id', $ticket->id)
-            ->orderBy('created_at', 'asc')
+        $conversations = $this->conversationRepository->query()
+            ->where($this->conversationRepository->ticketId(), $ticket->id)
+            ->orderBy($this->conversationRepository->createdAt(), 'asc')
             ->get();
 
         foreach ($conversations as $conversation) {
@@ -261,7 +296,7 @@ class SupportTicketService extends BaseService
 
         $email = $client->{$this->clientService->email()} ?? ($user->email ?? '');
         $name = $user ? ($user->{$this->userService->firstName()} .  $user->{$this->userService->lastName()}) : 'Client';
-        
+
         $ticketNumber = strtoupper(Str::random(3)) . rand(100, 999);
 
         $attachments = $payload['attachments'] ?? $payload['attachment'] ?? [];
@@ -275,18 +310,18 @@ class SupportTicketService extends BaseService
             $this->repository->ticketNumber() => $ticketNumber,
             $this->repository->subject() => $payload['title'] ?? '',
             $this->repository->description() => $payload['message'] ?? '',
-            $this->repository->status() => 'open',
+            $this->repository->status() => SupportTicketStatus::OPEN->value,
             $this->repository->createdBy() => $user?->id,
         ]);
 
-        SupportTicketConversation::create([
-            'ticket_id' => $ticket->id,
-            'message' => $payload['message'] ?? '',
-            'sender_type' => 'customer',
-            'sender_name' => $name,
-            'sender_email' => $email,
-            'is_internal' => false,
-            'attachments' => json_encode($storedAttachments),
+        $this->conversationRepository->create([
+            $this->conversationRepository->ticketId() => $ticket->id,
+            $this->conversationRepository->message() => $payload['message'] ?? '',
+            $this->conversationRepository->senderType() => 'customer',
+            $this->conversationRepository->senderName() => $name,
+            $this->conversationRepository->senderEmail() => $email,
+            $this->conversationRepository->isInternal() => false,
+            $this->conversationRepository->attachments() => json_encode($storedAttachments),
         ]);
 
         return $ticket->toArray();
@@ -315,14 +350,14 @@ class SupportTicketService extends BaseService
 
         $storedAttachments = $this->handleAttachments($attachments);
 
-        $conversation = SupportTicketConversation::create([
-            'ticket_id' => $ticket->id,
-            'message' => $message,
-            'sender_type' => 'customer',
-            'sender_name' => $name,
-            'sender_email' => $email,
-            'is_internal' => false,
-            'attachments' => json_encode($storedAttachments),
+        $conversation = $this->conversationRepository->create([
+            $this->conversationRepository->ticketId() => $ticket->id,
+            $this->conversationRepository->message() => $message,
+            $this->conversationRepository->senderType() => 'customer',
+            $this->conversationRepository->senderName() => $name,
+            $this->conversationRepository->senderEmail() => $email,
+            $this->conversationRepository->isInternal() => false,
+            $this->conversationRepository->attachments() => json_encode($storedAttachments),
         ]);
 
         return $conversation->toArray();
