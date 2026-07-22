@@ -14,7 +14,7 @@ abstract class BaseRepository
     // column constants
     public function id()
     {
-        return $this->model->getKeyName();
+        return BaseModel::ID;
     }
 
     public function status()

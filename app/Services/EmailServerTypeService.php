@@ -40,14 +40,5 @@ class EmailServerTypeService extends BaseService
         return $this->repository->isIncoming();
     }
 
-    public function configurationSchema()
-    {
-        return $this->repository->configurationSchema();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }
