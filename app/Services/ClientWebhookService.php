@@ -9,7 +9,7 @@ use App\Repositories\ClientWebhookRepository;
  */
 class ClientWebhookService extends BaseService
 {
-    
+
     public function __construct(ClientWebhookRepository $repository)
     {
         $this->repository = $repository;
@@ -66,11 +66,6 @@ class ClientWebhookService extends BaseService
         return $this->repository->timeoutSeconds();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function lastTriggeredAt()
     {
         return $this->repository->lastTriggeredAt();
@@ -101,14 +96,5 @@ class ClientWebhookService extends BaseService
         return $this->repository->totalFailures();
     }
 
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
     // functions
 }

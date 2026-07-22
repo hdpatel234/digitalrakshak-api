@@ -100,11 +100,6 @@ class SavedPaymentMethodService extends BaseService
         return $this->repository->isDefault();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function lastUsedAt()
     {
         return $this->repository->lastUsedAt();
@@ -114,5 +109,6 @@ class SavedPaymentMethodService extends BaseService
     {
         return $this->repository->usedCount();
     }
+
     // functions
 }

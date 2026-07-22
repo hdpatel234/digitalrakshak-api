@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ClientWebhook extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "client_webhooks";
-    
     const CLIENT_ID = "client_id";
     const WEBHOOK_NAME = "webhook_name";
     const WEBHOOK_URL = "webhook_url";
@@ -21,15 +18,12 @@ class ClientWebhook extends BaseModel
     const MAX_RETRIES = "max_retries";
     const RETRY_DELAY_SECONDS = "retry_delay_seconds";
     const TIMEOUT_SECONDS = "timeout_seconds";
-    const IS_ACTIVE = "is_active";
     const LAST_TRIGGERED_AT = "last_triggered_at";
     const LAST_SUCCESS_AT = "last_success_at";
     const LAST_FAILURE_AT = "last_failure_at";
     const LAST_ERROR = "last_error";
     const TOTAL_SUCCESS = "total_success";
     const TOTAL_FAILURES = "total_failures";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::CLIENT_ID,
         self::WEBHOOK_NAME,
@@ -41,14 +35,12 @@ class ClientWebhook extends BaseModel
         self::MAX_RETRIES,
         self::RETRY_DELAY_SECONDS,
         self::TIMEOUT_SECONDS,
-        self::IS_ACTIVE,
         self::LAST_TRIGGERED_AT,
         self::LAST_SUCCESS_AT,
         self::LAST_FAILURE_AT,
         self::LAST_ERROR,
         self::TOTAL_SUCCESS,
         self::TOTAL_FAILURES,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::STATUS
     ];
 }

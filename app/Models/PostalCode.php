@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PostalCode extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "postal_codes";
-    
     const COUNTRY_ID = "country_id";
     const STATE_ID = "state_id";
     const CITY_ID = "city_id";
@@ -18,7 +15,6 @@ class PostalCode extends BaseModel
     const LATITUDE = "latitude";
     const LONGITUDE = "longitude";
     const ACCURACY = "accuracy";
-    const IS_ACTIVE = "is_active";
     protected $fillable = [
         self::COUNTRY_ID,
         self::STATE_ID,
@@ -27,6 +23,6 @@ class PostalCode extends BaseModel
         self::LATITUDE,
         self::LONGITUDE,
         self::ACCURACY,
-        self::IS_ACTIVE,
+        self::STATUS,
     ];
 }

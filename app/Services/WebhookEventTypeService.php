@@ -9,7 +9,7 @@ use App\Repositories\WebhookEventTypeRepository;
  */
 class WebhookEventTypeService extends BaseService
 {
-    
+
     public function __construct(WebhookEventTypeRepository $repository)
     {
         $this->repository = $repository;
@@ -41,9 +41,5 @@ class WebhookEventTypeService extends BaseService
         return $this->repository->samplePayload();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }

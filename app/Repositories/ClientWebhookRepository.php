@@ -62,11 +62,6 @@ class ClientWebhookRepository extends BaseRepository
         return ClientWebhook::TIMEOUT_SECONDS;
     }
 
-    public function isActive()
-    {
-        return ClientWebhook::IS_ACTIVE;
-    }
-
     public function lastTriggeredAt()
     {
         return ClientWebhook::LAST_TRIGGERED_AT;
@@ -97,14 +92,5 @@ class ClientWebhookRepository extends BaseRepository
         return ClientWebhook::TOTAL_FAILURES;
     }
 
-    public function createdBy()
-    {
-        return ClientWebhook::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return ClientWebhook::UPDATED_BY;
-    }
     // functions
 }

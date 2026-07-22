@@ -17,19 +17,9 @@ class CronJobRepository extends BaseRepository
         return CronJob::COMMAND;
     }
 
-    public function isActive()
-    {
-        return CronJob::IS_ACTIVE;
-    }
-
     public function lastRunAt()
     {
         return CronJob::LAST_RUN_AT;
-    }
-
-    public function status()
-    {
-        return CronJob::STATUS;
     }
 
     public function errorMessage()

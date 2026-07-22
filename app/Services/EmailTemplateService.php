@@ -2,22 +2,20 @@
 
 namespace App\Services;
 
+use App\Enums\BaseStatus;
 use App\Models\EmailTemplate;
 use App\Repositories\EmailTemplateRepository;
 use App\Services\Email\TemplateVariableRenderer;
 
+/**
+ * @property EmailTemplateRepository $repository
+ */
 class EmailTemplateService extends BaseService
 {
-    protected TemplateVariableRenderer $templateVariableRenderer;
-
     public function __construct(
-        EmailTemplateRepository $repository,
-        TemplateVariableRenderer $templateVariableRenderer
-    )
-    {
-        $this->repository = $repository;
-        $this->templateVariableRenderer = $templateVariableRenderer;
-    }
+        protected EmailTemplateRepository $repository,
+        protected TemplateVariableRenderer $templateVariableRenderer
+    ) {}
 
     // column constants
     public function serverId()
@@ -70,11 +68,6 @@ class EmailTemplateService extends BaseService
         return $this->repository->allowedAttachments();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function createdBy()
     {
         return $this->repository->createdBy();
@@ -89,7 +82,7 @@ class EmailTemplateService extends BaseService
     {
         return $this->query()
             ->where($this->templateCode(), $templateCode)
-            ->where($this->isActive(), 1)
+            ->where($this->status(), BaseStatus::ACTIVE)
             ->first();
     }
 

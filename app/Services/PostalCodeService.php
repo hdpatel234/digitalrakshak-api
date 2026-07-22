@@ -9,7 +9,7 @@ use App\Repositories\PostalCodeRepository;
  */
 class PostalCodeService extends BaseService
 {
-    
+
     public function __construct(PostalCodeRepository $repository)
     {
         $this->repository = $repository;
@@ -51,9 +51,5 @@ class PostalCodeService extends BaseService
         return $this->repository->accuracy();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }

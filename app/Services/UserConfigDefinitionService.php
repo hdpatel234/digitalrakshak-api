@@ -9,7 +9,7 @@ use App\Repositories\UserConfigDefinitionRepository;
  */
 class UserConfigDefinitionService extends BaseService
 {
-    
+
     public function __construct(UserConfigDefinitionRepository $repository)
     {
         $this->repository = $repository;
@@ -91,14 +91,5 @@ class UserConfigDefinitionService extends BaseService
         return $this->repository->dependsOn();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
     // functions
 }

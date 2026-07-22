@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class UserSession extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "user_sessions";
-    
     const USER_ID = "user_id";
     const ACCESS_TOKEN_ID = "access_token_id";
     const IP_ADDRESS = "ip_address";
@@ -18,7 +15,6 @@ class UserSession extends BaseModel
     const BROWSER = "browser";
     const OS = "os";
     const DEVICE = "device";
-    const IS_ACTIVE = "is_active";
     protected $fillable = [
         self::USER_ID,
         self::ACCESS_TOKEN_ID,
@@ -27,6 +23,6 @@ class UserSession extends BaseModel
         self::BROWSER,
         self::OS,
         self::DEVICE,
-        self::IS_ACTIVE,
+        self::STATUS,
     ];
 }

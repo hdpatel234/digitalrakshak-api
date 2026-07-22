@@ -72,9 +72,5 @@ class UserSocialConnectionRepository extends BaseRepository
         return UserSocialConnection::LAST_LOGIN_AT;
     }
 
-    public function isActive()
-    {
-        return UserSocialConnection::IS_ACTIVE;
-    }
     // functions
 }

@@ -71,24 +71,9 @@ class CityService extends BaseService
         return $this->repository->isCapital();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function displayOrder()
     {
         return $this->repository->displayOrder();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
     }
 
     // functions

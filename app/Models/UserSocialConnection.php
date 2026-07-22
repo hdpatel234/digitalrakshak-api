@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class UserSocialConnection extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "user_social_connections";
-    
     const USER_ID = "user_id";
     const PROVIDER_ID = "provider_id";
     const PROVIDER_USER_ID = "provider_user_id";
@@ -23,7 +20,6 @@ class UserSocialConnection extends BaseModel
     const SCOPES = "scopes";
     const RAW_DATA = "raw_data";
     const LAST_LOGIN_AT = "last_login_at";
-    const IS_ACTIVE = "is_active";
     protected $fillable = [
         self::USER_ID,
         self::PROVIDER_ID,
@@ -37,6 +33,6 @@ class UserSocialConnection extends BaseModel
         self::SCOPES,
         self::RAW_DATA,
         self::LAST_LOGIN_AT,
-        self::IS_ACTIVE,
+        self::STATUS,
     ];
 }

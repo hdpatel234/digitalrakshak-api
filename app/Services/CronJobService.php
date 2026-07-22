@@ -21,11 +21,6 @@ class CronJobService extends BaseService
         return $this->repository->command();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function lastRunAt()
     {
         return $this->repository->lastRunAt();

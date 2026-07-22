@@ -22,11 +22,6 @@ class EmailRoutingRuleRepository extends BaseRepository
         return EmailRoutingRule::RULE_PRIORITY;
     }
 
-    public function isActive()
-    {
-        return EmailRoutingRule::IS_ACTIVE;
-    }
-
     public function matchType()
     {
         return EmailRoutingRule::MATCH_TYPE;
@@ -107,14 +102,5 @@ class EmailRoutingRuleRepository extends BaseRepository
         return EmailRoutingRule::LAST_USED_AT;
     }
 
-    public function createdBy()
-    {
-        return EmailRoutingRule::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return EmailRoutingRule::UPDATED_BY;
-    }
     // functions
 }

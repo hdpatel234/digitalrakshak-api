@@ -50,16 +50,6 @@ class PaymentGatewayService extends BaseService
         return $this->repository->supportedMethods();
     }
 
-    public function configurationSchema()
-    {
-        return $this->repository->configurationSchema();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function isDefault()
     {
         return $this->repository->isDefault();
@@ -69,5 +59,6 @@ class PaymentGatewayService extends BaseService
     {
         return $this->repository->displayOrder();
     }
+
     // functions
 }

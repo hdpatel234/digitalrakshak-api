@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\BaseStatus;
 use App\Models\UserSession;
 
 class UserSessionRepository extends BaseRepository
@@ -47,13 +48,9 @@ class UserSessionRepository extends BaseRepository
         return UserSession::DEVICE;
     }
 
-    public function isActive()
-    {
-        return UserSession::IS_ACTIVE;
-    }
     // functions
     public function markInactive($tokenId)
     {
-        return UserSession::where(UserSession::ACCESS_TOKEN_ID, $tokenId)->update([UserSession::IS_ACTIVE => false]);
+        return UserSession::where(UserSession::ACCESS_TOKEN_ID, $tokenId)->update([UserSession::STATUS => BaseStatus::INACTIVE]);
     }
 }

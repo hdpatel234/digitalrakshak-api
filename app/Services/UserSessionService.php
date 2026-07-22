@@ -9,7 +9,7 @@ use App\Repositories\UserSessionRepository;
  */
 class UserSessionService extends BaseService
 {
-    
+
     public function __construct(UserSessionRepository $repository)
     {
         $this->repository = $repository;
@@ -51,9 +51,5 @@ class UserSessionService extends BaseService
         return $this->repository->device();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }

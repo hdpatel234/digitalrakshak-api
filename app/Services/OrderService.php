@@ -7,7 +7,7 @@ use App\Repositories\OrderRepository;
 /**
  * @property OrderRepository $repository
  */
-class CandidateOrderService extends BaseService
+class OrderService extends BaseService
 {
 
     public function __construct(OrderRepository $repository)

@@ -47,9 +47,5 @@ class PostalCodeRepository extends BaseRepository
         return PostalCode::ACCURACY;
     }
 
-    public function isActive()
-    {
-        return PostalCode::IS_ACTIVE;
-    }
     // functions
 }

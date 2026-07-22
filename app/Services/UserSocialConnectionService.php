@@ -9,7 +9,7 @@ use App\Repositories\UserSocialConnectionRepository;
  */
 class UserSocialConnectionService extends BaseService
 {
-    
+
     public function __construct(UserSocialConnectionRepository $repository)
     {
         $this->repository = $repository;
@@ -76,9 +76,5 @@ class UserSocialConnectionService extends BaseService
         return $this->repository->lastLoginAt();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
     // functions
 }

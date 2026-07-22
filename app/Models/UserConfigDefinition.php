@@ -8,10 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class UserConfigDefinition extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "user_config_definitions";
-    
     const CATEGORY_ID = "category_id";
     const CONFIG_KEY = "config_key";
     const CONFIG_NAME = "config_name";
@@ -27,8 +24,6 @@ class UserConfigDefinition extends BaseModel
     const UI_COMPONENT = "ui_component";
     const UI_PROPS = "ui_props";
     const DEPENDS_ON = "depends_on";
-    const IS_ACTIVE = "is_active";
-    const CREATED_BY = "created_by";
     protected $fillable = [
         self::CATEGORY_ID,
         self::CONFIG_KEY,
@@ -45,8 +40,7 @@ class UserConfigDefinition extends BaseModel
         self::UI_COMPONENT,
         self::UI_PROPS,
         self::DEPENDS_ON,
-        self::IS_ACTIVE,
-        self::CREATED_BY,
+        self::STATUS
     ];
 
     protected function casts(): array

@@ -88,16 +88,6 @@ class UserConfigDefinitionRepository extends BaseRepository
         return UserConfigDefinition::DEPENDS_ON;
     }
 
-    public function isActive()
-    {
-        return UserConfigDefinition::IS_ACTIVE;
-    }
-
-    public function createdBy()
-    {
-        return UserConfigDefinition::CREATED_BY;
-    }
-
     public function getResolvedConfigsForUser(int|string $userId): array
     {
         $definitions = $this->query()

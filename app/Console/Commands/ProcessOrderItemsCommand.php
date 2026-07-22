@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\CandidateServiceLog;
 use App\Services\Verification\VerificationServiceFactory;
 use Illuminate\Support\Facades\Log;
-use App\Services\CandidateOrderService;
+use App\Services\OrderService;
 use App\Services\CandidateServiceService;
 use App\Services\CandidateService as CandidateModelService;
 use App\Services\ServiceService;
@@ -14,7 +14,7 @@ use App\Services\CandidateReportService;
 use App\Services\CandidateServiceLogService;
 use App\Enums\OrderStatus;
 
-class ProcessCandidateServicesCommand extends Command
+class ProcessOrderItemsCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -34,7 +34,7 @@ class ProcessCandidateServicesCommand extends Command
      * Execute the console command.
      */
     public function __construct(
-        protected CandidateOrderService $candidateOrderService,
+        protected OrderService $candidateOrderService,
         protected CandidateServiceService $candidateServiceService,
         protected CandidateModelService $candidateModelService,
         protected ServiceService $serviceService,

@@ -47,16 +47,6 @@ class PaymentGatewayRepository extends BaseRepository
         return PaymentGateway::SUPPORTED_METHODS;
     }
 
-    public function configurationSchema()
-    {
-        return PaymentGateway::CONFIGURATION_SCHEMA;
-    }
-
-    public function isActive()
-    {
-        return PaymentGateway::IS_ACTIVE;
-    }
-
     public function isDefault()
     {
         return PaymentGateway::IS_DEFAULT;
@@ -66,5 +56,6 @@ class PaymentGatewayRepository extends BaseRepository
     {
         return PaymentGateway::DISPLAY_ORDER;
     }
+
     // functions
 }

@@ -9,7 +9,7 @@ use App\Repositories\EmailRoutingRuleRepository;
  */
 class EmailRoutingRuleService extends BaseService
 {
-    
+
     public function __construct(EmailRoutingRuleRepository $repository)
     {
         $this->repository = $repository;
@@ -24,11 +24,6 @@ class EmailRoutingRuleService extends BaseService
     public function rulePriority()
     {
         return $this->repository->rulePriority();
-    }
-
-    public function isActive()
-    {
-        return $this->repository->isActive();
     }
 
     public function matchType()
@@ -111,14 +106,5 @@ class EmailRoutingRuleService extends BaseService
         return $this->repository->lastUsedAt();
     }
 
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
     // functions
 }

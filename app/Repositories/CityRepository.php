@@ -67,24 +67,9 @@ class CityRepository extends BaseRepository
         return City::IS_CAPITAL;
     }
 
-    public function isActive()
-    {
-        return City::IS_ACTIVE;
-    }
-
     public function displayOrder()
     {
         return City::DISPLAY_ORDER;
-    }
-
-    public function createdBy()
-    {
-        return City::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return City::UPDATED_BY;
     }
 
     // functions

@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ServiceFieldName;
-use App\Services\CandidateOrderService;
+use App\Services\OrderService;
 use App\Services\CandidateServiceService;
 use App\Services\CandidateServiceDataService;
 use App\Services\ProteanService;
@@ -19,7 +19,7 @@ class ProcessOrderVerificationsCommand extends Command
 
     public function __construct(
         protected ProteanService $proteanService,
-        protected CandidateOrderService $candidateOrderService,
+        protected OrderService $candidateOrderService,
         protected CandidateServiceService $candidateServiceService,
         protected CandidateServiceDataService $candidateServiceDataService
     ) {

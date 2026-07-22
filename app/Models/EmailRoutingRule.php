@@ -9,16 +9,13 @@ class EmailRoutingRule extends BaseModel
 {
     use SoftDeletes;
 
-    
     protected $table = "email_routing_rules";
     protected $casts = [
-        self::IS_ACTIVE => 'boolean',
         self::DAYS_OF_WEEK => 'array',
     ];
-    
+
     const RULE_NAME = "rule_name";
     const RULE_PRIORITY = "rule_priority";
-    const IS_ACTIVE = "is_active";
     const MATCH_TYPE = "match_type";
     const MATCH_VALUE = "match_value";
     const MATCH_PATTERN = "match_pattern";
@@ -35,12 +32,9 @@ class EmailRoutingRule extends BaseModel
     const DAYS_OF_WEEK = "days_of_week";
     const TIMES_USED = "times_used";
     const LAST_USED_AT = "last_used_at";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::RULE_NAME,
         self::RULE_PRIORITY,
-        self::IS_ACTIVE,
         self::MATCH_TYPE,
         self::MATCH_VALUE,
         self::MATCH_PATTERN,
@@ -57,8 +51,7 @@ class EmailRoutingRule extends BaseModel
         self::DAYS_OF_WEEK,
         self::TIMES_USED,
         self::LAST_USED_AT,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::STATUS
     ];
 
     public function server(): BelongsTo

@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Model;
 
-class CronJob extends Model
+class CronJob extends BaseModel
 {
     use SoftDeletes;
 
@@ -27,10 +26,8 @@ class CronJob extends Model
     const MAX_RETRIES = 'max_retries';
     const RETRY_DELAY_MINUTES = 'retry_delay_minutes';
     const PRIORITY = 'priority';
-    const IS_ACTIVE = 'is_active';
     const LAST_RUN_AT = 'last_run_at';
     const NEXT_RUN_AT = 'next_run_at';
-    const STATUS = 'status';
     const LAST_RUN_STATUS = 'last_run_status';
     const LAST_RUN_LOG_ID = 'last_run_log_id';
     const DURATION_SECONDS = 'duration_seconds';
@@ -57,7 +54,6 @@ class CronJob extends Model
         self::MAX_RETRIES,
         self::RETRY_DELAY_MINUTES,
         self::PRIORITY,
-        self::IS_ACTIVE,
         self::LAST_RUN_AT,
         self::NEXT_RUN_AT,
         self::STATUS,
@@ -67,10 +63,10 @@ class CronJob extends Model
         self::PROCESSED_COUNT,
         self::ERROR_COUNT,
         self::ERROR_MESSAGE,
+        self::STATUS
     ];
 
     protected $casts = [
-        self::IS_ACTIVE => 'boolean',
         self::CONCURRENT_INSTANCES => 'boolean',
         self::LAST_RUN_AT => 'datetime',
         self::NEXT_RUN_AT => 'datetime',

@@ -97,11 +97,6 @@ class SavedPaymentMethodRepository extends BaseRepository
         return SavedPaymentMethod::IS_DEFAULT;
     }
 
-    public function isActive()
-    {
-        return SavedPaymentMethod::IS_ACTIVE;
-    }
-
     public function lastUsedAt()
     {
         return SavedPaymentMethod::LAST_USED_AT;
@@ -111,5 +106,6 @@ class SavedPaymentMethodRepository extends BaseRepository
     {
         return SavedPaymentMethod::USED_COUNT;
     }
+
     // functions
 }

@@ -7,15 +7,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class EmailTemplate extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "email_templates";
     protected $casts = [
         self::VARIABLES => 'array',
-        self::ALLOWED_ATTACHMENTS => 'array',
-        self::IS_ACTIVE => 'boolean',
+        self::ALLOWED_ATTACHMENTS => 'array'
     ];
-    
+
     const SERVER_ID = "server_id";
     const TEMPLATE_NAME = "template_name";
     const TEMPLATE_CODE = "template_code";
@@ -26,7 +23,6 @@ class EmailTemplate extends BaseModel
     const VARIABLES = "variables";
     const DEFAULT_PRIORITY = "default_priority";
     const ALLOWED_ATTACHMENTS = "allowed_attachments";
-    const IS_ACTIVE = "is_active";
     const CREATED_BY = "created_by";
     const UPDATED_BY = "updated_by";
     protected $fillable = [
@@ -40,8 +36,6 @@ class EmailTemplate extends BaseModel
         self::VARIABLES,
         self::DEFAULT_PRIORITY,
         self::ALLOWED_ATTACHMENTS,
-        self::IS_ACTIVE,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::STATUS
     ];
 }

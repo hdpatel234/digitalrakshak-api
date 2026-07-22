@@ -9,7 +9,7 @@ use App\Repositories\ServiceProcessingRuleRepository;
  */
 class ServiceProcessingRuleService extends BaseService
 {
-    
+
     public function __construct(ServiceProcessingRuleRepository $repository)
     {
         $this->repository = $repository;
@@ -106,19 +106,5 @@ class ServiceProcessingRuleService extends BaseService
         return $this->repository->failureStatus();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
     // functions
 }

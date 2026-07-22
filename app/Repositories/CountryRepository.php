@@ -92,11 +92,6 @@ class CountryRepository extends BaseRepository
         return Country::POSTAL_CODE_REGEX;
     }
 
-    public function isActive()
-    {
-        return Country::IS_ACTIVE;
-    }
-
     public function isDefault()
     {
         return Country::IS_DEFAULT;
@@ -107,14 +102,5 @@ class CountryRepository extends BaseRepository
         return Country::DISPLAY_ORDER;
     }
 
-    public function createdBy()
-    {
-        return Country::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return Country::UPDATED_BY;
-    }
     // functions
 }

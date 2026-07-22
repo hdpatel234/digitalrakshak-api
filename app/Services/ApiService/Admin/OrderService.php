@@ -4,7 +4,7 @@ namespace App\Services\ApiService\Admin;
 
 use App\Enums\BaseDisplayOrder;
 use App\Enums\BaseStatus;
-use App\Services\CandidateOrderService;
+use App\Services\OrderService as AppOrderService;
 use App\Services\PaymentMethodTypeService;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -12,7 +12,7 @@ use App\Enums\PaymentStatus;
 class OrderService
 {
     public function __construct(
-        protected CandidateOrderService $candidateOrderService,
+        protected AppOrderService $candidateOrderService,
         protected PaymentMethodTypeService $paymentMethodTypeService
     ) {}
 

@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Country extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "countries";
-    
     const NAME = "name";
     const ISO_CODE_2 = "iso_code_2";
     const ISO_CODE_3 = "iso_code_3";
@@ -27,11 +24,8 @@ class Country extends BaseModel
     const TIMEZONES = "timezones";
     const POSTAL_CODE_FORMAT = "postal_code_format";
     const POSTAL_CODE_REGEX = "postal_code_regex";
-    const IS_ACTIVE = "is_active";
     const IS_DEFAULT = "is_default";
     const DISPLAY_ORDER = "display_order";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::NAME,
         self::ISO_CODE_2,
@@ -49,10 +43,8 @@ class Country extends BaseModel
         self::TIMEZONES,
         self::POSTAL_CODE_FORMAT,
         self::POSTAL_CODE_REGEX,
-        self::IS_ACTIVE,
         self::IS_DEFAULT,
         self::DISPLAY_ORDER,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::STATUS
     ];
 }

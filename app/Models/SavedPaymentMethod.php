@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class SavedPaymentMethod extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "saved_payment_methods";
-    
     const CLIENT_ID = "client_id";
     const USER_ID = "user_id";
     const CUSTOMER_ID = "customer_id";
@@ -28,7 +25,6 @@ class SavedPaymentMethod extends BaseModel
     const BANK_NAME = "bank_name";
     const UPI_ID = "upi_id";
     const IS_DEFAULT = "is_default";
-    const IS_ACTIVE = "is_active";
     const LAST_USED_AT = "last_used_at";
     const USED_COUNT = "used_count";
     protected $fillable = [
@@ -49,7 +45,6 @@ class SavedPaymentMethod extends BaseModel
         self::BANK_NAME,
         self::UPI_ID,
         self::IS_DEFAULT,
-        self::IS_ACTIVE,
         self::LAST_USED_AT,
         self::USED_COUNT,
     ];

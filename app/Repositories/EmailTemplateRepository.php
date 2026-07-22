@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\BaseStatus;
 use App\Models\EmailTemplate;
 
 class EmailTemplateRepository extends BaseRepository
@@ -16,7 +17,7 @@ class EmailTemplateRepository extends BaseRepository
     {
         return EmailTemplate::SERVER_ID;
     }
-    
+
     public function templateName()
     {
         return EmailTemplate::TEMPLATE_NAME;
@@ -62,11 +63,6 @@ class EmailTemplateRepository extends BaseRepository
         return EmailTemplate::ALLOWED_ATTACHMENTS;
     }
 
-    public function isActive()
-    {
-        return EmailTemplate::IS_ACTIVE;
-    }
-
     public function createdBy()
     {
         return EmailTemplate::CREATED_BY;
@@ -81,7 +77,7 @@ class EmailTemplateRepository extends BaseRepository
     {
         return $this->query()
             ->where($this->templateCode(), $code)
-            ->where($this->isActive(), true)
+            ->where($this->status(), BaseStatus::ACTIVE)
             ->first();
     }
 }

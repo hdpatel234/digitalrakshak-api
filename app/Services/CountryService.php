@@ -9,7 +9,7 @@ use App\Repositories\CountryRepository;
  */
 class CountryService extends BaseService
 {
-    
+
     public function __construct(CountryRepository $repository)
     {
         $this->repository = $repository;
@@ -96,11 +96,6 @@ class CountryService extends BaseService
         return $this->repository->postalCodeRegex();
     }
 
-    public function isActive()
-    {
-        return $this->repository->isActive();
-    }
-
     public function isDefault()
     {
         return $this->repository->isDefault();
@@ -120,5 +115,6 @@ class CountryService extends BaseService
     {
         return $this->repository->updatedBy();
     }
+
     // functions
 }

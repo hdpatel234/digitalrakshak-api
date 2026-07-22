@@ -60,7 +60,7 @@ class GenerateTableComponents extends Command
             if (Schema::hasTable($table)) {
                 $columns = Schema::getColumnListing($table);
                 // Filter out common Laravel columns if needed
-                return array_diff($columns, ['id', 'created_at', 'updated_at', 'deleted_at']);
+                return array_diff($columns, ['id', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at']);
             }
         } catch (\Exception $e) {
             $this->warn("Could not fetch columns from database: " . $e->getMessage());
@@ -110,7 +110,14 @@ class GenerateTableComponents extends Command
     {
         $constants = $this->generateModelConstants($columns);
         $fillable = $this->generateFillable($columns);
-        $useSoftDeletes = in_array('deleted_at', $columns) ? 'use SoftDeletes;' : '';
+        $hasDeletedAt = false;
+        try {
+            if (Schema::hasColumn($table, 'deleted_at')) {
+                $hasDeletedAt = true;
+            }
+        } catch (\Exception $e) {}
+        
+        $useSoftDeletes = $hasDeletedAt ? 'use SoftDeletes;' : '';
 
         return <<<PHP
 <?php
@@ -162,7 +169,7 @@ namespace App\Repositories;
 
 use App\Models\\{$modelName};
 
-class {$modelName}Repository extends {\$this->baseRepository}
+class {$modelName}Repository extends {$this->baseRepository}
 {
     public function __construct({$modelName} \$model)
     {
@@ -170,7 +177,7 @@ class {$modelName}Repository extends {\$this->baseRepository}
     }
 
     // column constants
-{\$getterMethods}
+{$getterMethods}
     // functions
 }
 PHP;
@@ -183,9 +190,9 @@ PHP;
             $methodName = Str::camel($column);
             $constantName = strtoupper($column);
             $methods[] = <<<PHP
-    public function {\$methodName}()
+    public function {$methodName}()
     {
-        return {$modelName}::{\$constantName};
+        return {$modelName}::{$constantName};
     }
 PHP;
         }
@@ -206,14 +213,9 @@ use App\Repositories\\{$modelName}Repository;
 /**
  * @property {$modelName}Repository \$repository
  */
-class {$modelName}Service extends {\$this->baseService}
+class {$modelName}Service extends {$this->baseService}
 {
-    protected \$repository;
-    
-    public function __construct({$modelName}Repository \$repository)
-    {
-        \$this->repository = \$repository;
-    }
+    public function __construct(protected {$modelName}Repository \$repository) {}
 
     // column constants
 {$getterMethods}

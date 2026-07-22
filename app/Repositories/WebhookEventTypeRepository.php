@@ -37,9 +37,5 @@ class WebhookEventTypeRepository extends BaseRepository
         return WebhookEventType::SAMPLE_PAYLOAD;
     }
 
-    public function isActive()
-    {
-        return WebhookEventType::IS_ACTIVE;
-    }
     // functions
 }

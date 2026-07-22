@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ServiceProcessingRule extends BaseModel
 {
     use SoftDeletes;
-
-    
     protected $table = "service_processing_rules";
-    
     const SERVICE_ID = "service_id";
     const PROCESSING_TYPE = "processing_type";
     const API_ENDPOINT = "api_endpoint";
@@ -29,9 +26,6 @@ class ServiceProcessingRule extends BaseModel
     const RETRY_DELAY_MINUTES = "retry_delay_minutes";
     const SUCCESS_STATUS = "success_status";
     const FAILURE_STATUS = "failure_status";
-    const IS_ACTIVE = "is_active";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
     protected $fillable = [
         self::SERVICE_ID,
         self::PROCESSING_TYPE,
@@ -51,8 +45,6 @@ class ServiceProcessingRule extends BaseModel
         self::RETRY_DELAY_MINUTES,
         self::SUCCESS_STATUS,
         self::FAILURE_STATUS,
-        self::IS_ACTIVE,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::STATUS
     ];
 }

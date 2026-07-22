@@ -102,19 +102,5 @@ class ServiceProcessingRuleRepository extends BaseRepository
         return ServiceProcessingRule::FAILURE_STATUS;
     }
 
-    public function isActive()
-    {
-        return ServiceProcessingRule::IS_ACTIVE;
-    }
-
-    public function createdBy()
-    {
-        return ServiceProcessingRule::CREATED_BY;
-    }
-
-    public function updatedBy()
-    {
-        return ServiceProcessingRule::UPDATED_BY;
-    }
     // functions
 }
