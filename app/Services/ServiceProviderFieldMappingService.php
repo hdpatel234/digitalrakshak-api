@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\ProviderFieldMappingRepository;
+use App\Repositories\ServiceProviderFieldMappingRepository;
 
 /**
- * @property ProviderFieldMappingRepository $repository
+ * @property ServiceProviderFieldMappingRepository $repository
  */
 class ProviderFieldMappingService extends BaseService
 {
-    
-    public function __construct(ProviderFieldMappingRepository $repository)
+
+    public function __construct(ServiceProviderFieldMappingRepository $repository)
     {
         $this->repository = $repository;
     }

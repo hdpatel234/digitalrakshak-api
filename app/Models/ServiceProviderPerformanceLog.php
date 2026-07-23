@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProviderPerformanceLog extends BaseModel
+class ServiceProviderPerformanceLog extends BaseModel
 {
     use SoftDeletes;
-
-    
-    protected $table = "provider_performance_logs";
-    
+    protected $table = "service_provider_performance_logs";
     const PROVIDER_ID = "provider_id";
     const SERVICE_ID = "service_id";
     const ASSIGNMENT_ID = "assignment_id";

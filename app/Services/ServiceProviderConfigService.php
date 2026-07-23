@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\ProviderApiConfigRepository;
+use App\Repositories\ServiceProviderConfigRepository;
 
 /**
- * @property ProviderApiConfigRepository $repository
+ * @property ServiceProviderConfigRepository $repository
  */
-class ProviderApiConfigService extends BaseService
+class ServiceProviderConfigService extends BaseService
 {
 
-    public function __construct(ProviderApiConfigRepository $repository)
+    public function __construct(ServiceProviderConfigRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -191,14 +191,5 @@ class ProviderApiConfigService extends BaseService
         return $this->repository->failedCalls();
     }
 
-    public function createdBy()
-    {
-        return $this->repository->createdBy();
-    }
-
-    public function updatedBy()
-    {
-        return $this->repository->updatedBy();
-    }
     // functions
 }

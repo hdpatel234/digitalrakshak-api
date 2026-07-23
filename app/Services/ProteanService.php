@@ -10,7 +10,7 @@ use phpseclib3\Crypt\RSA;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Repositories\ProviderApiConfigRepository;
+use App\Repositories\ServiceProviderConfigRepository;
 use App\Repositories\ServiceProviderRepository;
 
 class ProteanService
@@ -18,7 +18,7 @@ class ProteanService
     protected ?object $config = null;
     protected string $environment;
     public function __construct(
-        protected ProviderApiConfigRepository $providerApiConfigRepository,
+        protected ServiceProviderConfigRepository $serviceProviderConfigRepository,
         protected ServiceProviderRepository $serviceProviderRepository
     ) {
         $this->loadConfiguration();
@@ -31,28 +31,7 @@ class ProteanService
     {
         $this->environment = config('app.env') === EnvironmentEnum::PRODUCTION->value ? EnvironmentEnum::PRODUCTION->value : EnvironmentEnum::SANDBOX->value;
 
-        $configQuery = $this->providerApiConfigRepository->query()
-            ->join(
-                'service_providers',
-                'provider_api_configs.' . $this->providerApiConfigRepository->providerId(),
-                '=',
-                'service_providers.' . $this->serviceProviderRepository->id()
-            );
-
-        $config = (clone $configQuery)
-            ->where('service_providers.' . $this->serviceProviderRepository->providerCode(), 'protean')
-            ->where('provider_api_configs.' . $this->providerApiConfigRepository->environment(), $this->environment)
-            ->select('provider_api_configs.*')
-            ->first();
-
-        // Fallback to any active configuration if environment match is not found
-        if (!$config) {
-            $config = clone $configQuery;
-            $config = $config->where('service_providers.' . $this->serviceProviderRepository->providerCode(), 'protean')
-                ->where('provider_api_configs.' . $this->providerApiConfigRepository->status(), 'active')
-                ->select('provider_api_configs.*')
-                ->first();
-        }
+        $config = $this->serviceProviderConfigRepository->getConfigByProviderCodeAndEnvironment('protean', $this->environment, $this->serviceProviderRepository);
 
         $this->config = $config;
     }
@@ -112,10 +91,10 @@ class ProteanService
         // Cache the token with a safety margin of 60 seconds
         $expiry = now()->addSeconds((int)$expiresIn - 60);
 
-        $this->providerApiConfigRepository->update($this->config->id, [
-            $this->providerApiConfigRepository->apiToken() => $token,
-            $this->providerApiConfigRepository->tokenExpiry() => $expiry,
-            $this->providerApiConfigRepository->updatedAt() => now(),
+        $this->serviceProviderConfigRepository->update($this->config->id, [
+            $this->serviceProviderConfigRepository->apiToken() => $token,
+            $this->serviceProviderConfigRepository->tokenExpiry() => $expiry,
+            $this->serviceProviderConfigRepository->updatedAt() => now(),
         ]);
 
         // Refresh internal configuration cache
@@ -409,11 +388,11 @@ class ProteanService
             // ]);
 
             // Update stats on config
-            $this->providerApiConfigRepository->query()
-                ->where($this->providerApiConfigRepository->id(), $this->config->id)
-                ->increment($code >= 200 && $code < 300 ? $this->providerApiConfigRepository->successfulCalls() : $this->providerApiConfigRepository->failedCalls(), 1, [
-                    $this->providerApiConfigRepository->totalCalls() => DB::raw($this->providerApiConfigRepository->totalCalls() . ' + 1'),
-                    $this->providerApiConfigRepository->updatedAt() => now()
+            $this->serviceProviderConfigRepository->query()
+                ->where($this->serviceProviderConfigRepository->id(), $this->config->id)
+                ->increment($code >= 200 && $code < 300 ? $this->serviceProviderConfigRepository->successfulCalls() : $this->serviceProviderConfigRepository->failedCalls(), 1, [
+                    $this->serviceProviderConfigRepository->totalCalls() => DB::raw($this->serviceProviderConfigRepository->totalCalls() . ' + 1'),
+                    $this->serviceProviderConfigRepository->updatedAt() => now()
                 ]);
         } catch (Exception $e) {
             Log::warning("Failed to record Protean api provider log: " . $e->getMessage());

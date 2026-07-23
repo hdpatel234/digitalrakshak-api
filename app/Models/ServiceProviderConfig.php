@@ -4,12 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProviderApiConfig extends BaseModel
+class ServiceProviderConfig extends BaseModel
 {
     use SoftDeletes;
-
-    protected $table = "provider_api_configs";
-
+    protected $table = "service_provider_configs";
     const PROVIDER_ID = "provider_id";
     const CONFIG_NAME = "config_name";
     const ENVIRONMENT = "environment";
@@ -46,9 +44,6 @@ class ProviderApiConfig extends BaseModel
     const TOTAL_CALLS = "total_calls";
     const SUCCESSFUL_CALLS = "successful_calls";
     const FAILED_CALLS = "failed_calls";
-    const CREATED_BY = "created_by";
-    const UPDATED_BY = "updated_by";
-    const DELETED_BY = "deleted_by";
     protected $fillable = [
         self::PROVIDER_ID,
         self::CONFIG_NAME,
@@ -85,9 +80,7 @@ class ProviderApiConfig extends BaseModel
         self::SUCCESS_RATE,
         self::TOTAL_CALLS,
         self::SUCCESSFUL_CALLS,
-        self::FAILED_CALLS,
-        self::CREATED_BY,
-        self::UPDATED_BY,
+        self::FAILED_CALLS
     ];
 
     protected $casts = [

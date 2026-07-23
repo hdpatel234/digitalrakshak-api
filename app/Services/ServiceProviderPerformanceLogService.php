@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\ProviderPerformanceLogRepository;
+use App\Repositories\ServiceProviderPerformanceLogRepository;
 
 /**
- * @property ProviderPerformanceLogRepository $repository
+ * @property ServiceProviderPerformanceLogRepository $repository
  */
-class ProviderPerformanceLogService extends BaseService
+class ServiceProviderPerformanceLogService extends BaseService
 {
-    
-    public function __construct(ProviderPerformanceLogRepository $repository)
+
+    public function __construct(ServiceProviderPerformanceLogRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -55,5 +55,6 @@ class ProviderPerformanceLogService extends BaseService
     {
         return $this->repository->loggedAt();
     }
+
     // functions
 }

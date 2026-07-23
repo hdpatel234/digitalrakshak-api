@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\ProviderResponseMappingRepository;
+use App\Repositories\ServiceProviderResponseMappingRepository;
 
 /**
- * @property ProviderResponseMappingRepository $repository
+ * @property ServiceProviderResponseMappingRepository $repository
  */
-class ProviderResponseMappingService extends BaseService
+class ServiceProviderResponseMappingService extends BaseService
 {
-    
-    public function __construct(ProviderResponseMappingRepository $repository)
+
+    public function __construct(ServiceProviderResponseMappingRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -55,5 +55,6 @@ class ProviderResponseMappingService extends BaseService
     {
         return $this->repository->isRequired();
     }
+
     // functions
 }

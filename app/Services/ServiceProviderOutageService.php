@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\ProviderOutageRepository;
+use App\Repositories\ServiceProviderOutageRepository;
 
 /**
- * @property ProviderOutageRepository $repository
+ * @property ServiceProviderOutageRepository $repository
  */
-class ProviderOutageService extends BaseService
+class ServiceProviderOutageService extends BaseService
 {
-    
-    public function __construct(ProviderOutageRepository $repository)
+
+    public function __construct(ServiceProviderOutageRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -60,5 +60,6 @@ class ProviderOutageService extends BaseService
     {
         return $this->repository->resolution();
     }
+
     // functions
 }

@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProviderOutage extends BaseModel
+class ServiceProviderOutage extends BaseModel
 {
     use SoftDeletes;
-
-    
-    protected $table = "provider_outages";
-    
+    protected $table = "service_provider_outages";
     const PROVIDER_ID = "provider_id";
     const SERVICE_ID = "service_id";
     const OUTAGE_TYPE = "outage_type";

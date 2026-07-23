@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProviderFieldMapping extends BaseModel
+class ServiceProviderFieldMapping extends BaseModel
 {
     use SoftDeletes;
-
-    
-    protected $table = "provider_field_mappings";
-    
+    protected $table = "service_provider_field_mappings";
     const SERVICE_PROVIDER_ASSIGNMENT_ID = "service_provider_assignment_id";
     const SERVICE_FIELD_ID = "service_field_id";
     const PROVIDER_FIELD_NAME = "provider_field_name";
