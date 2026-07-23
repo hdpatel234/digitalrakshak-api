@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('provider_api_configs', function (Blueprint $table) {
+        Schema::create('service_provider_configs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('provider_id')->index('provider_configs_provider');
             $table->string('config_name');
@@ -63,6 +63,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('provider_api_configs');
+        Schema::dropIfExists('service_provider_configs');
     }
 };

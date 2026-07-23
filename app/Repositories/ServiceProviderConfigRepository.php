@@ -198,23 +198,23 @@ class ServiceProviderConfigRepository extends BaseRepository
         $configQuery = $this->query()
             ->join(
                 'service_providers',
-                'provider_api_configs.' . $this->providerId(),
+                'service_provider_configs.' . $this->providerId(),
                 '=',
                 'service_providers.' . $serviceProviderRepository->id()
             );
 
         $config = (clone $configQuery)
             ->where('service_providers.' . $serviceProviderRepository->providerCode(), $providerCode)
-            ->where('provider_api_configs.' . $this->environment(), $environment)
-            ->select('provider_api_configs.*')
+            ->where('service_provider_configs.' . $this->environment(), $environment)
+            ->select('service_provider_configs.*')
             ->first();
 
         // Fallback to any active configuration if environment match is not found
         if (!$config) {
             $config = clone $configQuery;
             $config = $config->where('service_providers.' . $serviceProviderRepository->providerCode(), $providerCode)
-                ->where('provider_api_configs.' . $this->status(), 'active')
-                ->select('provider_api_configs.*')
+                ->where('service_provider_configs.' . $this->status(), 'active')
+                ->select('service_provider_configs.*')
                 ->first();
         }
 
