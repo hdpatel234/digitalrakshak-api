@@ -2,8 +2,8 @@
 
 namespace App\Services\ApiService\Admin;
 
+use App\Enums\BaseStatus;
 use App\Enums\ClientStatus;
-use App\Enums\StatusEnum;
 use App\Models\Client;
 use App\Repositories\ClientRepository;
 use App\Repositories\ClientServiceRepository;
@@ -22,8 +22,6 @@ class ClientService
     public function getClients(array $data)
     {
         $query = $this->repo->getClientsQuery($data);
-
-        // Pagination
         $perPage = $data['limit'] ?? 10;
         $clients = $query->paginate($perPage);
 
@@ -47,9 +45,9 @@ class ClientService
                 'suspended' => $suspendedClients,
             ],
             'status_list' => [
-                ['key' => ClientStatus::ACTIVE->value, 'name' => 'Active'],
-                ['key' => ClientStatus::INACTIVE->value, 'name' => 'Inactive'],
-                ['key' => ClientStatus::SUSPENDED->value, 'name' => 'Suspended'],
+                ['key' => BaseStatus::ACTIVE->value, 'name' => BaseStatus::ACTIVE->label()],
+                ['key' => BaseStatus::INACTIVE->value, 'name' => BaseStatus::INACTIVE->label()],
+                ['key' => BaseStatus::SUSPENDED->value, 'name' => ClientStatus::SUSPENDED->label()],
             ]
         ];
     }
@@ -59,7 +57,7 @@ class ClientService
         if ($logoFile) {
             $data['logo'] = $logoFile->store('clients/logos', 'public');
         }
-        
+
         DB::beginTransaction();
         try {
             $client = $this->repo->create($data);
@@ -79,7 +77,7 @@ class ClientService
                         $this->clientServiceRepo->updateOrCreateByClientAndService(
                             $client->{$this->repo->id()},
                             $serviceId,
-                            [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
+                            [$this->clientServiceRepo->status() => $isEnabled ? BaseStatus::ACTIVE->value : BaseStatus::INACTIVE->value]
                         );
 
                         if ($customPrice !== null && $customPrice !== '') {
@@ -111,7 +109,7 @@ class ClientService
 
         $services = [];
         foreach ($clientServices as $serviceId => $clientService) {
-            if ($clientService->{$this->clientServiceRepo->status()} === StatusEnum::ACTIVE->value) {
+            if ($clientService->{$this->clientServiceRepo->status()} === BaseStatus::ACTIVE->value) {
                 $customPrice = null;
                 if ($clientPricing->has($serviceId)) {
                     $customPrice = $clientPricing->get($serviceId)->{$this->clientServicePricingRepo->customPrice()};
@@ -134,7 +132,7 @@ class ClientService
         if ($logoFile) {
             $data['logo'] = $logoFile->store('clients/logos', 'public');
         }
-        
+
         DB::beginTransaction();
         try {
             $client->update($data);
@@ -149,7 +147,7 @@ class ClientService
                     foreach ($services as $serviceData) {
                         $serviceId = $serviceData['service_id'] ?? null;
                         if (!$serviceId) continue;
-                        
+
                         $providedServiceIds[] = $serviceId;
 
                         $isEnabled = $serviceData['is_enabled'] ?? true;
@@ -158,7 +156,7 @@ class ClientService
                         $this->clientServiceRepo->updateOrCreateByClientAndService(
                             $client->{$this->repo->id()},
                             $serviceId,
-                            [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
+                            [$this->clientServiceRepo->status() => $isEnabled ? BaseStatus::ACTIVE->value : BaseStatus::INACTIVE->value]
                         );
 
                         if ($customPrice !== null && $customPrice !== '') {
@@ -177,12 +175,11 @@ class ClientService
                             );
                         }
                     }
-                    
-                    // Set status to inactive for services not in the list
+
                     $this->clientServiceRepo->updateStatusNotInList(
                         $client->{$this->repo->id()},
                         $providedServiceIds,
-                        'inactive'
+                        BaseStatus::INACTIVE->value
                     );
                 }
             }
@@ -217,7 +214,7 @@ class ClientService
         $data = $services->map(function ($service) use ($clientServices, $clientPricing) {
             $is_enabled = false;
             if ($clientServices->has($service->{$this->serviceRepo->id()})) {
-                $is_enabled = $clientServices->get($service->{$this->serviceRepo->id()})->{$this->clientServiceRepo->status()} === StatusEnum::ACTIVE->value;
+                $is_enabled = $clientServices->get($service->{$this->serviceRepo->id()})->{$this->clientServiceRepo->status()} === BaseStatus::ACTIVE->value;
             }
 
             $custom_price = null;
@@ -251,7 +248,7 @@ class ClientService
                 $this->clientServiceRepo->updateOrCreateByClientAndService(
                     $client->{$this->repo->id()},
                     $serviceId,
-                    [$this->clientServiceRepo->status() => $isEnabled ? StatusEnum::ACTIVE->value : StatusEnum::INACTIVE->value]
+                    [$this->clientServiceRepo->status() => $isEnabled ? BaseStatus::ACTIVE->value : BaseStatus::INACTIVE->value]
                 );
 
                 // Update or Create ClientServicePricing

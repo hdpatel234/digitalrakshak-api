@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BaseStatus;
 use App\Services\CronJobService;
 use App\Services\Cron\DynamicCronManager;
 use Illuminate\Console\Command;
@@ -60,7 +61,7 @@ class CronRunCommand extends Command
 
     protected function runAllJobs()
     {
-        $jobs = $this->cronJobService->query()->where($this->cronJobService->isActive(), 1)
+        $jobs = $this->cronJobService->query()->where($this->cronJobService->status(), BaseStatus::ACTIVE)
             ->where(function ($query) {
                 $query->where($this->cronJobService->nextRunAt(), '<=', now())
                     ->orWhereNull($this->cronJobService->nextRunAt());
@@ -114,9 +115,9 @@ class CronRunCommand extends Command
                 $result = $instance->$method($parameters);
 
                 $execution->update([
-                    'processed_count' => $result['processed'] ?? 0,
-                    'success_count' => $result['success'] ?? 0,
-                    'failed_count' => $result['failed'] ?? 0,
+                    'processed_count' => $result[BaseStatus::PROCESSED] ?? 0,
+                    'success_count' => $result[BaseStatus::SUCCESS] ?? 0,
+                    'failed_count' => $result[BaseStatus::FAILED] ?? 0,
                     'processed_logs' => isset($result['logs']) ? (is_array($result['logs']) ? json_encode($result['logs']) : $result['logs']) : null,
                 ]);
             } elseif ($job->{$this->cronJobService->command()}) {
@@ -186,10 +187,10 @@ class CronRunCommand extends Command
         if ($retryCount < ($job->{$this->cronJobService->maxRetries()} ?? 3)) {
             $job->update([
                 $this->cronJobService->nextRunAt() => now()->addMinutes($job->{$this->cronJobService->retryDelayMinutes()} ?? 5),
-                $this->cronJobService->lastRunStatus() => 'failed',
+                $this->cronJobService->lastRunStatus() => BaseStatus::FAILED,
             ]);
         } else {
-            $job->update([$this->cronJobService->isActive() => 0, $this->cronJobService->lastRunStatus() => 'failed']);
+            $job->update([$this->cronJobService->status() => BaseStatus::INACTIVE, $this->cronJobService->lastRunStatus() => BaseStatus::FAILED]);
             Log::warning("Cron job disabled: {$job->{$this->cronJobService->jobName()}} (max retries)");
         }
     }

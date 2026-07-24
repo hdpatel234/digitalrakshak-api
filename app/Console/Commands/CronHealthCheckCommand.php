@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BaseStatus;
 use App\Services\CronJobService;
 use App\Services\CronJobExecutionService;
 use Illuminate\Console\Command;
@@ -22,11 +23,11 @@ class CronHealthCheckCommand extends Command
     public function handle()
     {
         $healthy = true;
-        
+
         // Check for jobs that haven't run recently
         $threshold = now()->subHours(2);
-        
-        $stuckJobs = $this->cronJobService->query()->where($this->cronJobService->isActive(), 1)
+
+        $stuckJobs = $this->cronJobService->query()->where($this->cronJobService->status(), BaseStatus::ACTIVE)
             ->where(function ($query) use ($threshold) {
                 $query->whereNull($this->cronJobService->lastRunAt())
                     ->orWhere($this->cronJobService->lastRunAt(), '<', $threshold);
@@ -38,7 +39,7 @@ class CronHealthCheckCommand extends Command
             foreach ($stuckJobs as $job) {
                 $this->line("  - {$job->{$this->cronJobService->jobName()}} (last run: {$job->{$this->cronJobService->lastRunAt()}})");
             }
-            
+
             // Send alert
             $this->sendAlert($stuckJobs);
             $healthy = false;

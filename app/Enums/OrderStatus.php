@@ -10,4 +10,8 @@ enum OrderStatus: string
     case PROCESSING = 'processing';
     case COMPLETED = 'completed';
     case CANCELLED = 'cancelled';
+    public static function values(): array
+    {
+        return array_map(static fn(self $event): string => $event->value, self::cases());
+    }
 }

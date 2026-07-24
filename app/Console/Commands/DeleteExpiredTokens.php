@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\BaseStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Services\UserSessionService;
@@ -37,8 +38,8 @@ class DeleteExpiredTokens extends Command
             $this->userSessionService->query()
                 ->whereIn($this->userSessionService->accessTokenId(), $tokenIds)
                 ->update([
-                    $this->userSessionService->isActive() => false,
-                    'updated_at' => now(),
+                    $this->userSessionService->status() => BaseStatus::INACTIVE,
+                    $this->userSessionService->updatedAt() => now(),
                 ]);
 
             DB::table('oauth_access_tokens')

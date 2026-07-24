@@ -11,9 +11,8 @@ class PanVerificationService extends BaseVerificationService
     {
         if ($this->isTestMode()) {
             Log::info("Simulating PAN Verification for candidate ID {$OrderItem->candidate_id}");
-            usleep(100000); // 100ms
+            usleep(100000);
         } else {
-            // Actual API implementation goes here
             Log::info("Actual PAN Verification for candidate ID {$OrderItem->candidate_id}");
         }
     }

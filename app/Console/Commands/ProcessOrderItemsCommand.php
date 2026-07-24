@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\CandidateServiceLog;
 use App\Services\Verification\VerificationServiceFactory;
 use Illuminate\Support\Facades\Log;
 use App\Services\OrderService;
@@ -16,23 +15,8 @@ use App\Enums\OrderStatus;
 
 class ProcessOrderItemsCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:process-candidate-services';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Process candidate services for orders in processing state';
-
-    /**
-     * Execute the console command.
-     */
     public function __construct(
         protected OrderService $candidateOrderService,
         protected CandidateServiceService $candidateServiceService,
@@ -64,7 +48,9 @@ class ProcessOrderItemsCommand extends Command
             foreach ($order->candidates as $candidate) {
                 foreach ($candidate->candidateServices as $candidateService) {
                     if (!$candidateService->service || !$candidateService->service->{$this->serviceService->serviceCode()}) {
-                        $this->warn("Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}} is missing service or service_code.");
+                        $msg = "Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}} is missing service or service_code.";
+                        $this->warn($msg);
+                        Log::warning($msg);
                         continue;
                     }
 
@@ -87,8 +73,9 @@ class ProcessOrderItemsCommand extends Command
                             }
                         }
                     } catch (\Exception $e) {
-                        Log::error("Failed to process Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
-                        $this->error("Failed to process Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage());
+                        $msg = "Failed to process Candidate Service ID {$candidateService->{$this->candidateServiceService->id()}}: " . $e->getMessage();
+                        Log::error($msg);
+                        $this->error($msg);
                     }
                 }
 
@@ -121,8 +108,9 @@ class ProcessOrderItemsCommand extends Command
                             $this->error("Failed to generate report for Candidate ID {$candidate->{$this->candidateModelService->id()}}");
                         }
                     } catch (\Exception $e) {
-                        Log::error("Report generation failed for candidate {$candidate->{$this->candidateModelService->id()}}: " . $e->getMessage());
-                        $this->error("Report generation failed: " . $e->getMessage());
+                        $msg = "Report generation failed for candidate {$candidate->{$this->candidateModelService->id()}}: " . $e->getMessage();
+                        Log::error($msg);
+                        $this->error($msg);
                     }
                 }
             }

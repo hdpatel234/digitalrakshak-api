@@ -9,11 +9,8 @@ enum CandidateStatus: string
     case SENT = 'sent';
     case ACTIVE = 'active';
 
-    /**
-     * @return array<int, string>
-     */
     public static function values(): array
     {
-        return array_map(static fn (self $status): string => $status->value, self::cases());
+        return array_map(static fn(self $status): string => $status->value, self::cases());
     }
 }

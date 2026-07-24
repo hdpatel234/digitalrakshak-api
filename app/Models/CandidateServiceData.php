@@ -8,22 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class CandidateServiceData extends BaseModel
 {
     use SoftDeletes;
-
     protected $table = "candidate_service_data";
-
     const order_item_id = "order_item_id";
     const FIELD_ID = "field_id";
     const FIELD_VALUE = "field_value";
-    const IS_VERIFIED = "is_verified";
-    const VERIFIED_AT = "verified_at";
-    const VERIFIED_BY = "verified_by";
     protected $fillable = [
         self::order_item_id,
         self::FIELD_ID,
         self::FIELD_VALUE,
-        self::IS_VERIFIED,
-        self::VERIFIED_AT,
-        self::VERIFIED_BY,
         self::CREATED_BY,
         self::UPDATED_BY,
         self::DELETED_BY,

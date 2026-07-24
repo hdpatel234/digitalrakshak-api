@@ -8,12 +8,8 @@ enum UserType: string
     case CLIENT_ADMIN = 'client_admin';
     case CLIENT_USER = 'client_user';
     case ADMIN_USER = 'admin_user';
-
-    /**
-     * @return array<int, string>
-     */
     public static function values(): array
     {
-        return array_map(static fn (self $type): string => $type->value, self::cases());
+        return array_map(static fn(self $type): string => $type->value, self::cases());
     }
 }

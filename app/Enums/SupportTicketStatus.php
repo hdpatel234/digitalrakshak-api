@@ -8,7 +8,6 @@ enum SupportTicketStatus: string
     case PENDING = 'pending';
     case RESOLVED = 'resolved';
     case CLOSED = 'closed';
-
     public function name(): string
     {
         return match ($this) {
@@ -17,5 +16,9 @@ enum SupportTicketStatus: string
             self::RESOLVED => 'Resolved',
             self::CLOSED => 'Closed',
         };
+    }
+    public static function values(): array
+    {
+        return array_map(static fn(self $status): string => $status->value, self::cases());
     }
 }

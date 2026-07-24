@@ -2,15 +2,12 @@
 
 namespace App\Enums;
 
-enum BaseStatus: string
+enum VerificationCompareStatus: string
 {
-    case ACTIVE = 'active';
-    case INACTIVE = 'inactive';
-    case PENDING = 'pending';
-    case FAILED = 'failed';
-    case PROCESSED = 'processed';
-    case SUCCESS = 'success';
-    case SUSPENDED = 'suspended';
+    case MATCH = "match";
+    case MISMATCH = "mismatch";
+    case PARTIAL_MATCH = "partial_match";
+    case NOT_APPLICABLE = "not_applicable";
     public static function values(): array
     {
         return array_map(static fn(self $status): string => $status->value, self::cases());

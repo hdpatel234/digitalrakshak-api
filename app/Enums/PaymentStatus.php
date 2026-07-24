@@ -9,7 +9,6 @@ enum PaymentStatus: string
     case COMPLETED = 'completed';
     case FAILED = 'failed';
     case REFUNDED = 'refunded';
-
     public function label(): string
     {
         return match ($this) {
@@ -19,5 +18,9 @@ enum PaymentStatus: string
             self::FAILED => 'Failed',
             self::REFUNDED => 'Refunded',
         };
+    }
+    public static function values(): array
+    {
+        return array_map(static fn(self $event): string => $event->value, self::cases());
     }
 }
